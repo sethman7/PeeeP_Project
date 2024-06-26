@@ -2,6 +2,7 @@
 
 
 #include "PPCharacterPlayer.h"
+<<<<<<< Updated upstream
 #include "Camera/CameraComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 
@@ -17,4 +18,19 @@ APPCharacterPlayer::APPCharacterPlayer()
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
 	FollowCamera->bUsePawnControlRotation = false;
 
+=======
+#include "GameFramework/SpringArmComponent.h"
+#include "Camera/CameraComponent.h"
+
+APPCharacterPlayer::APPCharacterPlayer()
+{
+	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CamearaBoom"));
+	CameraBoom->SetupAttachment(RootComponent);
+	CameraBoom->TargetArmLength = 800.0f;
+	CameraBoom->bUsePawnControlRotation = true;
+
+	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
+	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
+	FollowCamera->bUsePawnControlRotation = false;
+>>>>>>> Stashed changes
 }

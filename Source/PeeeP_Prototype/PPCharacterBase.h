@@ -6,6 +6,13 @@
 #include "GameFramework/Character.h"
 #include "PPCharacterBase.generated.h"
 
+UENUM()
+enum class ECharacterControlType : uint8
+{
+	Shoulder,
+	Quater
+};
+
 UCLASS()
 class PEEEP_PROTOTYPE_API APPCharacterBase : public ACharacter
 {
@@ -16,14 +23,10 @@ public:
 	APPCharacterBase();
 
 protected:
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
+	virtual void SetCharacterControlData(const class UPPCharacterControlData* CharacterControlData);
 
-public:	
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
-
-	// Called to bind functionality to input
-	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
-
+	UPROPERTY(EditAnywhere, Category = CharacterControl, Meta = (AllowPrivateAccess = "true"))
+	// TMap -> python에 있는 Dictionary랑 비슷
+	// TMap<[Key], [Value]>
+	TMap<ECharacterControlType, class UPPCharacterControlData*> CharacterControlManager;
 };

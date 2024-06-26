@@ -14,4 +14,6 @@ class PEEEP_PROTOTYPE_API APPGameModeBase : public AGameModeBase
 {
 	GENERATED_BODY()
 	
+public:
+	APPGameModeBase();
 };

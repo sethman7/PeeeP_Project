@@ -12,9 +12,7 @@
 UCLASS()
 class PEEEP_PROTOTYPE_API APPCharacterPlayer : public APPCharacterBase
 {
-	GENERATED_BODY()
-<<<<<<< Updated upstream
-	
+	GENERATED_BODY()	
 public:
 	APPCharacterPlayer();
 
@@ -24,16 +22,4 @@ public:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class UCameraComponent> FollowCamera;
-=======
-
-public:
-	APPCharacterPlayer();
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera)
-	TObjectPtr <class USpringArmComponent> CameraBoom;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera)
-	TObjectPtr <class UCameraComponent> FollowCamera;
->>>>>>> Stashed changes
-	
 };

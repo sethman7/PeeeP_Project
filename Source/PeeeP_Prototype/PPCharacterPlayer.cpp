@@ -97,7 +97,7 @@ void APPCharacterPlayer::ButtonInteraction(const FInputActionValue& Value)
 {
 	FVector CameraPos = FollowCamera->GetComponentLocation();
 	FVector CameraForwardVector = FollowCamera->GetForwardVector();
-	FVector EndPos = CameraPos + CameraForwardVector * 700.f;
+	FVector EndPos = CameraPos + CameraForwardVector * 500.f;
 
 	FHitResult HitResult;
 	FCollisionQueryParams CollisionParam(SCENE_QUERY_STAT(Button), false, this);
@@ -156,9 +156,9 @@ APPCharacterPlayer::APPCharacterPlayer()
 	// Camera
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));	// CameraBoom 컴포넌트를 가져옴
 	CameraBoom->SetupAttachment(RootComponent);
-	CameraBoom->TargetArmLength = 500.0f;
+	CameraBoom->TargetArmLength = 300.0f;
 	CameraBoom->bUsePawnControlRotation = true;
-	CameraBoom->SetRelativeLocation(FVector(0.0f, 0.0f, 100.f));
+	CameraBoom->SetRelativeLocation(FVector(0.0f, 0.0f, 25.f));
 
 	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));	// FollowCamera 컴포넌트를 가져옴
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);

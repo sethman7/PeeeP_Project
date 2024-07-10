@@ -10,6 +10,8 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "PPCharacterControlData.h"
+#include "Interface/PPButtonExecuteInterface.h"
+
 
 void APPCharacterPlayer::BeginPlay()
 {
@@ -32,7 +34,7 @@ void APPCharacterPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 	EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
 	EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &APPCharacterPlayer::Move);
 	EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &APPCharacterPlayer::Look);
-
+	EnhancedInputComponent->BindAction(ButtonInteract, ETriggerEvent::Triggered, this, &APPCharacterPlayer::ButtonInteraction);
 }
 
 void APPCharacterPlayer::SetCharacterControl(ECharacterControlType NewCharacterControlType)
@@ -91,6 +93,36 @@ void APPCharacterPlayer::Look(const FInputActionValue& Value)
 	AddControllerPitchInput(LookAxisVector.Y);
 }
 
+void APPCharacterPlayer::ButtonInteraction(const FInputActionValue& Value)
+{
+	FVector CameraPos = FollowCamera->GetComponentLocation();
+	FVector CameraForwardVector = FollowCamera->GetForwardVector();
+	FVector EndPos = CameraPos + CameraForwardVector * 600.f;
+
+	FHitResult HitResult;
+	FCollisionQueryParams CollisionParam(SCENE_QUERY_STAT(Button), false, this);
+	
+
+	bool IsHit = GetWorld()->LineTraceSingleByChannel(HitResult, CameraPos, EndPos, ECC_GameTraceChannel1, CollisionParam, FCollisionResponseParams(ECR_Block));
+
+	if (IsHit)
+	{
+		AActor* HitActor = HitResult.GetActor();
+		IPPButtonExecuteInterface* ButtonActor = Cast<IPPButtonExecuteInterface>(HitActor);
+		ensure(ButtonActor);
+		if (ButtonActor != nullptr)
+		{
+			UE_LOG(LogTemp, Log, TEXT("FindButton"));
+			ButtonActor->Execute();
+		}
+	}
+
+	FColor DebugColor(255, 0, 0);
+
+	DrawDebugLine(GetWorld(), CameraPos, EndPos, DebugColor, false, 5.0f);
+
+}
+
 APPCharacterPlayer::APPCharacterPlayer()
 {
 	// Input
@@ -114,12 +146,19 @@ APPCharacterPlayer::APPCharacterPlayer()
 	{
 		LookAction = InputActionLookRef.Object;
 	}
+	static ConstructorHelpers::FObjectFinder<UInputAction> ButtonInteractRef(TEXT("/Script/EnhancedInput.InputAction'/Game/Input/Actions/IA_Button.IA_Button'"));
+	if(!ButtonInteractRef.Object)
+	{
+		ButtonInteract = ButtonInteractRef.Object;
+	}
+
 
 	// Camera
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));	// CameraBoom 컴포넌트를 가져옴
 	CameraBoom->SetupAttachment(RootComponent);
-	CameraBoom->TargetArmLength = 800.0f;
+	CameraBoom->TargetArmLength = 400.0f;
 	CameraBoom->bUsePawnControlRotation = true;
+	CameraBoom->SetRelativeLocation(FVector(0.0f, 0.0f, 25.f));
 
 	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));	// FollowCamera 컴포넌트를 가져옴
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);

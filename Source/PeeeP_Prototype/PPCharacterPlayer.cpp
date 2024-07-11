@@ -24,6 +24,14 @@ void APPCharacterPlayer::BeginPlay()
 	}
 }
 
+void APPCharacterPlayer::Tick(float DeltaTime)
+{
+	if (GrabHandle->GetGrabbedComponent())
+	{
+		GrabHandle->SetTargetLocation((GetActorForwardVector() * 50.0f) + GetActorLocation());
+	}
+}
+
 void APPCharacterPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
@@ -35,6 +43,9 @@ void APPCharacterPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 	EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &APPCharacterPlayer::Move);
 	EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &APPCharacterPlayer::Look);
 	EnhancedInputComponent->BindAction(ButtonInteract, ETriggerEvent::Triggered, this, &APPCharacterPlayer::ButtonInteraction);
+	EnhancedInputComponent->BindAction(GrabAction, ETriggerEvent::Triggered, this, &APPCharacterPlayer::GrabInteraction);
+	EnhancedInputComponent->BindAction(GrabAction, ETriggerEvent::Completed, this, &APPCharacterPlayer::GrabRelease);
+
 }
 
 void APPCharacterPlayer::SetCharacterControl(ECharacterControlType NewCharacterControlType)
@@ -123,6 +134,40 @@ void APPCharacterPlayer::ButtonInteraction(const FInputActionValue& Value)
 
 }
 
+void APPCharacterPlayer::GrabInteraction()
+{
+	UE_LOG(LogTemp, Log, TEXT("Button Click"));
+	FVector CameraPos = FollowCamera->GetComponentLocation();
+	FVector CameraForwardVector = FollowCamera->GetForwardVector();
+	FVector EndPos = CameraPos + CameraForwardVector * 600.f;
+
+	FHitResult HitResult;
+	FCollisionQueryParams CollisionParam(SCENE_QUERY_STAT(Grab), true, this);
+
+	bool IsHit = GetWorld()->LineTraceSingleByChannel(HitResult, CameraPos, EndPos, ECC_GameTraceChannel2, CollisionParam, FCollisionResponseParams(ECR_Block));
+	if (IsHit)
+	{
+		GrabObectDistanceFromCamera = HitResult.Distance;
+		GrabHandle->GrabComponentAtLocationWithRotation(HitResult.GetComponent(), TEXT("None"), HitResult.GetComponent()->GetComponentLocation(), FRotator::ZeroRotator);
+
+		UE_LOG(LogTemp, Log, TEXT("GrabHit"));
+	}
+
+	FColor DebugColor(255, 0, 0);
+
+	DrawDebugLine(GetWorld(), CameraPos, EndPos, DebugColor, false, 5.0f);
+}
+
+void APPCharacterPlayer::GrabRelease()
+{
+	if (GrabHandle->GetGrabbedComponent())
+	{
+		GrabHandle->ReleaseComponent();
+	}
+}
+
+
+
 APPCharacterPlayer::APPCharacterPlayer()
 {
 	// Input
@@ -151,7 +196,15 @@ APPCharacterPlayer::APPCharacterPlayer()
 	{
 		ButtonInteract = ButtonInteractRef.Object;
 	}
+	static ConstructorHelpers::FObjectFinder<UInputAction> GrabInteractRef(TEXT("/Script/EnhancedInput.InputAction'/Game/Input/Actions/IA_Grab.IA_Grab'"));
+	if (nullptr != GrabInteractRef.Object)
+	{
+		GrabAction = GrabInteractRef.Object;
+	}
 
+	// Grab
+	GrabHandle = CreateDefaultSubobject<UPhysicsHandleComponent>(TEXT("PhysicsHandle"));
+	
 
 	// Camera
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));	// CameraBoom 컴포넌트를 가져옴

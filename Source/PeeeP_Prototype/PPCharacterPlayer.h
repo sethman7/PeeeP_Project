@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "PPCharacterBase.h"
 #include "InputActionValue.h"
+#include "PhysicsEngine/PhysicsHandleComponent.h"
 #include "PPCharacterPlayer.generated.h"
 
 /**
@@ -20,7 +21,7 @@ public:
 	
 protected:
 	virtual void BeginPlay() override;
-
+	virtual void Tick(float DeltaTime) override;
 protected:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
@@ -46,9 +47,19 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class UInputAction> ButtonInteract;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, Meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class UInputAction> GrabAction;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Physics, Meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class UPhysicsHandleComponent> GrabHandle;
+
 	void Move(const FInputActionValue& Value);
 	void Look(const FInputActionValue& Value);
 	void ButtonInteraction(const FInputActionValue& Value);
+	void GrabInteraction();
+	void GrabRelease();
+
+	float GrabObectDistanceFromCamera;
 
 	ECharacterControlType CurrentCharacterControlType;
 

@@ -147,7 +147,6 @@ void APPCharacterPlayer::GrabInteraction()
 	bool IsHit = GetWorld()->LineTraceSingleByChannel(HitResult, CameraPos, EndPos, ECC_GameTraceChannel2, CollisionParam, FCollisionResponseParams(ECR_Block));
 	if (IsHit)
 	{
-		GrabObectDistanceFromCamera = HitResult.Distance;
 		GrabHandle->GrabComponentAtLocationWithRotation(HitResult.GetComponent(), TEXT("None"), HitResult.GetComponent()->GetComponentLocation(), FRotator::ZeroRotator);
 
 		UE_LOG(LogTemp, Log, TEXT("GrabHit"));
@@ -221,6 +220,10 @@ APPCharacterPlayer::APPCharacterPlayer()
 	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));	// FollowCamera 컴포넌트를 가져옴
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
 	FollowCamera->bUsePawnControlRotation = false;
+
+
+	/*GetCharacterMovement()->JumpZVelocity = 1500.f;
+	GetCharacterMovement()->GravityScale = 5.f;*/
 }
 
 

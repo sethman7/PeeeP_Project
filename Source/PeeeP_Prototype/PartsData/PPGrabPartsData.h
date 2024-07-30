@@ -15,9 +15,7 @@ class PEEEP_PROTOTYPE_API UPPGrabPartsData : public UPPPartsDataBase
 	GENERATED_BODY()
 	
 public:
-	virtual void AttachParts(APlayerController* PlayerController) override;
 
-protected:
-	
-	TObjectPtr<class UPhysicsHandleComponent> GrabHandle;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TObjectPtr<class UInputAction> GrabAction;
 };

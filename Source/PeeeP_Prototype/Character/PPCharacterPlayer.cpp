@@ -165,8 +165,6 @@ void APPCharacterPlayer::GrabRelease()
 	}
 }
 
-
-
 APPCharacterPlayer::APPCharacterPlayer()
 {
 	// Input
@@ -221,7 +219,7 @@ APPCharacterPlayer::APPCharacterPlayer()
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
 	FollowCamera->bUsePawnControlRotation = false;
 
-
+	
 	/*GetCharacterMovement()->JumpZVelocity = 1500.f;
 	GetCharacterMovement()->GravityScale = 5.f;*/
 }

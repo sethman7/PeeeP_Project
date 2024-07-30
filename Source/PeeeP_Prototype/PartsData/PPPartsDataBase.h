@@ -9,22 +9,20 @@
 /**
  * 
  */
+
 UCLASS()
 class PEEEP_PROTOTYPE_API UPPPartsDataBase : public UPrimaryDataAsset
 {
 	GENERATED_BODY()
 	
-protected:
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Meta = (AllowPrivateAccess = "true"))
+public:
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TObjectPtr<class UStaticMesh> PartsMesh;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TObjectPtr<class UInputMappingContext> PartsMappingContext;
 
-
-public:
-
-	virtual void AttachParts(APlayerController* PlayerController);
-	virtual void DettachParts(APlayerController* PlayerController);
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TSubclassOf<class UPPPartsBase> PartsComponent;
 
 };

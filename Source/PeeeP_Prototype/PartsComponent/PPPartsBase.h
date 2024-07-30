@@ -20,9 +20,9 @@ protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
 
+	virtual void SetupParts();
+
 public:	
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
-
-	//virtual void SetupParts() = 0;
 };

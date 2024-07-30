@@ -32,7 +32,8 @@ void UPPPartsBase::TickComponent(float DeltaTime, ELevelTick TickType, FActorCom
 	// ...
 }
 
-//void UPPPartsBase::SetupParts()
-//{
-//}
+void UPPPartsBase::SetupParts()
+{
+
+}
 

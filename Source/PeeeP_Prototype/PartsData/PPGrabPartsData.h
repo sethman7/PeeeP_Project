@@ -15,6 +15,7 @@ class PEEEP_PROTOTYPE_API UPPGrabPartsData : public UPPPartsDataBase
 	GENERATED_BODY()
 	
 public:
+	UPPGrabPartsData();
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TObjectPtr<class UInputAction> GrabAction;

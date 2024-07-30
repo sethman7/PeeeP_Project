@@ -11,6 +11,7 @@
 #include "EnhancedInputSubsystems.h"
 #include "PPCharacterControlData.h"
 #include "Interface/PPButtonExecuteInterface.h"
+#include "PartsComponent/PPGrabParts.h"
 
 
 void APPCharacterPlayer::BeginPlay()
@@ -22,14 +23,15 @@ void APPCharacterPlayer::BeginPlay()
 	{
 		Subsystem->AddMappingContext(DefaultMappingContext, 0);
 	}
+
+	//Parts 임시로 생성자에서 부여함 해당 부분은 나중에 인벤토리에서 데이터 이용해서 파츠 변경하는 함수 따로 만들어서 적용하면 될 듯
+	UActorComponent* PartsComponent = AddComponentByClass(UPPGrabParts::StaticClass(), true, FTransform::Identity, false);
+	Parts = CastChecked<UPPPartsBase>(PartsComponent);
 }
 
 void APPCharacterPlayer::Tick(float DeltaTime)
 {
-	if (GrabHandle->GetGrabbedComponent())
-	{
-		GrabHandle->SetTargetLocation((GetActorForwardVector() * 50.0f) + GetActorLocation());
-	}
+	
 }
 
 void APPCharacterPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -43,8 +45,6 @@ void APPCharacterPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 	EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &APPCharacterPlayer::Move);
 	EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &APPCharacterPlayer::Look);
 	EnhancedInputComponent->BindAction(ButtonInteract, ETriggerEvent::Triggered, this, &APPCharacterPlayer::ButtonInteraction);
-	EnhancedInputComponent->BindAction(GrabAction, ETriggerEvent::Triggered, this, &APPCharacterPlayer::GrabInteraction);
-	EnhancedInputComponent->BindAction(GrabAction, ETriggerEvent::Completed, this, &APPCharacterPlayer::GrabRelease);
 
 }
 
@@ -134,35 +134,9 @@ void APPCharacterPlayer::ButtonInteraction(const FInputActionValue& Value)
 
 }
 
-void APPCharacterPlayer::GrabInteraction()
+UCameraComponent* APPCharacterPlayer::GetCamera()
 {
-	UE_LOG(LogTemp, Log, TEXT("Button Click"));
-	FVector CameraPos = FollowCamera->GetComponentLocation();
-	FVector CameraForwardVector = FollowCamera->GetForwardVector();
-	FVector EndPos = CameraPos + CameraForwardVector * 600.f;
-
-	FHitResult HitResult;
-	FCollisionQueryParams CollisionParam(SCENE_QUERY_STAT(Grab), true, this);
-
-	bool IsHit = GetWorld()->LineTraceSingleByChannel(HitResult, CameraPos, EndPos, ECC_GameTraceChannel2, CollisionParam, FCollisionResponseParams(ECR_Block));
-	if (IsHit)
-	{
-		GrabHandle->GrabComponentAtLocationWithRotation(HitResult.GetComponent(), TEXT("None"), HitResult.GetComponent()->GetComponentLocation(), FRotator::ZeroRotator);
-
-		UE_LOG(LogTemp, Log, TEXT("GrabHit"));
-	}
-
-	FColor DebugColor(255, 0, 0);
-
-	DrawDebugLine(GetWorld(), CameraPos, EndPos, DebugColor, false, 5.0f);
-}
-
-void APPCharacterPlayer::GrabRelease()
-{
-	if (GrabHandle->GetGrabbedComponent())
-	{
-		GrabHandle->ReleaseComponent();
-	}
+	return FollowCamera;
 }
 
 APPCharacterPlayer::APPCharacterPlayer()
@@ -199,10 +173,6 @@ APPCharacterPlayer::APPCharacterPlayer()
 		GrabAction = GrabInteractRef.Object;
 	}
 
-	// Grab
-	GrabHandle = CreateDefaultSubobject<UPhysicsHandleComponent>(TEXT("PhysicsHandle"));
-	
-
 	// Camera
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));	// CameraBoom 컴포넌트를 가져옴
 	CameraBoom->SetupAttachment(RootComponent);
@@ -219,9 +189,6 @@ APPCharacterPlayer::APPCharacterPlayer()
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
 	FollowCamera->bUsePawnControlRotation = false;
 
-	
-	/*GetCharacterMovement()->JumpZVelocity = 1500.f;
-	GetCharacterMovement()->GravityScale = 5.f;*/
 }
 
 

@@ -50,7 +50,7 @@ void APPConveyorBelt::Tick(float DeltaTime)
         }
     }
 }
-
+// UPrimitiveComponent : 오브젝트의 위치, 회전, 크기 및 충돌 처리와 관련된 기능
 void APPConveyorBelt::OnOverlapBegin(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
     if (OtherActor && (OtherActor != this) && OtherComp)

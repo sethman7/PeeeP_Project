@@ -2,7 +2,7 @@
 
 
 #include "Prop/PPPressurePlate.h"
-#include "Prop/Door_Test.h"
+#include "Prop/PPDoor.h"
 #include "Components/StaticMeshComponent.h"
 #include "Components/BoxComponent.h"
 
@@ -28,12 +28,12 @@ void APPPressurePlate::BeginPlay()
 
 void APPPressurePlate::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	Door->SwitchOnOff();
+	Door->OnInteract();
 }
 
 void APPPressurePlate::OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
-	Door->SwitchOnOff();
+	Door->OnInteract();
 }
 
 // Called every frame

@@ -4,18 +4,21 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "Door_Test.generated.h"
+#include "Components/TimeLineComponent.h"
+#include "PPDoor.generated.h"
 
 UCLASS()
-class PEEEP_PROTOTYPE_API ADoor_Test : public AActor
+class PEEEP_PROTOTYPE_API APPDoor : public AActor
 {
 	GENERATED_BODY()
 	
 public:	
 	// Sets default values for this actor's properties
-	ADoor_Test();
-	void SwitchOnOff();
-	void MoveDoor(float value);
+	APPDoor();
+	void OnInteract();
+
+	UFUNCTION()
+	void OpenDoor(float value);
 
 protected:
 	// Called when the game starts or when spawned
@@ -29,7 +32,15 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 private:
-	bool trigger;
-	bool Switch;
-	double Z_Loc;
+	bool bIsDoorClosed;
+	double Speed;
+	double Max;
+	double ZLocation;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite,Category="Timeline",Meta=(AllowPrivateAccess = "true"))
+	UCurveFloat* CurveFloat;
+
+	FTimeline Timeline;
+
+
 };

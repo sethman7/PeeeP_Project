@@ -2,8 +2,9 @@
 #include "Components/StaticMeshComponent.h"
 #include "Components/BoxComponent.h"
 #include "GameFramework/Actor.h"
+#include "GameFramework/Character.h"
+#include "GameFramework/CharacterMovementComponent.h"
 
-// Sets default values
 APPConveyorBelt::APPConveyorBelt()
 {
     PrimaryActorTick.bCanEverTick = true;
@@ -16,34 +17,35 @@ APPConveyorBelt::APPConveyorBelt()
     TriggerBox->OnComponentBeginOverlap.AddDynamic(this, &APPConveyorBelt::OnOverlapBegin);
     TriggerBox->OnComponentEndOverlap.AddDynamic(this, &APPConveyorBelt::OnOverlapEnd);
 
-    BeltSpeed = 600.0f;
+    BeltSpeed = 300.0f;
     bIsActivated = false;
-    BeltLength = 1000.0f; // 필요에 따라 조정
-    Tolerance = 10.0f; // 필요에 따라 조정
+    BeltLength = 1000.0f;
+    Tolerance = 10.0f;
 }
 
-// Called when the game starts or when spawned
 void APPConveyorBelt::BeginPlay()
 {
     Super::BeginPlay();
 }
 
-// Called every frame
 void APPConveyorBelt::Tick(float DeltaTime)
 {
     Super::Tick(DeltaTime);
 
     if (bIsActivated)
     {
-        TArray<AActor*> OverlappingActorsCopy = OverlappingActors;  // 배열 복사
+        TArray<AActor*> OverlappingActorsCopy = OverlappingActors;
 
         for (AActor* OverlappingActor : OverlappingActorsCopy)
         {
             if (OverlappingActor && !HasReachedEndOfBelt(OverlappingActor))
             {
                 FVector NewLocation = OverlappingActor->GetActorLocation();
-                NewLocation += GetActorForwardVector() * BeltSpeed * DeltaTime;
+                FVector Velocity = GetActorForwardVector() * BeltSpeed;
+                NewLocation += Velocity * DeltaTime;
                 OverlappingActor->SetActorLocation(NewLocation);
+
+                ActorVelocities.Add(OverlappingActor, Velocity);
             }
         }
     }
@@ -62,6 +64,26 @@ void APPConveyorBelt::OnOverlapEnd(class UPrimitiveComponent* OverlappedComp, cl
 {
     if (OtherActor && (OtherActor != this) && OtherComp)
     {
+        if (ActorVelocities.Contains(OtherActor))
+        {
+            FVector LastVelocity = ActorVelocities[OtherActor];
+
+            if (ACharacter* Character = Cast<ACharacter>(OtherActor))
+            {
+                if (Character->GetCharacterMovement())
+                {
+                    Character->GetCharacterMovement()->Velocity.X = LastVelocity.X;
+                    Character->GetCharacterMovement()->Velocity.Y = LastVelocity.Y;
+                }
+            }
+            else if (UPrimitiveComponent* PrimitiveComponent = Cast<UPrimitiveComponent>(OtherActor->GetRootComponent()))
+            {
+                PrimitiveComponent->AddImpulse(LastVelocity, NAME_None, true);
+            }
+
+            ActorVelocities.Remove(OtherActor);
+        }
+
         OverlappingActors.Remove(OtherActor);
         if (OverlappingActors.Num() == 0)
         {

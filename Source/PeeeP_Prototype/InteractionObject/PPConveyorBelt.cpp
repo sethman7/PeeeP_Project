@@ -9,7 +9,7 @@ APPConveyorBelt::APPConveyorBelt()
 {
     PrimaryActorTick.bCanEverTick = true;
 
-    BeltMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Conveyor"));
+    BeltMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("BP_Conveyor"));
     RootComponent = BeltMesh;
 
     TriggerBox = CreateDefaultSubobject<UBoxComponent>(TEXT("TriggerBox"));

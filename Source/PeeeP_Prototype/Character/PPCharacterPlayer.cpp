@@ -11,8 +11,61 @@
 #include "EnhancedInputSubsystems.h"
 #include "PPCharacterControlData.h"
 #include "Interface/PPButtonExecuteInterface.h"
-#include "PartsComponent/PPGrabParts.h"
+#include "Parts/PartsComponent/PPGrabParts.h"
+#include "Parts/PartsData/PPPartsDataBase.h"
 
+
+APPCharacterPlayer::APPCharacterPlayer()
+{
+	// Input
+	static ConstructorHelpers::FObjectFinder<UInputMappingContext> InputMappingContextRef(TEXT("/Script/EnhancedInput.InputMappingContext'/Game/Input/IMC_Default.IMC_Default'"));
+	if (nullptr != InputMappingContextRef.Object)
+	{
+		DefaultMappingContext = InputMappingContextRef.Object;
+	}
+	static ConstructorHelpers::FObjectFinder<UInputAction> InputActionMoveRef(TEXT("/Script/EnhancedInput.InputAction'/Game/Input/Actions/IA_Move.IA_Move'"));
+	if (nullptr != InputActionMoveRef.Object)
+	{
+		MoveAction = InputActionMoveRef.Object;
+	}
+	static ConstructorHelpers::FObjectFinder<UInputAction> InputActionJumpRef(TEXT("/Script/EnhancedInput.InputAction'/Game/Input/Actions/IA_Jump.IA_Jump'"));
+	if (nullptr != InputActionJumpRef.Object)
+	{
+		JumpAction = InputActionJumpRef.Object;
+	}
+	static ConstructorHelpers::FObjectFinder<UInputAction> InputActionLookRef(TEXT("/Script/EnhancedInput.InputAction'/Game/Input/Actions/IA_Look.IA_Look'"));
+	if (nullptr != InputActionLookRef.Object)
+	{
+		LookAction = InputActionLookRef.Object;
+	}
+	static ConstructorHelpers::FObjectFinder<UInputAction> ButtonInteractRef(TEXT("/Script/EnhancedInput.InputAction'/Game/Input/Actions/IA_Button.IA_Button'"));
+	if (!ButtonInteractRef.Object)
+	{
+		ButtonInteract = ButtonInteractRef.Object;
+	}
+	static ConstructorHelpers::FObjectFinder<UInputAction> GrabInteractRef(TEXT("/Script/EnhancedInput.InputAction'/Game/Input/Actions/IA_Grab.IA_Grab'"));
+	if (nullptr != GrabInteractRef.Object)
+	{
+		GrabAction = GrabInteractRef.Object;
+	}
+
+	// Camera
+	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));	// CameraBoom 컴포넌트를 가져옴
+	CameraBoom->SetupAttachment(RootComponent);
+	CameraBoom->TargetArmLength = 600.0f;
+	CameraBoom->bUsePawnControlRotation = true;
+	CameraBoom->SetRelativeLocation(FVector(0.0f, 0.0f, 100.f));
+	CameraBoom->bEnableCameraLag = true;
+	CameraBoom->bEnableCameraRotationLag = true;
+	CameraBoom->CameraLagSpeed = 5.0f;
+	CameraBoom->CameraRotationLagSpeed = 20.f;
+	CameraBoom->CameraLagMaxDistance = 500.f;
+
+	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));	// FollowCamera 컴포넌트를 가져옴
+	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
+	FollowCamera->bUsePawnControlRotation = false;
+
+}
 
 void APPCharacterPlayer::BeginPlay()
 {
@@ -24,9 +77,9 @@ void APPCharacterPlayer::BeginPlay()
 		Subsystem->AddMappingContext(DefaultMappingContext, 0);
 	}
 
-	//Parts 임시로 생성자에서 부여함 해당 부분은 나중에 인벤토리에서 데이터 이용해서 파츠 변경하는 함수 따로 만들어서 적용하면 될 듯
-	UActorComponent* PartsComponent = AddComponentByClass(UPPGrabParts::StaticClass(), true, FTransform::Identity, false);
-	Parts = CastChecked<UPPPartsBase>(PartsComponent);
+	////Parts 임시로 생성자에서 부여함 해당 부분은 나중에 인벤토리에서 데이터 이용해서 파츠 변경하는 함수 따로 만들어서 적용하면 될 듯
+	//UActorComponent* PartsComponent = AddComponentByClass(UPPGrabParts::StaticClass(), true, FTransform::Identity, false);
+	//Parts = CastChecked<UPPPartsBase>(PartsComponent);
 }
 
 void APPCharacterPlayer::Tick(float DeltaTime)
@@ -131,7 +184,6 @@ void APPCharacterPlayer::ButtonInteraction(const FInputActionValue& Value)
 	FColor DebugColor(255, 0, 0);
 
 	DrawDebugLine(GetWorld(), CameraPos, EndPos, DebugColor, false, 5.0f);
-
 }
 
 UCameraComponent* APPCharacterPlayer::GetCamera()
@@ -139,56 +191,20 @@ UCameraComponent* APPCharacterPlayer::GetCamera()
 	return FollowCamera;
 }
 
-APPCharacterPlayer::APPCharacterPlayer()
+
+void APPCharacterPlayer::SwitchParts(UPPPartsDataBase* InPartsData)
 {
-	// Input
-	static ConstructorHelpers::FObjectFinder<UInputMappingContext> InputMappingContextRef(TEXT("/Script/EnhancedInput.InputMappingContext'/Game/Input/IMC_Default.IMC_Default'"));
-	if (nullptr != InputMappingContextRef.Object)
+	if (Parts)
 	{
-		DefaultMappingContext = InputMappingContextRef.Object;
-	}
-	static ConstructorHelpers::FObjectFinder<UInputAction> InputActionMoveRef(TEXT("/Script/EnhancedInput.InputAction'/Game/Input/Actions/IA_Move.IA_Move'"));
-	if (nullptr != InputActionMoveRef.Object)
-	{
-		MoveAction = InputActionMoveRef.Object;
-	}
-	static ConstructorHelpers::FObjectFinder<UInputAction> InputActionJumpRef(TEXT("/Script/EnhancedInput.InputAction'/Game/Input/Actions/IA_Jump.IA_Jump'"));
-	if (nullptr != InputActionJumpRef.Object)
-	{
-		JumpAction = InputActionJumpRef.Object;
-	}
-	static ConstructorHelpers::FObjectFinder<UInputAction> InputActionLookRef(TEXT("/Script/EnhancedInput.InputAction'/Game/Input/Actions/IA_Look.IA_Look'"));
-	if (nullptr != InputActionLookRef.Object)
-	{
-		LookAction = InputActionLookRef.Object;
-	}
-	static ConstructorHelpers::FObjectFinder<UInputAction> ButtonInteractRef(TEXT("/Script/EnhancedInput.InputAction'/Game/Input/Actions/IA_Button.IA_Button'"));
-	if(!ButtonInteractRef.Object)
-	{
-		ButtonInteract = ButtonInteractRef.Object;
-	}
-	static ConstructorHelpers::FObjectFinder<UInputAction> GrabInteractRef(TEXT("/Script/EnhancedInput.InputAction'/Game/Input/Actions/IA_Grab.IA_Grab'"));
-	if (nullptr != GrabInteractRef.Object)
-	{
-		GrabAction = GrabInteractRef.Object;
+		UE_LOG(LogTemp, Log, TEXT("Destroy Parts"));
+		Parts->DestroyComponent();
 	}
 
-	// Camera
-	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));	// CameraBoom 컴포넌트를 가져옴
-	CameraBoom->SetupAttachment(RootComponent);
-	CameraBoom->TargetArmLength = 600.0f;
-	CameraBoom->bUsePawnControlRotation = true;
-	CameraBoom->SetRelativeLocation(FVector(0.0f, 0.0f, 100.f));
-	CameraBoom->bEnableCameraLag = true;
-	CameraBoom->bEnableCameraRotationLag = true;
-	CameraBoom->CameraLagSpeed = 5.0f;
-	CameraBoom->CameraRotationLagSpeed = 20.f;
-	CameraBoom->CameraLagMaxDistance = 500.f;
-
-	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));	// FollowCamera 컴포넌트를 가져옴
-	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
-	FollowCamera->bUsePawnControlRotation = false;
-
+	UE_LOG(LogTemp, Log, TEXT("Creat New Parts"));
+	UActorComponent* PartsComponent = AddComponentByClass(InPartsData->PartsComponent, true, FTransform::Identity, false);
+	Parts = CastChecked<UPPPartsBase>(PartsComponent);
 }
+
+
 
 

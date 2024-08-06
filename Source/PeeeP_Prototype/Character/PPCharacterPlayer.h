@@ -72,6 +72,9 @@ public:
 
 protected:
 //Parts
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, Meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Parts, Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class UPPPartsBase> Parts;
+
+public:
+	void SwitchParts(class UPPPartsDataBase* InPartsData);
 };

@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "PartsData/PPPartsDataBase.h"
+#include "Parts/PartsData/PPPartsDataBase.h"
 #include "PPGrabPartsData.generated.h"
 
 /**

@@ -4,25 +4,36 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
-#include "PPPartsBase.generated.h"
+#include "PPElectricDischargeComponent.generated.h"
+
+UENUM()
+enum class EDischargeMode : uint8
+{
+	Sphere = 0,
+	Capsule
+};
 
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
-class PEEEP_PROTOTYPE_API UPPPartsBase : public UActorComponent
+class PEEEP_PROTOTYPE_API UPPElectricDischargeComponent : public UActorComponent
 {
 	GENERATED_BODY()
 
 public:	
 	// Sets default values for this component's properties
-	UPPPartsBase();
+	UPPElectricDischargeComponent();
 
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
 
-	virtual void SetupParts();
+	EDischargeMode DischargeMode;
 
 public:	
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+
+	void Discharge();
+	void ChangeDischargeMode();
+
 };

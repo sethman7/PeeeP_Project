@@ -1,8 +1,8 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "PartsData/PPGrabPartsData.h"
-#include "PartsComponent/PPGrabParts.h"
+#include "Parts/PartsData/PPGrabPartsData.h"
+#include "Parts/PartsComponent/PPGrabParts.h"
 
 UPPGrabPartsData::UPPGrabPartsData()
 {

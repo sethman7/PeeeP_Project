@@ -11,8 +11,8 @@
 #include "EnhancedInputSubsystems.h"
 #include "PPCharacterControlData.h"
 #include "Interface/PPButtonExecuteInterface.h"
-#include "PartsComponent/PPGrabParts.h"
-#include "PartsData/PPPartsDataBase.h"
+#include "Parts/PartsComponent/PPGrabParts.h"
+#include "Parts/PartsData/PPPartsDataBase.h"
 
 
 APPCharacterPlayer::APPCharacterPlayer()

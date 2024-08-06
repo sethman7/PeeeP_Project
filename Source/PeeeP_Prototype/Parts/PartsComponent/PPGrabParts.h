@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "PartsComponent/PPPartsBase.h"
+#include "Parts/PartsComponent/PPPartsBase.h"
 #include "PPGrabParts.generated.h"
 
 /**
@@ -24,12 +24,10 @@ protected:
 
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
-	virtual void SetupParts() override;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 	TObjectPtr<class UPPGrabPartsData> GrabPartsData;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	TObjectPtr<class UPhysicsHandleComponent> GrabHandle;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)

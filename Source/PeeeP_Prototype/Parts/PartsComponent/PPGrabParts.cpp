@@ -1,8 +1,8 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "PartsComponent/PPGrabParts.h"
-#include "PartsData/PPGrabPartsData.h"
+#include "Parts/PartsComponent/PPGrabParts.h"
+#include "Parts/PartsData/PPGrabPartsData.h"
 #include "Character/PPCharacterPlayer.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
@@ -20,25 +20,7 @@ UPPGrabParts::UPPGrabParts()
 		GrabPartsData = GrabPartsDataRef.Object;
 	}
 
-	SetupParts();
-}
-
-
-void UPPGrabParts::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
-{
-	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-
-	if (GrabHandle->GetGrabbedComponent())
-	{
-		if (Owner)
-		{
-			GrabHandle->SetTargetLocation((Owner->GetActorForwardVector() * 100.0f) + Owner->GetActorLocation());
-		}
-	}
-}
-
-void UPPGrabParts::SetupParts()
-{
+	//Setup
 	APPCharacterPlayer* PlayerCharacter = Cast<APPCharacterPlayer>(Owner);
 	if (PlayerCharacter)
 	{
@@ -57,6 +39,20 @@ void UPPGrabParts::SetupParts()
 				EnhancedInputComponent->BindAction(GrabPartsData->GrabAction, ETriggerEvent::Triggered, this, &UPPGrabParts::GrabInteraction);
 				EnhancedInputComponent->BindAction(GrabPartsData->GrabAction, ETriggerEvent::Completed, this, &UPPGrabParts::GrabRelease);
 			}
+		}
+	}
+}
+
+
+void UPPGrabParts::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
+{
+	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+
+	if (GrabHandle->GetGrabbedComponent())
+	{
+		if (Owner)
+		{
+			GrabHandle->SetTargetLocation((Owner->GetActorForwardVector() * 100.0f) + Owner->GetActorLocation());
 		}
 	}
 }

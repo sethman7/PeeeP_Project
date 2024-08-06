@@ -33,7 +33,7 @@ public:
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
-	void Discharge();
+	void Discharge(FVector StartLocation, float InRange);
 	void ChangeDischargeMode();
 
 };

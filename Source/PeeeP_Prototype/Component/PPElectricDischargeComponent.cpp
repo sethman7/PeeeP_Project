@@ -3,6 +3,7 @@
 
 #include "Component/PPElectricDischargeComponent.h"
 #include "CollisionQueryParams.h"
+#include "Interface/PPElectricObjectInterface.h"
 
 // Sets default values for this component's properties
 UPPElectricDischargeComponent::UPPElectricDischargeComponent()
@@ -31,7 +32,7 @@ void UPPElectricDischargeComponent::TickComponent(float DeltaTime, ELevelTick Ti
 
 }
 
-void UPPElectricDischargeComponent::Discharge()
+void UPPElectricDischargeComponent::Discharge(FVector StartLocation, float InRange)
 {
 	AActor* Owner = GetOwner();
 
@@ -41,13 +42,40 @@ void UPPElectricDischargeComponent::Discharge()
 	{
 		FHitResult OutHitResult;
 
-		float CapsuleRadius = 50.0f;
+		FVector Start = StartLocation;
+		FVector End = Start + Owner->GetActorForwardVector() * InRange;
+		float SphereRadius = 50.0f;
 
+		bool bIsHit = GetWorld()->SweepSingleByChannel(OutHitResult, Start, End, FQuat::Identity, ECC_GameTraceChannel2 /*ÀÓ½Ã·Î ±×·¦ ³Ö¾îµÒ*/,
+			FCollisionShape::MakeSphere(SphereRadius), CollisionParam);
 
+		if (bIsHit)
+		{
+			IPPElectricObjectInterface* HitElectricObject = CastChecked<IPPElectricObjectInterface>(OutHitResult.GetActor());
+			if (HitElectricObject)
+			{
+				HitElectricObject->Charge();
+			}
+		}
 	}
 	else if (DischargeMode == EDischargeMode::Sphere)
 	{
+		TArray<FOverlapResult> OutOverlapResults;
 
+		bool bIsHit = GetWorld()->OverlapMultiByChannel(OutOverlapResults, Owner->GetActorLocation(), FQuat::Identity, ECC_GameTraceChannel2 /*ÀÓ½Ã·Î ±×·¦ ³Ö¾îµÒ*/,
+			FCollisionShape::MakeSphere(InRange), CollisionParam);
+
+		if (bIsHit)
+		{
+			for (FOverlapResult OverlapResult : OutOverlapResults)
+			{
+				IPPElectricObjectInterface* HitElectricObject = CastChecked<IPPElectricObjectInterface>(OverlapResult.GetActor());
+				if (HitElectricObject)
+				{
+					HitElectricObject->Charge();
+				}
+			}
+		}
 	}
 
 }

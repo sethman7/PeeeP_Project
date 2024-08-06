@@ -2,6 +2,7 @@
 
 
 #include "Component/PPElectricDischargeComponent.h"
+#include "CollisionQueryParams.h"
 
 // Sets default values for this component's properties
 UPPElectricDischargeComponent::UPPElectricDischargeComponent()
@@ -12,7 +13,6 @@ UPPElectricDischargeComponent::UPPElectricDischargeComponent()
 
 	DischargeMode = EDischargeMode::Sphere;
 
-	// ...
 }
 
 
@@ -21,8 +21,6 @@ void UPPElectricDischargeComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	// ...
-	
 }
 
 
@@ -31,32 +29,27 @@ void UPPElectricDischargeComponent::TickComponent(float DeltaTime, ELevelTick Ti
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-	// ...
 }
 
 void UPPElectricDischargeComponent::Discharge()
 {
-	switch (DischargeMode)
+	AActor* Owner = GetOwner();
+
+	FCollisionQueryParams CollisionParam(SCENE_QUERY_STAT(ElectricDischarge), false, Owner);
+
+	if (DischargeMode == EDischargeMode::Capsule)
 	{
-	case EDischargeMode::Capsule:
+		FHitResult OutHitResult;
+
+		float CapsuleRadius = 50.0f;
 
 
-
-
-
-
-		break;
-	case EDischargeMode::Sphere:
-
-
-
-
-
-
-
-
-		break;
 	}
+	else if (DischargeMode == EDischargeMode::Sphere)
+	{
+
+	}
+
 }
 
 void UPPElectricDischargeComponent::ChangeDischargeMode()

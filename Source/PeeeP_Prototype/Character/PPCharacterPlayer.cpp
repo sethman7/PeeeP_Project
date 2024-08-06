@@ -64,7 +64,6 @@ APPCharacterPlayer::APPCharacterPlayer()
 	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));	// FollowCamera 컴포넌트를 가져옴
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
 	FollowCamera->bUsePawnControlRotation = false;
-
 }
 
 void APPCharacterPlayer::BeginPlay()

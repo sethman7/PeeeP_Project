@@ -50,14 +50,9 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class UInputAction> GrabAction;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Physics, Meta = (AllowPrivateAccess = "true"))
-	TObjectPtr<class UPhysicsHandleComponent> GrabHandle;
-
 	void Move(const FInputActionValue& Value);
 	void Look(const FInputActionValue& Value);
 	void ButtonInteraction(const FInputActionValue& Value);
-	void GrabInteraction();
-	void GrabRelease();
 
 	float GrabObectDistanceFromCamera;
 
@@ -70,4 +65,16 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class UCameraComponent> FollowCamera;
+
+public:
+	UCameraComponent* GetCamera();
+
+
+protected:
+//Parts
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Parts, Meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class UPPPartsBase> Parts;
+
+public:
+	void SwitchParts(class UPPPartsDataBase* InPartsData);
 };

@@ -4,11 +4,11 @@
 
 #include "CoreMinimal.h"
 #include "UObject/Interface.h"
-#include "PPButtonExecuteInterface.generated.h"
+#include "PPInteractableObjectInterface.generated.h"
 
 // This class does not need to be modified.
 UINTERFACE(MinimalAPI)
-class UPPButtonExecuteInterface : public UInterface
+class UPPInteractableObjectInterface : public UInterface
 {
 	GENERATED_BODY()
 };
@@ -16,11 +16,11 @@ class UPPButtonExecuteInterface : public UInterface
 /**
  * 
  */
-class PEEEP_PROTOTYPE_API IPPButtonExecuteInterface
+class PEEEP_PROTOTYPE_API IPPInteractableObjectInterface
 {
 	GENERATED_BODY()
 
 	// Add interface functions to this class. This is the class that will be inherited to implement this interface.
 public:
-	virtual void Execute() {};
+	virtual void Interact()=0;
 };

@@ -7,6 +7,7 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "CollisionQueryParams.h"
+#include "Camera/CameraComponent.h" // Ãß°¡
 
 UPPGrabParts::UPPGrabParts()
 {

@@ -13,7 +13,8 @@ UPPElectricDischargeComponent::UPPElectricDischargeComponent()
 	PrimaryComponentTick.bCanEverTick = true;
 
 	DischargeMode = EDischargeMode::Sphere;
-
+	MaxChargingTime = 3.0f;
+	CurrentChargingTime = 0.0f;
 }
 
 
@@ -32,7 +33,23 @@ void UPPElectricDischargeComponent::TickComponent(float DeltaTime, ELevelTick Ti
 
 }
 
-void UPPElectricDischargeComponent::Discharge(FVector StartLocation, float InRange)
+void UPPElectricDischargeComponent::Charging()
+{
+	float PrevChargeTime = CurrentChargingTime;
+
+	if (PrevChargeTime >= MaxChargingTime)
+	{
+		return;
+	}
+
+	CurrentChargingTime += GetWorld()->GetDeltaSeconds();
+	if (CurrentChargingTime >= MaxChargingTime)
+	{
+		CurrentChargingTime = MaxChargingTime;
+	}
+}
+
+void UPPElectricDischargeComponent::Discharge(FVector StartLocation, float ChargeTime)
 {
 	AActor* Owner = GetOwner();
 
@@ -42,8 +59,10 @@ void UPPElectricDischargeComponent::Discharge(FVector StartLocation, float InRan
 	{
 		FHitResult OutHitResult;
 
+		float DefaultEndRange = 300.0f;
+
 		FVector Start = StartLocation;
-		FVector End = Start + Owner->GetActorForwardVector() * InRange;
+		FVector End = Start + Owner->GetActorForwardVector() * (DefaultEndRange + ChargeTime * 50.0f);
 		float SphereRadius = 50.0f;
 
 		bool bIsHit = GetWorld()->SweepSingleByChannel(OutHitResult, Start, End, FQuat::Identity, ECC_GameTraceChannel2 /*ÀÓ½Ã·Î ±×·¦ ³Ö¾îµÒ*/,
@@ -62,12 +81,15 @@ void UPPElectricDischargeComponent::Discharge(FVector StartLocation, float InRan
 	{
 		TArray<FOverlapResult> OutOverlapResults;
 
+		float DefaultSphereRadius = 300.0f;
+		float SphereRadius = DefaultSphereRadius + ChargeTime * 50.0f;
+
 		bool bIsHit = GetWorld()->OverlapMultiByChannel(OutOverlapResults, Owner->GetActorLocation(), FQuat::Identity, ECC_GameTraceChannel2 /*ÀÓ½Ã·Î ±×·¦ ³Ö¾îµÒ*/,
-			FCollisionShape::MakeSphere(InRange), CollisionParam);
+			FCollisionShape::MakeSphere(ChargeTime), CollisionParam);
 
 		if (bIsHit)
 		{
-			for (FOverlapResult OverlapResult : OutOverlapResults)
+			for (const FOverlapResult OverlapResult : OutOverlapResults)
 			{
 				IPPElectricObjectInterface* HitElectricObject = CastChecked<IPPElectricObjectInterface>(OverlapResult.GetActor());
 				if (HitElectricObject)
@@ -78,6 +100,7 @@ void UPPElectricDischargeComponent::Discharge(FVector StartLocation, float InRan
 		}
 	}
 
+	CurrentChargingTime = 0.0f;
 }
 
 void UPPElectricDischargeComponent::ChangeDischargeMode()

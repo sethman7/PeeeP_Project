@@ -47,14 +47,9 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class UInputAction> ButtonInteract;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, Meta = (AllowPrivateAccess = "true"))
-	TObjectPtr<class UInputAction> GrabAction;
-
 	void Move(const FInputActionValue& Value);
 	void Look(const FInputActionValue& Value);
 	void ButtonInteraction(const FInputActionValue& Value);
-
-	float GrabObectDistanceFromCamera;
 
 	ECharacterControlType CurrentCharacterControlType;
 
@@ -77,4 +72,13 @@ protected:
 
 public:
 	void SwitchParts(class UPPPartsDataBase* InPartsData);
+
+protected:
+//ElectricComponent
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, Meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class UInputAction> ElectricDisChargeAction;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Electric)
+	TObjectPtr<class UPPElectricDischargeComponent> ElectricDischargeComponent;
+
 };

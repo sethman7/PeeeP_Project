@@ -2,6 +2,10 @@
 
 
 #include "Parts/PartsComponent/PPPartsBase.h"
+#include "Parts/PartsData/PPGrabPartsData.h"
+#include "Character/PPCharacterPlayer.h"
+#include "EnhancedInputComponent.h"
+#include "EnhancedInputSubsystems.h"
 
 // Sets default values for this component's properties
 UPPPartsBase::UPPPartsBase()
@@ -11,6 +15,25 @@ UPPPartsBase::UPPPartsBase()
 	PrimaryComponentTick.bCanEverTick = true;
 
 	// ...
+}
+
+void UPPPartsBase::BeginDestroy()
+{
+	Super::BeginDestroy();
+
+	APPCharacterPlayer* PlayerCharacter = Cast<APPCharacterPlayer>(GetOwner());
+	if (PlayerCharacter)
+	{
+		APlayerController* PlayerController = CastChecked<APlayerController>(PlayerCharacter->GetController());
+		if (UEnhancedInputLocalPlayerSubsystem* Subsystem
+			= ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
+		{
+			if (PartsData)
+			{
+				Subsystem->RemoveMappingContext(PartsData->PartsMappingContext);
+			}
+		}
+	}
 }
 
 

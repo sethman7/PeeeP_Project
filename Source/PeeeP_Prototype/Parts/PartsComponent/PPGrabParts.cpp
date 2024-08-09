@@ -7,6 +7,7 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "CollisionQueryParams.h"
+#include "Camera/CameraComponent.h"
 
 UPPGrabParts::UPPGrabParts()
 {
@@ -17,7 +18,7 @@ UPPGrabParts::UPPGrabParts()
 	static ConstructorHelpers::FObjectFinder<UPPGrabPartsData> GrabPartsDataRef(TEXT("/Script/PeeeP_Prototype.PPGrabPartsData'/Game/Parts/Grab/GrabData.GrabData'"));
 	if (GrabPartsDataRef.Object)
 	{
-		GrabPartsData = GrabPartsDataRef.Object;
+		PartsData = GrabPartsDataRef.Object;
 	}
 
 	//Setup
@@ -31,6 +32,7 @@ UPPGrabParts::UPPGrabParts()
 		if (UEnhancedInputLocalPlayerSubsystem* Subsystem
 			= ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
 		{
+			UPPGrabPartsData* GrabPartsData = Cast<UPPGrabPartsData>(PartsData);
 			if (GrabPartsData)
 			{
 				Subsystem->AddMappingContext(GrabPartsData->PartsMappingContext, 1);
@@ -40,6 +42,16 @@ UPPGrabParts::UPPGrabParts()
 				EnhancedInputComponent->BindAction(GrabPartsData->GrabAction, ETriggerEvent::Completed, this, &UPPGrabParts::GrabRelease);
 			}
 		}
+	}
+}
+
+void UPPGrabParts::BeginDestroy()
+{
+	Super::BeginDestroy();
+
+	if (GrabHandle)
+	{
+		GrabHandle->DestroyComponent();
 	}
 }
 
@@ -69,7 +81,7 @@ void UPPGrabParts::GrabInteraction()
 		FVector EndPos = CameraPos + CameraForwardVector * 800.f;
 
 		FHitResult HitResult;
-		FCollisionQueryParams CollisionParam(SCENE_QUERY_STAT(Grab), true, PlayerCharacter);
+		FCollisionQueryParams CollisionParam(SCENE_QUERY_STAT(Grab), false, PlayerCharacter);
 
 		bool IsHit = GetWorld()->LineTraceSingleByChannel(HitResult, CameraPos, EndPos, ECC_GameTraceChannel2, CollisionParam, FCollisionResponseParams(ECR_Block));
 		if (IsHit)

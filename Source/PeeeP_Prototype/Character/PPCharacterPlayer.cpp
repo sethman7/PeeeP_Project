@@ -13,6 +13,7 @@
 #include "Interface/PPButtonExecuteInterface.h"
 #include "Parts/PartsComponent/PPGrabParts.h"
 #include "Parts/PartsData/PPPartsDataBase.h"
+#include "Component/PPElectricDischargeComponent.h"
 
 
 APPCharacterPlayer::APPCharacterPlayer()
@@ -43,11 +44,6 @@ APPCharacterPlayer::APPCharacterPlayer()
 	{
 		ButtonInteract = ButtonInteractRef.Object;
 	}
-	static ConstructorHelpers::FObjectFinder<UInputAction> GrabInteractRef(TEXT("/Script/EnhancedInput.InputAction'/Game/Input/Actions/IA_Grab.IA_Grab'"));
-	if (nullptr != GrabInteractRef.Object)
-	{
-		GrabAction = GrabInteractRef.Object;
-	}
 
 	// Camera
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));	// CameraBoom 컴포넌트를 가져옴
@@ -64,6 +60,8 @@ APPCharacterPlayer::APPCharacterPlayer()
 	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));	// FollowCamera 컴포넌트를 가져옴
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
 	FollowCamera->bUsePawnControlRotation = false;
+
+	ElectricDischargeComponent = CreateDefaultSubobject<UPPElectricDischargeComponent>(TEXT("ElectricDischargeComponent"));
 }
 
 void APPCharacterPlayer::BeginPlay()

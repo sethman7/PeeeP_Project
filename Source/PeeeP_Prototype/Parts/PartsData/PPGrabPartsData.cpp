@@ -3,6 +3,7 @@
 
 #include "Parts/PartsData/PPGrabPartsData.h"
 #include "Parts/PartsComponent/PPGrabParts.h"
+#include "InputMappingContext.h"
 
 UPPGrabPartsData::UPPGrabPartsData()
 {

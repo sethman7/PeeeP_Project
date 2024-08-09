@@ -16,6 +16,8 @@ public:
 	// Sets default values for this component's properties
 	UPPPartsBase();
 
+	virtual void BeginDestroy() override;
+
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
@@ -23,4 +25,9 @@ protected:
 public:	
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+
+protected:
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+	TObjectPtr<class UPPPartsDataBase> PartsData;
 };

@@ -35,21 +35,20 @@ void UPPElectricDischargeComponent::TickComponent(float DeltaTime, ELevelTick Ti
 
 void UPPElectricDischargeComponent::Charging()
 {
-	float PrevChargeTime = CurrentChargingTime;
 
-	if (PrevChargeTime >= MaxChargingTime)
+	if (CurrentChargingTime >= MaxChargingTime)
 	{
 		return;
 	}
 
 	CurrentChargingTime += GetWorld()->GetDeltaSeconds();
-	if (CurrentChargingTime >= MaxChargingTime)
-	{
-		CurrentChargingTime = MaxChargingTime;
-	}
+
+	CurrentChargingTime = FMath::Clamp(CurrentChargingTime, 0, MaxChargingTime);
+
+	UE_LOG(LogTemp, Log, TEXT("Charging Time: %f"), CurrentChargingTime);
 }
 
-void UPPElectricDischargeComponent::Discharge(FVector StartLocation, float ChargeTime)
+void UPPElectricDischargeComponent::Discharge()
 {
 	AActor* Owner = GetOwner();
 
@@ -61,9 +60,11 @@ void UPPElectricDischargeComponent::Discharge(FVector StartLocation, float Charg
 
 		float DefaultEndRange = 300.0f;
 
-		FVector Start = StartLocation;
-		FVector End = Start + Owner->GetActorForwardVector() * (DefaultEndRange + ChargeTime * 50.0f);
 		float SphereRadius = 50.0f;
+
+		FVector Start = Owner->GetActorLocation() + Owner->GetActorForwardVector()* SphereRadius;
+		FVector End = Start + Owner->GetActorForwardVector() * (DefaultEndRange + CurrentChargingTime * 50.0f);
+
 
 		bool bIsHit = GetWorld()->SweepSingleByChannel(OutHitResult, Start, End, FQuat::Identity, ECC_GameTraceChannel2 /*ÀÓ½Ã·Î ±×·¦ ³Ö¾îµÒ*/,
 			FCollisionShape::MakeSphere(SphereRadius), CollisionParam);
@@ -76,16 +77,18 @@ void UPPElectricDischargeComponent::Discharge(FVector StartLocation, float Charg
 				HitElectricObject->Charge();
 			}
 		}
+
+		UE_LOG(LogTemp, Log, TEXT("Discharge Capsule %f"), CurrentChargingTime);
 	}
 	else if (DischargeMode == EDischargeMode::Sphere)
 	{
 		TArray<FOverlapResult> OutOverlapResults;
 
 		float DefaultSphereRadius = 300.0f;
-		float SphereRadius = DefaultSphereRadius + ChargeTime * 50.0f;
+		float SphereRadius = DefaultSphereRadius + CurrentChargingTime * 50.0f;
 
 		bool bIsHit = GetWorld()->OverlapMultiByChannel(OutOverlapResults, Owner->GetActorLocation(), FQuat::Identity, ECC_GameTraceChannel2 /*ÀÓ½Ã·Î ±×·¦ ³Ö¾îµÒ*/,
-			FCollisionShape::MakeSphere(ChargeTime), CollisionParam);
+			FCollisionShape::MakeSphere(CurrentChargingTime), CollisionParam);
 
 		if (bIsHit)
 		{
@@ -98,6 +101,8 @@ void UPPElectricDischargeComponent::Discharge(FVector StartLocation, float Charg
 				}
 			}
 		}
+
+		UE_LOG(LogTemp, Log, TEXT("Discharge Sphere %f"), CurrentChargingTime);
 	}
 
 	CurrentChargingTime = 0.0f;
@@ -108,10 +113,14 @@ void UPPElectricDischargeComponent::ChangeDischargeMode()
 	if (DischargeMode == EDischargeMode::Capsule)
 	{
 		DischargeMode = EDischargeMode::Sphere;
+
+		UE_LOG(LogTemp, Log, TEXT("Change Discharge Mode from Capsule to Sphere"));
 	}
 	else if(DischargeMode == EDischargeMode::Sphere)
 	{
 		DischargeMode = EDischargeMode::Capsule;
+
+		UE_LOG(LogTemp, Log, TEXT("Change Discharge Mode from Sphere to Capsule"));
 	}
 }
 

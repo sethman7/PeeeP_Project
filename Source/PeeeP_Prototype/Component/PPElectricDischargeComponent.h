@@ -38,8 +38,13 @@ public:
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
+	//UFUNCTION()
 	void Charging();
-	void Discharge(FVector StartLocation, float InRange);
+
+	//UFUNCTION()
+	void Discharge();
+
+	UFUNCTION()
 	void ChangeDischargeMode();
 
 };

@@ -10,7 +10,7 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "PPCharacterControlData.h"
-#include "Interface/PPButtonExecuteInterface.h"
+#include "Interface/PPInteractableObjectInterface.h"
 #include "Parts/PartsComponent/PPGrabParts.h"
 #include "Parts/PartsData/PPPartsDataBase.h"
 #include "Component/PPElectricDischargeComponent.h"
@@ -185,12 +185,12 @@ void APPCharacterPlayer::ButtonInteraction(const FInputActionValue& Value)
 	if (IsHit)
 	{
 		AActor* HitActor = HitResult.GetActor();
-		IPPButtonExecuteInterface* ButtonActor = Cast<IPPButtonExecuteInterface>(HitActor);
+		IPPInteractableObjectInterface* ButtonActor = Cast<IPPInteractableObjectInterface>(HitActor);
 		ensure(ButtonActor);
 		if (ButtonActor != nullptr)
 		{
 			UE_LOG(LogTemp, Log, TEXT("FindButton"));
-			ButtonActor->Execute();
+			ButtonActor->Interact();
 		}
 	}
 

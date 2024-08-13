@@ -6,6 +6,9 @@
 #include "Components/ActorComponent.h"
 #include "PPElectricDischargeComponent.generated.h"
 
+
+DECLARE_DELEGATE(FDischargeEndDelegate);
+
 UENUM()
 enum class EDischargeMode : uint8
 {
@@ -34,6 +37,12 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	float MaxChargingTime;
 
+	FTimerHandle AutoDischargeTimeHandler;
+	FTimerHandle RechargingDelayTimeHandler;
+
+	float RechargingDelay;
+	bool bRechargingEnable;
+
 public:	
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
@@ -46,5 +55,6 @@ public:
 
 	UFUNCTION()
 	void ChangeDischargeMode();
+	void SetbRecharging();
 
 };

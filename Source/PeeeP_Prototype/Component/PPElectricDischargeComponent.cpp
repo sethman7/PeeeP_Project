@@ -4,6 +4,7 @@
 #include "Component/PPElectricDischargeComponent.h"
 #include "CollisionQueryParams.h"
 #include "Interface/PPElectricObjectInterface.h"
+#include "TimerManager.h"
 
 // Sets default values for this component's properties
 UPPElectricDischargeComponent::UPPElectricDischargeComponent()
@@ -15,6 +16,9 @@ UPPElectricDischargeComponent::UPPElectricDischargeComponent()
 	DischargeMode = EDischargeMode::Sphere;
 	MaxChargingTime = 3.0f;
 	CurrentChargingTime = 0.0f;
+	RechargingDelay = 1.0f;
+	bRechargingEnable = true;
+
 }
 
 
@@ -35,9 +39,18 @@ void UPPElectricDischargeComponent::TickComponent(float DeltaTime, ELevelTick Ti
 
 void UPPElectricDischargeComponent::Charging()
 {
+	if (bRechargingEnable)
+	{
+		return;
+	}
 
 	if (CurrentChargingTime >= MaxChargingTime)
 	{
+		if (!AutoDischargeTimeHandler.IsValid())
+		{
+			GetWorld()->GetTimerManager().SetTimer(AutoDischargeTimeHandler, this, &UPPElectricDischargeComponent::Discharge, 1.0f, false);
+			UE_LOG(LogTemp, Warning, TEXT("Timer"));
+		}
 		return;
 	}
 
@@ -75,6 +88,7 @@ void UPPElectricDischargeComponent::Discharge()
 			if (HitElectricObject)
 			{
 				HitElectricObject->Charge();
+				UE_LOG(LogTemp, Log, TEXT("IsHit : Capsule"))
 			}
 		}
 
@@ -98,6 +112,7 @@ void UPPElectricDischargeComponent::Discharge()
 				if (HitElectricObject)
 				{
 					HitElectricObject->Charge();
+					UE_LOG(LogTemp, Log, TEXT("IsHit : Sphere Num: %d"), OutOverlapResults.Num());
 				}
 			}
 		}
@@ -106,6 +121,11 @@ void UPPElectricDischargeComponent::Discharge()
 	}
 
 	CurrentChargingTime = 0.0f;
+	bRechargingEnable = false;
+
+	GetWorld()->GetTimerManager().ClearTimer(AutoDischargeTimeHandler);
+	GetWorld()->GetTimerManager().SetTimer(RechargingDelayTimeHandler, this, UPPElectricDischargeComponent::SetbRecharging, RechargingDelay, false);
+
 }
 
 void UPPElectricDischargeComponent::ChangeDischargeMode()
@@ -122,5 +142,10 @@ void UPPElectricDischargeComponent::ChangeDischargeMode()
 
 		UE_LOG(LogTemp, Log, TEXT("Change Discharge Mode from Sphere to Capsule"));
 	}
+}
+
+void UPPElectricDischargeComponent::SetbRecharging()
+{
+	bRechargingEnable = true;
 }
 

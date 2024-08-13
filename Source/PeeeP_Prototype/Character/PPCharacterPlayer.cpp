@@ -13,6 +13,7 @@
 #include "Interface/PPInteractableObjectInterface.h"
 #include "Parts/PartsComponent/PPGrabParts.h"
 #include "Parts/PartsData/PPPartsDataBase.h"
+#include "Component/PPElectricDischargeComponent.h"
 
 
 APPCharacterPlayer::APPCharacterPlayer()
@@ -43,10 +44,15 @@ APPCharacterPlayer::APPCharacterPlayer()
 	{
 		ButtonInteract = ButtonInteractRef.Object;
 	}
-	static ConstructorHelpers::FObjectFinder<UInputAction> GrabInteractRef(TEXT("/Script/EnhancedInput.InputAction'/Game/Input/Actions/IA_Grab.IA_Grab'"));
-	if (nullptr != GrabInteractRef.Object)
+	static ConstructorHelpers::FObjectFinder<UInputAction> ElectricDischargeActionRef(TEXT("/Script/EnhancedInput.InputAction'/Game/Input/Actions/IA_Discharge.IA_Discharge'"));
+	if (!ElectricDischargeActionRef.Object)
 	{
-		GrabAction = GrabInteractRef.Object;
+		ElectricDischargeAction = ElectricDischargeActionRef.Object;
+	}
+	static ConstructorHelpers::FObjectFinder<UInputAction> ElectricDischargeModeChangeActionRef(TEXT("/Script/EnhancedInput.InputAction'/Game/Input/Actions/IA_DischargeModeChange.IA_DischargeModeChange'"));
+	if (!ElectricDischargeModeChangeActionRef.Object)
+	{
+		ElectricDischargeModeChangeAction = ElectricDischargeModeChangeActionRef.Object;
 	}
 
 	// Camera
@@ -65,6 +71,7 @@ APPCharacterPlayer::APPCharacterPlayer()
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
 	FollowCamera->bUsePawnControlRotation = false;
 
+	ElectricDischargeComponent = CreateDefaultSubobject<UPPElectricDischargeComponent>(TEXT("ElectricDischargeComponent"));
 }
 
 void APPCharacterPlayer::BeginPlay()
@@ -84,7 +91,7 @@ void APPCharacterPlayer::BeginPlay()
 
 void APPCharacterPlayer::Tick(float DeltaTime)
 {
-	
+
 }
 
 void APPCharacterPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -98,7 +105,13 @@ void APPCharacterPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 	EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &APPCharacterPlayer::Move);
 	EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &APPCharacterPlayer::Look);
 	EnhancedInputComponent->BindAction(ButtonInteract, ETriggerEvent::Triggered, this, &APPCharacterPlayer::ButtonInteraction);
-
+	if (ElectricDischargeComponent)
+	{
+		EnhancedInputComponent->BindAction(ElectricDischargeAction, ETriggerEvent::Ongoing, ElectricDischargeComponent.Get(), &UPPElectricDischargeComponent::Charging);
+		EnhancedInputComponent->BindAction(ElectricDischargeAction, ETriggerEvent::Completed, ElectricDischargeComponent.Get(), &UPPElectricDischargeComponent::Discharge);
+		EnhancedInputComponent->BindAction(ElectricDischargeModeChangeAction, ETriggerEvent::Completed, ElectricDischargeComponent.Get(), &UPPElectricDischargeComponent::ChangeDischargeMode);
+	}
+	
 }
 
 void APPCharacterPlayer::SetCharacterControl(ECharacterControlType NewCharacterControlType)
@@ -165,7 +178,7 @@ void APPCharacterPlayer::ButtonInteraction(const FInputActionValue& Value)
 
 	FHitResult HitResult;
 	FCollisionQueryParams CollisionParam(SCENE_QUERY_STAT(Button), false, this);
-	
+
 
 	bool IsHit = GetWorld()->LineTraceSingleByChannel(HitResult, CameraPos, EndPos, ECC_GameTraceChannel1, CollisionParam, FCollisionResponseParams(ECR_Block));
 

@@ -2,6 +2,8 @@
 
 
 #include "Component/PPElectricDischargeComponent.h"
+#include "CollisionQueryParams.h"
+#include "Interface/PPElectricObjectInterface.h"
 
 // Sets default values for this component's properties
 UPPElectricDischargeComponent::UPPElectricDischargeComponent()
@@ -11,8 +13,8 @@ UPPElectricDischargeComponent::UPPElectricDischargeComponent()
 	PrimaryComponentTick.bCanEverTick = true;
 
 	DischargeMode = EDischargeMode::Sphere;
-
-	// ...
+	MaxChargingTime = 3.0f;
+	CurrentChargingTime = 0.0f;
 }
 
 
@@ -21,8 +23,6 @@ void UPPElectricDischargeComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	// ...
-	
 }
 
 
@@ -31,32 +31,81 @@ void UPPElectricDischargeComponent::TickComponent(float DeltaTime, ELevelTick Ti
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-	// ...
+}
+
+void UPPElectricDischargeComponent::Charging()
+{
+
+	if (CurrentChargingTime >= MaxChargingTime)
+	{
+		return;
+	}
+
+	CurrentChargingTime += GetWorld()->GetDeltaSeconds();
+
+	CurrentChargingTime = FMath::Clamp(CurrentChargingTime, 0, MaxChargingTime);
+
+	UE_LOG(LogTemp, Log, TEXT("Charging Time: %f"), CurrentChargingTime);
 }
 
 void UPPElectricDischargeComponent::Discharge()
 {
-	switch (DischargeMode)
+	AActor* Owner = GetOwner();
+
+	FCollisionQueryParams CollisionParam(SCENE_QUERY_STAT(ElectricDischarge), false, Owner);
+
+	if (DischargeMode == EDischargeMode::Capsule)
 	{
-	case EDischargeMode::Capsule:
+		FHitResult OutHitResult;
+
+		float DefaultEndRange = 300.0f;
+
+		float SphereRadius = 50.0f;
+
+		FVector Start = Owner->GetActorLocation() + Owner->GetActorForwardVector()* SphereRadius;
+		FVector End = Start + Owner->GetActorForwardVector() * (DefaultEndRange + CurrentChargingTime * 50.0f);
 
 
+		bool bIsHit = GetWorld()->SweepSingleByChannel(OutHitResult, Start, End, FQuat::Identity, ECC_GameTraceChannel2 /*ÀÓ½Ã·Î ±×·¦ ³Ö¾îµÒ*/,
+			FCollisionShape::MakeSphere(SphereRadius), CollisionParam);
 
+		if (bIsHit)
+		{
+			IPPElectricObjectInterface* HitElectricObject = CastChecked<IPPElectricObjectInterface>(OutHitResult.GetActor());
+			if (HitElectricObject)
+			{
+				HitElectricObject->Charge();
+			}
+		}
 
-
-
-		break;
-	case EDischargeMode::Sphere:
-
-
-
-
-
-
-
-
-		break;
+		UE_LOG(LogTemp, Log, TEXT("Discharge Capsule %f"), CurrentChargingTime);
 	}
+	else if (DischargeMode == EDischargeMode::Sphere)
+	{
+		TArray<FOverlapResult> OutOverlapResults;
+
+		float DefaultSphereRadius = 300.0f;
+		float SphereRadius = DefaultSphereRadius + CurrentChargingTime * 50.0f;
+
+		bool bIsHit = GetWorld()->OverlapMultiByChannel(OutOverlapResults, Owner->GetActorLocation(), FQuat::Identity, ECC_GameTraceChannel2 /*ÀÓ½Ã·Î ±×·¦ ³Ö¾îµÒ*/,
+			FCollisionShape::MakeSphere(CurrentChargingTime), CollisionParam);
+
+		if (bIsHit)
+		{
+			for (const FOverlapResult OverlapResult : OutOverlapResults)
+			{
+				IPPElectricObjectInterface* HitElectricObject = CastChecked<IPPElectricObjectInterface>(OverlapResult.GetActor());
+				if (HitElectricObject)
+				{
+					HitElectricObject->Charge();
+				}
+			}
+		}
+
+		UE_LOG(LogTemp, Log, TEXT("Discharge Sphere %f"), CurrentChargingTime);
+	}
+
+	CurrentChargingTime = 0.0f;
 }
 
 void UPPElectricDischargeComponent::ChangeDischargeMode()
@@ -64,10 +113,14 @@ void UPPElectricDischargeComponent::ChangeDischargeMode()
 	if (DischargeMode == EDischargeMode::Capsule)
 	{
 		DischargeMode = EDischargeMode::Sphere;
+
+		UE_LOG(LogTemp, Log, TEXT("Change Discharge Mode from Capsule to Sphere"));
 	}
 	else if(DischargeMode == EDischargeMode::Sphere)
 	{
 		DischargeMode = EDischargeMode::Capsule;
+
+		UE_LOG(LogTemp, Log, TEXT("Change Discharge Mode from Sphere to Capsule"));
 	}
 }
 

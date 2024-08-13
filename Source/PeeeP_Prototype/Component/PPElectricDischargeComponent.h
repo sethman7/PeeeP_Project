@@ -29,11 +29,22 @@ protected:
 
 	EDischargeMode DischargeMode;
 
+	float CurrentChargingTime;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	float MaxChargingTime;
+
 public:	
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
+	//UFUNCTION()
+	void Charging();
+
+	//UFUNCTION()
 	void Discharge();
+
+	UFUNCTION()
 	void ChangeDischargeMode();
 
 };

@@ -5,6 +5,8 @@
 #include "CollisionQueryParams.h"
 #include "Interface/PPElectricObjectInterface.h"
 #include "TimerManager.h"
+#include "GameFramework/Character.h"
+#include "GameFramework/CharacterMovementComponent.h"
 
 // Sets default values for this component's properties
 UPPElectricDischargeComponent::UPPElectricDischargeComponent()
@@ -17,8 +19,10 @@ UPPElectricDischargeComponent::UPPElectricDischargeComponent()
 	MaxChargingTime = 3.0f;
 	CurrentChargingTime = 0.0f;
 	RechargingDelay = 1.0f;
+	MoveSpeedReductionRate = 0.5f;
 	bRechargingEnable = true;
 
+	bChargeStart = false;
 }
 
 
@@ -39,9 +43,20 @@ void UPPElectricDischargeComponent::TickComponent(float DeltaTime, ELevelTick Ti
 
 void UPPElectricDischargeComponent::Charging()
 {
-	if (bRechargingEnable)
+	if (!bRechargingEnable)
 	{
 		return;
+	}
+
+	if (!bChargeStart)
+	{
+		ACharacter* OwnerCharacter = Cast<ACharacter>(GetOwner());
+		if (OwnerCharacter)
+		{
+			OwnerCharacter->GetCharacterMovement()->MaxWalkSpeed *= MoveSpeedReductionRate;
+		}
+
+		bChargeStart = true;
 	}
 
 	if (CurrentChargingTime >= MaxChargingTime)
@@ -63,6 +78,8 @@ void UPPElectricDischargeComponent::Charging()
 
 void UPPElectricDischargeComponent::Discharge()
 {
+	bChargeStart = false;
+
 	AActor* Owner = GetOwner();
 
 	FCollisionQueryParams CollisionParam(SCENE_QUERY_STAT(ElectricDischarge), false, Owner);
@@ -77,7 +94,6 @@ void UPPElectricDischargeComponent::Discharge()
 
 		FVector Start = Owner->GetActorLocation() + Owner->GetActorForwardVector()* SphereRadius;
 		FVector End = Start + Owner->GetActorForwardVector() * (DefaultEndRange + CurrentChargingTime * 50.0f);
-
 
 		bool bIsHit = GetWorld()->SweepSingleByChannel(OutHitResult, Start, End, FQuat::Identity, ECC_GameTraceChannel2 /*ÀÓ½Ã·Î ±×·¦ ³Ö¾îµÒ*/,
 			FCollisionShape::MakeSphere(SphereRadius), CollisionParam);
@@ -120,11 +136,17 @@ void UPPElectricDischargeComponent::Discharge()
 		UE_LOG(LogTemp, Log, TEXT("Discharge Sphere %f"), CurrentChargingTime);
 	}
 
+	ACharacter* OwnerCharacter = Cast<ACharacter>(GetOwner());
+	if (OwnerCharacter)
+	{
+		OwnerCharacter->GetCharacterMovement()->MaxWalkSpeed /= MoveSpeedReductionRate;
+	}
+
 	CurrentChargingTime = 0.0f;
 	bRechargingEnable = false;
 
 	GetWorld()->GetTimerManager().ClearTimer(AutoDischargeTimeHandler);
-	GetWorld()->GetTimerManager().SetTimer(RechargingDelayTimeHandler, this, UPPElectricDischargeComponent::SetbRecharging, RechargingDelay, false);
+	GetWorld()->GetTimerManager().SetTimer(RechargingDelayTimeHandler, this, &UPPElectricDischargeComponent::SetbRecharging, RechargingDelay, false);
 
 }
 

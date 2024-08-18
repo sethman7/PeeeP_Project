@@ -41,7 +41,10 @@ protected:
 	FTimerHandle RechargingDelayTimeHandler;
 
 	float RechargingDelay;
+	float MoveSpeedReductionRate;
+
 	bool bRechargingEnable;
+	bool bChargeStart;
 
 public:	
 	// Called every frame

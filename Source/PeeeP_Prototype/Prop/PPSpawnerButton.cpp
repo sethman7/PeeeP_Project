@@ -29,7 +29,7 @@ void APPSpawnerButton::Tick(float DeltaTime)
 }
 
 
-void APPSpawnerButton::Execute()
+void APPSpawnerButton::Interact()
 {
 	APPItemSpawner* SpawnerClass = Cast<APPItemSpawner>(ItemSpawner);
 	SpawnerClass->SpawnItem();

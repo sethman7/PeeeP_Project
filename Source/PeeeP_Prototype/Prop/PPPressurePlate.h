@@ -20,7 +20,7 @@ protected:
 	virtual void BeginPlay() override;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Door")
-	TObjectPtr<class ADoor_Test> Door;
+	TObjectPtr<class APPDoor> Door;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Mesh")
 	TObjectPtr<class UStaticMeshComponent> Body;

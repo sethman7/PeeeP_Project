@@ -5,7 +5,7 @@
 
 APPGameModeBase::APPGameModeBase()
 {
-	static ConstructorHelpers::FClassFinder<APawn> DefaultPawnClassRef(TEXT("/Script/Engine.Blueprint'/Game/Characters/BP_PPCharacterPlayer.BP_PPCharacterPlayer_C'"));
+	static ConstructorHelpers::FClassFinder<APawn> DefaultPawnClassRef(TEXT("/Game/Characters/BP_PPCharacterPlayer.BP_PPCharacterPlayer_C"));
 	if (DefaultPawnClassRef.Class)
 	{
 		DefaultPawnClass = DefaultPawnClassRef.Class;

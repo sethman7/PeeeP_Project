@@ -2,6 +2,7 @@
 
 #include "InteractionObject/PPGrabableObject.h"
 #include "Components/StaticMeshComponent.h"
+#include "GameFramework/ProjectileMovementComponent.h"
 
 // Sets default values
 APPGrabableObject::APPGrabableObject()

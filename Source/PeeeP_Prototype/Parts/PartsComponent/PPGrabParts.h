@@ -9,7 +9,7 @@
 /**
  * 
  */
-UCLASS()
+UCLASS(meta = (BlueprintSpawnableComponent))
 class PEEEP_PROTOTYPE_API UPPGrabParts : public UPPPartsBase
 {
 	GENERATED_BODY()
@@ -17,15 +17,12 @@ class PEEEP_PROTOTYPE_API UPPGrabParts : public UPPPartsBase
 
 public:
 	UPPGrabParts();
-
 	
+	virtual void BeginDestroy() override;
 
 protected:
 
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
-	TObjectPtr<class UPPGrabPartsData> GrabPartsData;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	TObjectPtr<class UPhysicsHandleComponent> GrabHandle;

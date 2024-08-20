@@ -4,6 +4,9 @@
 #include "Component/PPElectricDischargeComponent.h"
 #include "CollisionQueryParams.h"
 #include "Interface/PPElectricObjectInterface.h"
+#include "TimerManager.h"
+#include "GameFramework/Character.h"
+#include "GameFramework/CharacterMovementComponent.h"
 
 // Sets default values for this component's properties
 UPPElectricDischargeComponent::UPPElectricDischargeComponent()
@@ -15,6 +18,11 @@ UPPElectricDischargeComponent::UPPElectricDischargeComponent()
 	DischargeMode = EDischargeMode::Sphere;
 	MaxChargingTime = 3.0f;
 	CurrentChargingTime = 0.0f;
+	RechargingDelay = 1.0f;
+	MoveSpeedReductionRate = 0.5f;
+	bRechargingEnable = true;
+
+	bChargeStart = false;
 }
 
 
@@ -35,9 +43,29 @@ void UPPElectricDischargeComponent::TickComponent(float DeltaTime, ELevelTick Ti
 
 void UPPElectricDischargeComponent::Charging()
 {
+	if (!bRechargingEnable)
+	{
+		return;
+	}
+
+	if (!bChargeStart)
+	{
+		ACharacter* OwnerCharacter = Cast<ACharacter>(GetOwner());
+		if (OwnerCharacter)
+		{
+			OwnerCharacter->GetCharacterMovement()->MaxWalkSpeed *= MoveSpeedReductionRate;
+		}
+
+		bChargeStart = true;
+	}
 
 	if (CurrentChargingTime >= MaxChargingTime)
 	{
+		if (!AutoDischargeTimeHandler.IsValid())
+		{
+			GetWorld()->GetTimerManager().SetTimer(AutoDischargeTimeHandler, this, &UPPElectricDischargeComponent::Discharge, 1.0f, false);
+			UE_LOG(LogTemp, Warning, TEXT("Timer"));
+		}
 		return;
 	}
 
@@ -50,6 +78,8 @@ void UPPElectricDischargeComponent::Charging()
 
 void UPPElectricDischargeComponent::Discharge()
 {
+	bChargeStart = false;
+
 	AActor* Owner = GetOwner();
 
 	FCollisionQueryParams CollisionParam(SCENE_QUERY_STAT(ElectricDischarge), false, Owner);
@@ -65,8 +95,8 @@ void UPPElectricDischargeComponent::Discharge()
 		FVector Start = Owner->GetActorLocation() + Owner->GetActorForwardVector()* SphereRadius;
 		FVector End = Start + Owner->GetActorForwardVector() * (DefaultEndRange + CurrentChargingTime * 50.0f);
 
+		bool bIsHit = GetWorld()->SweepSingleByChannel(OutHitResult, Start, End, FQuat::Identity, ECC_GameTraceChannel5 /*ÀÓ½Ã·Î ±×·¦ ³Ö¾îµÒ*/,
 
-		bool bIsHit = GetWorld()->SweepSingleByChannel(OutHitResult, Start, End, FQuat::Identity, ECC_GameTraceChannel2 /*ÀÓ½Ã·Î ±×·¦ ³Ö¾îµÒ*/,
 			FCollisionShape::MakeSphere(SphereRadius), CollisionParam);
 
 		if (bIsHit)
@@ -74,7 +104,9 @@ void UPPElectricDischargeComponent::Discharge()
 			IPPElectricObjectInterface* HitElectricObject = CastChecked<IPPElectricObjectInterface>(OutHitResult.GetActor());
 			if (HitElectricObject)
 			{
+				UE_LOG(LogTemp, Log, TEXT("Electric Object Hit!"));
 				HitElectricObject->Charge();
+				UE_LOG(LogTemp, Log, TEXT("IsHit : Capsule"))
 			}
 		}
 
@@ -87,7 +119,7 @@ void UPPElectricDischargeComponent::Discharge()
 		float DefaultSphereRadius = 300.0f;
 		float SphereRadius = DefaultSphereRadius + CurrentChargingTime * 50.0f;
 
-		bool bIsHit = GetWorld()->OverlapMultiByChannel(OutOverlapResults, Owner->GetActorLocation(), FQuat::Identity, ECC_GameTraceChannel2 /*ÀÓ½Ã·Î ±×·¦ ³Ö¾îµÒ*/,
+		bool bIsHit = GetWorld()->OverlapMultiByChannel(OutOverlapResults, Owner->GetActorLocation(), FQuat::Identity, ECC_GameTraceChannel5 /*ÀÓ½Ã·Î ±×·¦ ³Ö¾îµÒ*/,
 			FCollisionShape::MakeSphere(CurrentChargingTime), CollisionParam);
 
 		if (bIsHit)
@@ -98,6 +130,7 @@ void UPPElectricDischargeComponent::Discharge()
 				if (HitElectricObject)
 				{
 					HitElectricObject->Charge();
+					UE_LOG(LogTemp, Log, TEXT("IsHit : Sphere Num: %d"), OutOverlapResults.Num());
 				}
 			}
 		}
@@ -105,7 +138,18 @@ void UPPElectricDischargeComponent::Discharge()
 		UE_LOG(LogTemp, Log, TEXT("Discharge Sphere %f"), CurrentChargingTime);
 	}
 
+	ACharacter* OwnerCharacter = Cast<ACharacter>(GetOwner());
+	if (OwnerCharacter)
+	{
+		OwnerCharacter->GetCharacterMovement()->MaxWalkSpeed /= MoveSpeedReductionRate;
+	}
+
 	CurrentChargingTime = 0.0f;
+	bRechargingEnable = false;
+
+	GetWorld()->GetTimerManager().ClearTimer(AutoDischargeTimeHandler);
+	GetWorld()->GetTimerManager().SetTimer(RechargingDelayTimeHandler, this, &UPPElectricDischargeComponent::SetbRecharging, RechargingDelay, false);
+
 }
 
 void UPPElectricDischargeComponent::ChangeDischargeMode()
@@ -122,5 +166,10 @@ void UPPElectricDischargeComponent::ChangeDischargeMode()
 
 		UE_LOG(LogTemp, Log, TEXT("Change Discharge Mode from Sphere to Capsule"));
 	}
+}
+
+void UPPElectricDischargeComponent::SetbRecharging()
+{
+	bRechargingEnable = true;
 }
 

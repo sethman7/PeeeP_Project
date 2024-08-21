@@ -28,7 +28,7 @@ public:
     class APPMovingPlate* MovingPlate; // 발판을 참조하는 변수 추가
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Interaction")
-    class ADoor_Test* Door; // 도어를 참조하는 변수 추가
+    class APPDoor* Door; // 도어를 참조하는 변수 추가
 
 private:
     UFUNCTION()

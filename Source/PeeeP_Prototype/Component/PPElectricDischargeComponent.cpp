@@ -7,6 +7,7 @@
 #include "TimerManager.h"
 #include "GameFramework/Character.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Character/PPCharacterPlayer.h"
 
 // Sets default values for this component's properties
 UPPElectricDischargeComponent::UPPElectricDischargeComponent()
@@ -50,10 +51,10 @@ void UPPElectricDischargeComponent::Charging()
 
 	if (!bChargeStart)
 	{
-		ACharacter* OwnerCharacter = Cast<ACharacter>(GetOwner());
+		APPCharacterPlayer* OwnerCharacter = Cast<APPCharacterPlayer>(GetOwner());
 		if (OwnerCharacter)
 		{
-			OwnerCharacter->GetCharacterMovement()->MaxWalkSpeed *= MoveSpeedReductionRate;
+			OwnerCharacter->ReduationMaxWalkSpeedRatio(MoveSpeedReductionRate);
 		}
 
 		bChargeStart = true;
@@ -78,6 +79,11 @@ void UPPElectricDischargeComponent::Charging()
 
 void UPPElectricDischargeComponent::Discharge()
 {
+	if (!bRechargingEnable)
+	{
+		return;
+	}
+
 	bChargeStart = false;
 
 	AActor* Owner = GetOwner();
@@ -136,16 +142,19 @@ void UPPElectricDischargeComponent::Discharge()
 		UE_LOG(LogTemp, Log, TEXT("Discharge Sphere %f"), CurrentChargingTime);
 	}
 
-	ACharacter* OwnerCharacter = Cast<ACharacter>(GetOwner());
+	APPCharacterPlayer* OwnerCharacter = Cast<APPCharacterPlayer>(GetOwner());
 	if (OwnerCharacter)
 	{
-		OwnerCharacter->GetCharacterMovement()->MaxWalkSpeed /= MoveSpeedReductionRate;
+		OwnerCharacter->RevertMaxWalkSpeed();
 	}
 
 	CurrentChargingTime = 0.0f;
 	bRechargingEnable = false;
 
-	GetWorld()->GetTimerManager().ClearTimer(AutoDischargeTimeHandler);
+	if (!AutoDischargeTimeHandler.IsValid())
+	{
+		GetWorld()->GetTimerManager().ClearTimer(AutoDischargeTimeHandler);
+	}
 	GetWorld()->GetTimerManager().SetTimer(RechargingDelayTimeHandler, this, &UPPElectricDischargeComponent::SetbRecharging, RechargingDelay, false);
 
 }

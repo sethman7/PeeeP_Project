@@ -101,7 +101,8 @@ void UPPElectricDischargeComponent::Discharge()
 		FVector Start = Owner->GetActorLocation() + Owner->GetActorForwardVector()* SphereRadius;
 		FVector End = Start + Owner->GetActorForwardVector() * (DefaultEndRange + CurrentChargingTime * 50.0f);
 
-		bool bIsHit = GetWorld()->SweepSingleByChannel(OutHitResult, Start, End, FQuat::Identity, ECC_GameTraceChannel2 /*ÀÓ½Ã·Î ±×·¦ ³Ö¾îµÒ*/,
+		bool bIsHit = GetWorld()->SweepSingleByChannel(OutHitResult, Start, End, FQuat::Identity, ECC_GameTraceChannel5 /*ÀÓ½Ã·Î ±×·¦ ³Ö¾îµÒ*/,
+
 			FCollisionShape::MakeSphere(SphereRadius), CollisionParam);
 
 		if (bIsHit)
@@ -109,6 +110,7 @@ void UPPElectricDischargeComponent::Discharge()
 			IPPElectricObjectInterface* HitElectricObject = CastChecked<IPPElectricObjectInterface>(OutHitResult.GetActor());
 			if (HitElectricObject)
 			{
+				UE_LOG(LogTemp, Log, TEXT("Electric Object Hit!"));
 				HitElectricObject->Charge();
 				UE_LOG(LogTemp, Log, TEXT("IsHit : Capsule"))
 			}
@@ -123,7 +125,7 @@ void UPPElectricDischargeComponent::Discharge()
 		float DefaultSphereRadius = 300.0f;
 		float SphereRadius = DefaultSphereRadius + CurrentChargingTime * 50.0f;
 
-		bool bIsHit = GetWorld()->OverlapMultiByChannel(OutOverlapResults, Owner->GetActorLocation(), FQuat::Identity, ECC_GameTraceChannel2 /*ÀÓ½Ã·Î ±×·¦ ³Ö¾îµÒ*/,
+		bool bIsHit = GetWorld()->OverlapMultiByChannel(OutOverlapResults, Owner->GetActorLocation(), FQuat::Identity, ECC_GameTraceChannel5 /*ÀÓ½Ã·Î ±×·¦ ³Ö¾îµÒ*/,
 			FCollisionShape::MakeSphere(CurrentChargingTime), CollisionParam);
 
 		if (bIsHit)

@@ -4,18 +4,18 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "Interface/PPButtonExecuteInterface.h"
+#include "Interface/PPInteractableObjectInterface.h"
 #include "PPSpawnerButton.generated.h"
 
 UCLASS()
-class PEEEP_PROTOTYPE_API APPSpawnerButton : public AActor , public IPPButtonExecuteInterface
+class PEEEP_PROTOTYPE_API APPSpawnerButton : public AActor , public IPPInteractableObjectInterface
 {
 	GENERATED_BODY()
 	
 public:	
 	// Sets default values for this actor's properties
 	APPSpawnerButton();
-	void Execute() override;
+	void Interact() override;
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;

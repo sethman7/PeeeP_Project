@@ -6,12 +6,77 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "GameFramework/DefaultPawn.h"
 #include "GameFramework/PlayerController.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "InputMappingContext.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "PPCharacterControlData.h"
-#include "Interface/PPButtonExecuteInterface.h"
+#include "Interface/PPInteractableObjectInterface.h"
+#include "Parts/PartsComponent/PPGrabParts.h"
+#include "Parts/PartsData/PPPartsDataBase.h"
+#include "Component/PPElectricDischargeComponent.h"
 
+
+APPCharacterPlayer::APPCharacterPlayer()
+{
+	// Input
+	static ConstructorHelpers::FObjectFinder<UInputMappingContext> InputMappingContextRef(TEXT("/Script/EnhancedInput.InputMappingContext'/Game/Input/IMC_Default.IMC_Default'"));
+	if (nullptr != InputMappingContextRef.Object)
+	{
+		DefaultMappingContext = InputMappingContextRef.Object;
+	}
+	static ConstructorHelpers::FObjectFinder<UInputAction> InputActionMoveRef(TEXT("/Script/EnhancedInput.InputAction'/Game/Input/Actions/IA_Move.IA_Move'"));
+	if (nullptr != InputActionMoveRef.Object)
+	{
+		MoveAction = InputActionMoveRef.Object;
+	}
+	static ConstructorHelpers::FObjectFinder<UInputAction> InputActionJumpRef(TEXT("/Script/EnhancedInput.InputAction'/Game/Input/Actions/IA_Jump.IA_Jump'"));
+	if (nullptr != InputActionJumpRef.Object)
+	{
+		JumpAction = InputActionJumpRef.Object;
+	}
+	static ConstructorHelpers::FObjectFinder<UInputAction> InputActionLookRef(TEXT("/Script/EnhancedInput.InputAction'/Game/Input/Actions/IA_Look.IA_Look'"));
+	if (nullptr != InputActionLookRef.Object)
+	{
+		LookAction = InputActionLookRef.Object;
+	}
+	static ConstructorHelpers::FObjectFinder<UInputAction> ButtonInteractRef(TEXT("/Script/EnhancedInput.InputAction'/Game/Input/Actions/IA_Button.IA_Button'"));
+	if (!ButtonInteractRef.Object)
+	{
+		ButtonInteract = ButtonInteractRef.Object;
+	}
+	static ConstructorHelpers::FObjectFinder<UInputAction> ElectricDischargeActionRef(TEXT("/Script/EnhancedInput.InputAction'/Game/Input/Actions/IA_Discharge.IA_Discharge'"));
+	if (!ElectricDischargeActionRef.Object)
+	{
+		ElectricDischargeAction = ElectricDischargeActionRef.Object;
+	}
+	static ConstructorHelpers::FObjectFinder<UInputAction> ElectricDischargeModeChangeActionRef(TEXT("/Script/EnhancedInput.InputAction'/Game/Input/Actions/IA_DischargeModeChange.IA_DischargeModeChange'"));
+	if (!ElectricDischargeModeChangeActionRef.Object)
+	{
+		ElectricDischargeModeChangeAction = ElectricDischargeModeChangeActionRef.Object;
+	}
+
+	// Camera
+	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));	// CameraBoom 컴포넌트를 가져옴
+	CameraBoom->SetupAttachment(RootComponent);
+	CameraBoom->TargetArmLength = 600.0f;
+	CameraBoom->bUsePawnControlRotation = true;
+	CameraBoom->SetRelativeLocation(FVector(0.0f, 0.0f, 100.f));
+	CameraBoom->bEnableCameraLag = true;
+	CameraBoom->bEnableCameraRotationLag = true;
+	CameraBoom->CameraLagSpeed = 5.0f;
+	CameraBoom->CameraRotationLagSpeed = 20.f;
+	CameraBoom->CameraLagMaxDistance = 500.f;
+
+	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));	// FollowCamera 컴포넌트를 가져옴
+	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
+	FollowCamera->bUsePawnControlRotation = false;
+
+	ElectricDischargeComponent = CreateDefaultSubobject<UPPElectricDischargeComponent>(TEXT("ElectricDischargeComponent"));
+
+	GetCharacterMovement()->BrakingDecelerationWalking = 2000.f;
+	GetCharacterMovement()->GravityScale = 1.6f;
+}
 
 void APPCharacterPlayer::BeginPlay()
 {
@@ -22,14 +87,15 @@ void APPCharacterPlayer::BeginPlay()
 	{
 		Subsystem->AddMappingContext(DefaultMappingContext, 0);
 	}
+
+	////Parts 임시로 생성자에서 부여함 해당 부분은 나중에 인벤토리에서 데이터 이용해서 파츠 변경하는 함수 따로 만들어서 적용하면 될 듯
+	//UActorComponent* PartsComponent = AddComponentByClass(UPPGrabParts::StaticClass(), true, FTransform::Identity, false);
+	//Parts = CastChecked<UPPPartsBase>(PartsComponent);
 }
 
 void APPCharacterPlayer::Tick(float DeltaTime)
 {
-	if (GrabHandle->GetGrabbedComponent())
-	{
-		GrabHandle->SetTargetLocation((GetActorForwardVector() * 50.0f) + GetActorLocation());
-	}
+
 }
 
 void APPCharacterPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -43,9 +109,13 @@ void APPCharacterPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 	EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &APPCharacterPlayer::Move);
 	EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &APPCharacterPlayer::Look);
 	EnhancedInputComponent->BindAction(ButtonInteract, ETriggerEvent::Triggered, this, &APPCharacterPlayer::ButtonInteraction);
-	EnhancedInputComponent->BindAction(GrabAction, ETriggerEvent::Triggered, this, &APPCharacterPlayer::GrabInteraction);
-	EnhancedInputComponent->BindAction(GrabAction, ETriggerEvent::Completed, this, &APPCharacterPlayer::GrabRelease);
-
+	if (ElectricDischargeComponent)
+	{
+		EnhancedInputComponent->BindAction(ElectricDischargeAction, ETriggerEvent::Ongoing, ElectricDischargeComponent.Get(), &UPPElectricDischargeComponent::Charging);
+		EnhancedInputComponent->BindAction(ElectricDischargeAction, ETriggerEvent::Completed, ElectricDischargeComponent.Get(), &UPPElectricDischargeComponent::Discharge);
+		EnhancedInputComponent->BindAction(ElectricDischargeModeChangeAction, ETriggerEvent::Completed, ElectricDischargeComponent.Get(), &UPPElectricDischargeComponent::ChangeDischargeMode);
+	}
+	
 }
 
 void APPCharacterPlayer::SetCharacterControl(ECharacterControlType NewCharacterControlType)
@@ -112,110 +182,45 @@ void APPCharacterPlayer::ButtonInteraction(const FInputActionValue& Value)
 
 	FHitResult HitResult;
 	FCollisionQueryParams CollisionParam(SCENE_QUERY_STAT(Button), false, this);
-	
+
 
 	bool IsHit = GetWorld()->LineTraceSingleByChannel(HitResult, CameraPos, EndPos, ECC_GameTraceChannel1, CollisionParam, FCollisionResponseParams(ECR_Block));
 
 	if (IsHit)
 	{
 		AActor* HitActor = HitResult.GetActor();
-		IPPButtonExecuteInterface* ButtonActor = Cast<IPPButtonExecuteInterface>(HitActor);
+		IPPInteractableObjectInterface* ButtonActor = Cast<IPPInteractableObjectInterface>(HitActor);
 		ensure(ButtonActor);
 		if (ButtonActor != nullptr)
 		{
 			UE_LOG(LogTemp, Log, TEXT("FindButton"));
-			ButtonActor->Execute();
+			ButtonActor->Interact();
 		}
 	}
 
 	FColor DebugColor(255, 0, 0);
 
 	DrawDebugLine(GetWorld(), CameraPos, EndPos, DebugColor, false, 5.0f);
-
 }
 
-void APPCharacterPlayer::GrabInteraction()
+UCameraComponent* APPCharacterPlayer::GetCamera()
 {
-	UE_LOG(LogTemp, Log, TEXT("Button Click"));
-	FVector CameraPos = FollowCamera->GetComponentLocation();
-	FVector CameraForwardVector = FollowCamera->GetForwardVector();
-	FVector EndPos = CameraPos + CameraForwardVector * 600.f;
-
-	FHitResult HitResult;
-	FCollisionQueryParams CollisionParam(SCENE_QUERY_STAT(Grab), true, this);
-
-	bool IsHit = GetWorld()->LineTraceSingleByChannel(HitResult, CameraPos, EndPos, ECC_GameTraceChannel2, CollisionParam, FCollisionResponseParams(ECR_Block));
-	if (IsHit)
-	{
-		GrabObectDistanceFromCamera = HitResult.Distance;
-		GrabHandle->GrabComponentAtLocationWithRotation(HitResult.GetComponent(), TEXT("None"), HitResult.GetComponent()->GetComponentLocation(), FRotator::ZeroRotator);
-
-		UE_LOG(LogTemp, Log, TEXT("GrabHit"));
-	}
-
-	FColor DebugColor(255, 0, 0);
-
-	DrawDebugLine(GetWorld(), CameraPos, EndPos, DebugColor, false, 5.0f);
+	return FollowCamera;
 }
 
-void APPCharacterPlayer::GrabRelease()
+
+void APPCharacterPlayer::SwitchParts(UPPPartsDataBase* InPartsData)
 {
-	if (GrabHandle->GetGrabbedComponent())
+	if (Parts)
 	{
-		GrabHandle->ReleaseComponent();
+		UE_LOG(LogTemp, Log, TEXT("Destroy Parts"));
+		Parts->DestroyComponent();
 	}
+
+	UE_LOG(LogTemp, Log, TEXT("Creat New Parts"));
+	UActorComponent* PartsComponent = AddComponentByClass(InPartsData->PartsComponent, true, FTransform::Identity, false);
+	Parts = CastChecked<UPPPartsBase>(PartsComponent);
 }
 
-
-
-APPCharacterPlayer::APPCharacterPlayer()
-{
-	// Input
-	static ConstructorHelpers::FObjectFinder<UInputMappingContext> InputMappingContextRef(TEXT("/Script/EnhancedInput.InputMappingContext'/Game/Input/IMC_Default.IMC_Default'"));
-	if (nullptr != InputMappingContextRef.Object)
-	{
-		DefaultMappingContext = InputMappingContextRef.Object;
-	}
-	static ConstructorHelpers::FObjectFinder<UInputAction> InputActionMoveRef(TEXT("/Script/EnhancedInput.InputAction'/Game/Input/Actions/IA_Move.IA_Move'"));
-	if (nullptr != InputActionMoveRef.Object)
-	{
-		MoveAction = InputActionMoveRef.Object;
-	}
-	static ConstructorHelpers::FObjectFinder<UInputAction> InputActionJumpRef(TEXT("/Script/EnhancedInput.InputAction'/Game/Input/Actions/IA_Jump.IA_Jump'"));
-	if (nullptr != InputActionJumpRef.Object)
-	{
-		JumpAction = InputActionJumpRef.Object;
-	}
-	static ConstructorHelpers::FObjectFinder<UInputAction> InputActionLookRef(TEXT("/Script/EnhancedInput.InputAction'/Game/Input/Actions/IA_Look.IA_Look'"));
-	if (nullptr != InputActionLookRef.Object)
-	{
-		LookAction = InputActionLookRef.Object;
-	}
-	static ConstructorHelpers::FObjectFinder<UInputAction> ButtonInteractRef(TEXT("/Script/EnhancedInput.InputAction'/Game/Input/Actions/IA_Button.IA_Button'"));
-	if(!ButtonInteractRef.Object)
-	{
-		ButtonInteract = ButtonInteractRef.Object;
-	}
-	static ConstructorHelpers::FObjectFinder<UInputAction> GrabInteractRef(TEXT("/Script/EnhancedInput.InputAction'/Game/Input/Actions/IA_Grab.IA_Grab'"));
-	if (nullptr != GrabInteractRef.Object)
-	{
-		GrabAction = GrabInteractRef.Object;
-	}
-
-	// Grab
-	GrabHandle = CreateDefaultSubobject<UPhysicsHandleComponent>(TEXT("PhysicsHandle"));
-	
-
-	// Camera
-	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));	// CameraBoom 컴포넌트를 가져옴
-	CameraBoom->SetupAttachment(RootComponent);
-	CameraBoom->TargetArmLength = 400.0f;
-	CameraBoom->bUsePawnControlRotation = true;
-	CameraBoom->SetRelativeLocation(FVector(0.0f, 0.0f, 25.f));
-
-	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));	// FollowCamera 컴포넌트를 가져옴
-	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
-	FollowCamera->bUsePawnControlRotation = false;
-}
 
 

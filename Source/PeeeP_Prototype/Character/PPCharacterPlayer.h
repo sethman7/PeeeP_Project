@@ -72,6 +72,8 @@ protected:
 
 public:
 	void SwitchParts(class UPPPartsDataBase* InPartsData);
+
+
 	
 protected:
 //ElectricComponent
@@ -84,4 +86,9 @@ protected:
 	TObjectPtr<class UPPElectricDischargeComponent> ElectricDischargeComponent;
 
 	float ChargeTime;
+	float MaxWalkSpeed;
+
+public:
+	void ReduationMaxWalkSpeedRatio(float InReductionRatio);
+	void RevertMaxWalkSpeed();
 };

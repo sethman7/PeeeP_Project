@@ -95,15 +95,15 @@ void UPPElectricDischargeComponent::Discharge()
 		FHitResult OutHitResult;
 
 		float DefaultEndRange = 300.0f;
+		float FinalEndRange = DefaultEndRange + CurrentChargingTime * 50.0f;
 
-		float SphereRadius = 50.0f;
+		float CapsuleRadius = 50.0f;
 
-		FVector Start = Owner->GetActorLocation() + Owner->GetActorForwardVector()* SphereRadius;
-		FVector End = Start + Owner->GetActorForwardVector() * (DefaultEndRange + CurrentChargingTime * 50.0f);
+		FVector Start = Owner->GetActorLocation() + Owner->GetActorForwardVector()* CapsuleRadius;
+		FVector End = Start + Owner->GetActorForwardVector() * FinalEndRange;
 
 		bool bIsHit = GetWorld()->SweepSingleByChannel(OutHitResult, Start, End, FQuat::Identity, ECC_GameTraceChannel5 /*ÀÓ½Ã·Î ±×·¦ ³Ö¾îµÒ*/,
-
-			FCollisionShape::MakeSphere(SphereRadius), CollisionParam);
+			FCollisionShape::MakeCapsule(CapsuleRadius, FinalEndRange * 0.5f), CollisionParam);
 
 		if (bIsHit)
 		{

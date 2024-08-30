@@ -1,5 +1,3 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
 #include "CoreMinimal.h"
@@ -9,35 +7,33 @@
 UCLASS()
 class PEEEP_PROTOTYPE_API APPPressurePlate : public AActor
 {
-	GENERATED_BODY()
-	
-public:	
-	// Sets default values for this actor's properties
-	APPPressurePlate();
+    GENERATED_BODY()
+
+public:
+    APPPressurePlate();
 
 protected:
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
+    virtual void BeginPlay() override;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Door")
-	TObjectPtr<class APPDoor> Door;
+public:
+    virtual void Tick(float DeltaTime) override;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Mesh")
-	TObjectPtr<class UStaticMeshComponent> Body;
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+    class UStaticMeshComponent* Body;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "CollisionBox")
-	class UBoxComponent* CollisionBox;
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+    class UBoxComponent* CollisionBox;
 
-	/** Overlap Begin */
-	UFUNCTION()
-	void OnOverlapBegin(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Interaction")
+    class APPMovingPlate* MovingPlate; // 발판을 참조하는 변수 추가
 
-	/** Overlap End */
-	UFUNCTION()
-	void OnOverlapEnd(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Interaction")
+    class APPDoor* Door; // 도어를 참조하는 변수 추가
 
-public:	
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
+private:
+    UFUNCTION()
+    void OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
+    UFUNCTION()
+    void OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 };

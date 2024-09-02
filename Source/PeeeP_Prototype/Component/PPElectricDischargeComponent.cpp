@@ -8,6 +8,8 @@
 #include "GameFramework/Character.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Character/PPCharacterPlayer.h"
+#include "NiagaraComponent.h"
+#include "NiagaraSystem.h"
 
 // Sets default values for this component's properties
 UPPElectricDischargeComponent::UPPElectricDischargeComponent()
@@ -24,6 +26,8 @@ UPPElectricDischargeComponent::UPPElectricDischargeComponent()
 	bRechargingEnable = true;
 
 	bChargeStart = false;
+
+	DischaegeEffectComponent = CreateDefaultSubobject<UNiagaraComponent>(TEXT("NiagaraComponent"));
 }
 
 

@@ -15,6 +15,7 @@
 #include "Parts/PartsComponent/PPGrabParts.h"
 #include "Parts/PartsData/PPPartsDataBase.h"
 #include "Component/PPElectricDischargeComponent.h"
+#include "NiagaraComponent.h"
 
 
 APPCharacterPlayer::APPCharacterPlayer()
@@ -78,6 +79,7 @@ APPCharacterPlayer::APPCharacterPlayer()
 	GetCharacterMovement()->GravityScale = 1.6f;
 	this->MaxWalkSpeed = 200.0f;
 	GetCharacterMovement()->MaxWalkSpeed = this->MaxWalkSpeed;
+	
 }
 
 void APPCharacterPlayer::BeginPlay()

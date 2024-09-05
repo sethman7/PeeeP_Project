@@ -59,7 +59,7 @@ APPCharacterPlayer::APPCharacterPlayer()
 	// Camera
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));	// CameraBoom 컴포넌트를 가져옴
 	CameraBoom->SetupAttachment(RootComponent);
-	CameraBoom->TargetArmLength = 600.0f;
+	CameraBoom->TargetArmLength = 400.0f;
 	CameraBoom->bUsePawnControlRotation = true;
 	CameraBoom->SetRelativeLocation(FVector(0.0f, 0.0f, 100.f));
 	CameraBoom->bEnableCameraLag = true;
@@ -76,6 +76,8 @@ APPCharacterPlayer::APPCharacterPlayer()
 
 	GetCharacterMovement()->BrakingDecelerationWalking = 2000.f;
 	GetCharacterMovement()->GravityScale = 1.6f;
+	this->MaxWalkSpeed = 200.0f;
+	GetCharacterMovement()->MaxWalkSpeed = this->MaxWalkSpeed;
 }
 
 void APPCharacterPlayer::BeginPlay()
@@ -221,6 +223,18 @@ void APPCharacterPlayer::SwitchParts(UPPPartsDataBase* InPartsData)
 	UActorComponent* PartsComponent = AddComponentByClass(InPartsData->PartsComponent, true, FTransform::Identity, false);
 	Parts = CastChecked<UPPPartsBase>(PartsComponent);
 }
+
+void APPCharacterPlayer::ReduationMaxWalkSpeedRatio(float InReductionRatio)
+{
+	GetCharacterMovement()->MaxWalkSpeed *= InReductionRatio;
+}
+
+void APPCharacterPlayer::RevertMaxWalkSpeed()
+{
+	GetCharacterMovement()->MaxWalkSpeed = this->MaxWalkSpeed;
+}
+
+
 
 
 

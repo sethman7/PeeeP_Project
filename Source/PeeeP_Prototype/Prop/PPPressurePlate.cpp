@@ -1,6 +1,6 @@
 #include "Prop/PPPressurePlate.h"
 #include "Gimmick/PPMovingPlate.h" // 발판 클래스 헤더 추가
-#include "Prop/Door_Test.h" // 도어 클래스 헤더 추가
+#include "Prop/PPDoor.h" // 도어 클래스 헤더 추가
 #include "Components/StaticMeshComponent.h"
 #include "Components/BoxComponent.h"
 
@@ -35,7 +35,7 @@ void APPPressurePlate::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActo
     }
     if (Door) // 도어가 설정된 경우에만
     {
-        Door->SwitchOnOff();
+        Door->OnInteract();
     }
 }
 
@@ -48,7 +48,7 @@ void APPPressurePlate::OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor*
     }
     if (Door) // 도어가 설정된 경우에만
     {
-        Door->SwitchOnOff();
+        Door->OnInteract();
     }
 }
 

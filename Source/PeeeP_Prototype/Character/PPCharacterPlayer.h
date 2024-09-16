@@ -27,6 +27,11 @@ protected:
 
 // Character Control Section
 protected:
+	// Character Movement Component
+	// 외부에 의해서 플레이어가 움직일 일이 생길 때 원인으로부터 참조하여 사용
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<class UCharacterMovementComponent> CharacterMovementComponent;
+
 	void SetCharacterControl(ECharacterControlType NewCharacterControlType);
 	virtual void SetCharacterControlData(const class UPPCharacterControlData* CharacterControlData) override;
 

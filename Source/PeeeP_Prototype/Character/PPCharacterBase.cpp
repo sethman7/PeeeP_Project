@@ -15,7 +15,7 @@ APPCharacterBase::APPCharacterBase()
 	bUseControllerRotationRoll = false;
 
 	// Capsule
-	GetCapsuleComponent()->InitCapsuleSize(23.f, 20.0f);
+	GetCapsuleComponent()->InitCapsuleSize(10.f, 10.0f);
 	GetCapsuleComponent()->SetCollisionProfileName(TEXT("Pawn"));
 
 	// Movement
@@ -27,7 +27,7 @@ APPCharacterBase::APPCharacterBase()
 	GetCharacterMovement()->MinAnalogWalkSpeed = 20.f;
 
 	// Mesh
-	GetMesh()->SetRelativeLocationAndRotation(FVector(0.0f, 0.0f, -25.0f), FRotator(0.0f, -90.0f, 0.0f));
+	GetMesh()->SetRelativeLocationAndRotation(FVector(0.0f, 0.0f, -10.0f), FRotator(0.0f, -90.0f, 0.0f));
 	GetMesh()->SetRelativeScale3D(FVector(1.75f, 1.75f, 1.75f));
 	GetMesh()->SetAnimationMode(EAnimationMode::AnimationBlueprint);
 	GetMesh()->SetCollisionProfileName(TEXT("NoCollision"));

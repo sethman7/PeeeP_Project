@@ -27,6 +27,11 @@ protected:
 
 // Character Control Section
 protected:
+	// Character Movement Component
+	// 외부에 의해서 플레이어가 움직일 일이 생길 때 원인으로부터 참조하여 사용
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<class UCharacterMovementComponent> CharacterMovementComponent;
+
 	void SetCharacterControl(ECharacterControlType NewCharacterControlType);
 	virtual void SetCharacterControlData(const class UPPCharacterControlData* CharacterControlData) override;
 
@@ -47,19 +52,9 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class UInputAction> ButtonInteract;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, Meta = (AllowPrivateAccess = "true"))
-	TObjectPtr<class UInputAction> GrabAction;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Physics, Meta = (AllowPrivateAccess = "true"))
-	TObjectPtr<class UPhysicsHandleComponent> GrabHandle;
-
 	void Move(const FInputActionValue& Value);
 	void Look(const FInputActionValue& Value);
 	void ButtonInteraction(const FInputActionValue& Value);
-	void GrabInteraction();
-	void GrabRelease();
-
-	float GrabObectDistanceFromCamera;
 
 	ECharacterControlType CurrentCharacterControlType;
 
@@ -70,4 +65,35 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class UCameraComponent> FollowCamera;
+
+public:
+	UCameraComponent* GetCamera();
+
+
+protected:
+//Parts
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Parts, Meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class UPPPartsBase> Parts;
+
+public:
+	void SwitchParts(class UPPPartsDataBase* InPartsData);
+
+
+	
+protected:
+//ElectricComponent
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Electric, Meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class UInputAction> ElectricDischargeAction;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Electric, Meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class UInputAction> ElectricDischargeModeChangeAction;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Electric)
+	TObjectPtr<class UPPElectricDischargeComponent> ElectricDischargeComponent;
+
+	float ChargeTime;
+	float MaxWalkSpeed;
+
+public:
+	void ReduationMaxWalkSpeedRatio(float InReductionRatio);
+	void RevertMaxWalkSpeed();
 };

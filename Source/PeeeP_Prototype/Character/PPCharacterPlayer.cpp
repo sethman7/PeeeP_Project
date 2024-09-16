@@ -62,12 +62,13 @@ APPCharacterPlayer::APPCharacterPlayer()
 	CameraBoom->SetupAttachment(RootComponent);
 	CameraBoom->TargetArmLength = 400.0f;
 	CameraBoom->bUsePawnControlRotation = true;
-	CameraBoom->SetRelativeLocation(FVector(0.0f, 0.0f, 100.f));
+	CameraBoom->SetRelativeLocation(FVector(0.0f, 0.0f, 50.f));
 	CameraBoom->bEnableCameraLag = true;
 	CameraBoom->bEnableCameraRotationLag = true;
 	CameraBoom->CameraLagSpeed = 5.0f;
 	CameraBoom->CameraRotationLagSpeed = 20.f;
 	CameraBoom->CameraLagMaxDistance = 500.f;
+	CameraBoom->ProbeSize = 8.0f;
 
 	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));	// FollowCamera 컴포넌트를 가져옴
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
@@ -77,8 +78,9 @@ APPCharacterPlayer::APPCharacterPlayer()
 
 	GetCharacterMovement()->BrakingDecelerationWalking = 2000.f;
 	GetCharacterMovement()->GravityScale = 1.6f;
-	this->MaxWalkSpeed = 200.0f;
+	this->MaxWalkSpeed = 150.0f;
 	GetCharacterMovement()->MaxWalkSpeed = this->MaxWalkSpeed;
+	GetCharacterMovement()->MaxStepHeight = 10.0f;
 	
 }
 

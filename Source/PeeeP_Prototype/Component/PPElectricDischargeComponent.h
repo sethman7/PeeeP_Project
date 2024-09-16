@@ -46,6 +46,9 @@ protected:
 	bool bRechargingEnable;
 	bool bChargeStart;
 
+	int8 CurrentChargeLevel;
+	int8 MaxChargeLevel;
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Electric)
 	TObjectPtr<class UNiagaraSystem> DischaegeEffect;
 

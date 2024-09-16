@@ -23,6 +23,8 @@ UPPElectricDischargeComponent::UPPElectricDischargeComponent()
 	CurrentChargingTime = 0.0f;
 	RechargingDelay = 1.0f;
 	MoveSpeedReductionRate = 0.5f;
+	CurrentChargeLevel = 0;
+	MaxChargeLevel = 3;
 	bRechargingEnable = true;
 
 	bChargeStart = false;
@@ -64,7 +66,7 @@ void UPPElectricDischargeComponent::Charging()
 		bChargeStart = true;
 	}
 
-	if (CurrentChargingTime >= MaxChargingTime)
+	if (CurrentChargeLevel >= MaxChargeLevel)
 	{
 		if (!AutoDischargeTimeHandler.IsValid())
 		{
@@ -78,12 +80,19 @@ void UPPElectricDischargeComponent::Charging()
 
 	CurrentChargingTime = FMath::Clamp(CurrentChargingTime, 0, MaxChargingTime);
 
+	int32 IntCurrentChargingTime = FMath::TruncToInt(CurrentChargingTime);
+
+	if (CurrentChargeLevel < IntCurrentChargingTime)
+	{
+		CurrentChargeLevel = IntCurrentChargingTime;
+	}
+
 	UE_LOG(LogTemp, Log, TEXT("Charging Time: %f"), CurrentChargingTime);
 }
 
 void UPPElectricDischargeComponent::Discharge()
 {
-	if (!bRechargingEnable)
+	if (!bRechargingEnable || CurrentChargeLevel == 0)
 	{
 		return;
 	}
@@ -119,6 +128,10 @@ void UPPElectricDischargeComponent::Discharge()
 				UE_LOG(LogTemp, Log, TEXT("IsHit : Capsule"))
 			}
 		}
+		// 0 60 120 180
+		// 0 40 80 120
+		/*DischaegeEffectComponent->SetFloatParameter();
+		DischaegeEffect*/
 
 		UE_LOG(LogTemp, Log, TEXT("Discharge Capsule %f"), CurrentChargingTime);
 	}
@@ -126,11 +139,10 @@ void UPPElectricDischargeComponent::Discharge()
 	{
 		TArray<FOverlapResult> OutOverlapResults;
 
-		float DefaultSphereRadius = 300.0f;
-		float SphereRadius = DefaultSphereRadius + CurrentChargingTime * 50.0f;
+		float SphereRadius = CurrentChargeLevel * 60.0f;
 
 		bool bIsHit = GetWorld()->OverlapMultiByChannel(OutOverlapResults, Owner->GetActorLocation(), FQuat::Identity, ECC_GameTraceChannel5 /*ÀÓ½Ã·Î ±×·¦ ³Ö¾îµÒ*/,
-			FCollisionShape::MakeSphere(CurrentChargingTime), CollisionParam);
+			FCollisionShape::MakeSphere(SphereRadius), CollisionParam);
 
 		if (bIsHit)
 		{
@@ -140,7 +152,8 @@ void UPPElectricDischargeComponent::Discharge()
 				if (HitElectricObject)
 				{
 					HitElectricObject->Charge();
-					UE_LOG(LogTemp, Log, TEXT("IsHit : Sphere Num: %d"), OutOverlapResults.Num());
+					UE_LOG(LogTemp, Log, TEXT("IsHit : Sphere HitObjectNum: %d"), OutOverlapResults.Num());
+					UE_LOG(LogTemp, Log, TEXT("ChargeLevel: %d"), CurrentChargeLevel);
 				}
 			}
 		}
@@ -155,6 +168,7 @@ void UPPElectricDischargeComponent::Discharge()
 	}
 
 	CurrentChargingTime = 0.0f;
+	CurrentChargeLevel = 0;
 	bRechargingEnable = false;
 
 	if (!AutoDischargeTimeHandler.IsValid())

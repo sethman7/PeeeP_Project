@@ -15,7 +15,7 @@
 #include "Parts/PartsComponent/PPGrabParts.h"
 #include "Parts/PartsData/PPPartsDataBase.h"
 #include "Component/PPElectricDischargeComponent.h"
-#include "NiagaraComponent.h"
+#include "GameFramework/CharacterMovementComponent.h"
 
 
 APPCharacterPlayer::APPCharacterPlayer()
@@ -62,13 +62,12 @@ APPCharacterPlayer::APPCharacterPlayer()
 	CameraBoom->SetupAttachment(RootComponent);
 	CameraBoom->TargetArmLength = 400.0f;
 	CameraBoom->bUsePawnControlRotation = true;
-	CameraBoom->SetRelativeLocation(FVector(0.0f, 0.0f, 50.f));
+	CameraBoom->SetRelativeLocation(FVector(0.0f, 0.0f, 100.f));
 	CameraBoom->bEnableCameraLag = true;
 	CameraBoom->bEnableCameraRotationLag = true;
 	CameraBoom->CameraLagSpeed = 5.0f;
 	CameraBoom->CameraRotationLagSpeed = 20.f;
-	CameraBoom->CameraLagMaxDistance = 500.f;
-	CameraBoom->ProbeSize = 8.0f;
+	CameraBoom->CameraLagMaxDistance = 300.f;
 
 	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));	// FollowCamera 컴포넌트를 가져옴
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
@@ -78,10 +77,8 @@ APPCharacterPlayer::APPCharacterPlayer()
 
 	GetCharacterMovement()->BrakingDecelerationWalking = 2000.f;
 	GetCharacterMovement()->GravityScale = 1.6f;
-	this->MaxWalkSpeed = 150.0f;
+	this->MaxWalkSpeed = 200.0f;
 	GetCharacterMovement()->MaxWalkSpeed = this->MaxWalkSpeed;
-	GetCharacterMovement()->MaxStepHeight = 10.0f;
-	
 }
 
 void APPCharacterPlayer::BeginPlay()
@@ -94,7 +91,8 @@ void APPCharacterPlayer::BeginPlay()
 		Subsystem->AddMappingContext(DefaultMappingContext, 0);
 	}
 
-	////Parts 임시로 생성자에서 부여함 해당 부분은 나중에 인벤토리에서 데이터 이용해서 파츠 변경하는 함수 따로 만들어서 적용하면 될 듯
+	//// Parts 임시로 생성자에서 부여함
+	//// 해당 부분은 나중에 인벤토리에서 데이터 이용해서 파츠 변경하는 함수 따로 만들어서 적용하면 될 듯
 	//UActorComponent* PartsComponent = AddComponentByClass(UPPGrabParts::StaticClass(), true, FTransform::Identity, false);
 	//Parts = CastChecked<UPPPartsBase>(PartsComponent);
 }

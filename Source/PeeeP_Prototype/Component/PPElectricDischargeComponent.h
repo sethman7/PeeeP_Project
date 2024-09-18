@@ -46,6 +46,15 @@ protected:
 	bool bRechargingEnable;
 	bool bChargeStart;
 
+	int8 CurrentChargeLevel;
+	int8 MaxChargeLevel;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Electric)
+	TObjectPtr<class UNiagaraSystem> DischaegeEffect;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Electric)
+	TObjectPtr<class UNiagaraComponent> DischaegeEffectComponent;
+
 public:	
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;

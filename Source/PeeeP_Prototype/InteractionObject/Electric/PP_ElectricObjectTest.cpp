@@ -31,7 +31,7 @@ void APP_ElectricObjectTest::Charge()
 	UPrimitiveComponent* PrimitiveComponent = Cast<UPrimitiveComponent>(GetRootComponent());
 	if (PrimitiveComponent)
 	{
-		PrimitiveComponent->SetPhysicsLinearVelocity(FVector(0.0f, 0.0f, 500.f));
+		PrimitiveComponent->SetPhysicsLinearVelocity(FVector(0.0f, 0.0f, 500.f), true);
 	}
 }
 

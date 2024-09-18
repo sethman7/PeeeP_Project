@@ -10,7 +10,7 @@ public class PeeeP_Prototype : ModuleRules
 
 		PublicIncludePaths.AddRange(new string[] { "PeeeP_Prototype" });
 	
-		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput" });
+		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput", "Niagara" });
 
 		PrivateDependencyModuleNames.AddRange(new string[] {  });
 

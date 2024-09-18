@@ -96,4 +96,11 @@ protected:
 public:
 	void ReduationMaxWalkSpeedRatio(float InReductionRatio);
 	void RevertMaxWalkSpeed();
+
+protected:
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, Meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class UInputAction> OpenMenuInteract;
+
+	void OpenMenu();
 };

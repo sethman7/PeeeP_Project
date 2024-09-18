@@ -6,9 +6,6 @@
 #include "Components/ActorComponent.h"
 #include "PPElectricDischargeComponent.generated.h"
 
-
-DECLARE_DELEGATE(FDischargeEndDelegate);
-
 UENUM()
 enum class EDischargeMode : uint8
 {

@@ -14,18 +14,23 @@ class PEEEP_PROTOTYPE_API APPPlayerController : public APlayerController
 {
 	GENERATED_BODY()
 	
+public:
 	APPPlayerController();
+	
+	void OpenMenu();
+	void CloseMenu();
+
 
 protected:
 	virtual void BeginPlay() override;
 
-	// À§Á¬ Å¬·¡½º¸¦ ÀúÀåÇÒ º¯¼ö
+	TSubclassOf<class UUserWidget> PauseUIClass;
+
+	TObjectPtr<class UUserWidget> PauseUI;
+	// ï¿½ï¿½ï¿½ï¿½ Å¬ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="UI")
 	TSubclassOf<class UPPInGameUIMain> InGameUIMainClass;
-	// ½ÇÁ¦ »ý¼ºµÈ À§Á¬À» °¡¸®Å°´Â Æ÷ÀÎÅÍ
+	// ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Å°ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 	UPROPERTY()
 	TObjectPtr<class UPPInGameUIMain> InGameUIMain;
-
-public:
-
 };

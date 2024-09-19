@@ -15,7 +15,7 @@ APPCharacterBase::APPCharacterBase()
 	bUseControllerRotationRoll = false;
 
 	// Capsule
-	GetCapsuleComponent()->InitCapsuleSize(10.f, 10.0f);
+	GetCapsuleComponent()->InitCapsuleSize(10.f, 10.f);
 	GetCapsuleComponent()->SetCollisionProfileName(TEXT("Pawn"));
 
 	// Movement
@@ -23,7 +23,7 @@ APPCharacterBase::APPCharacterBase()
 	GetCharacterMovement()->RotationRate = FRotator(0.0f, 500.0f, 0.0f);
 	GetCharacterMovement()->JumpZVelocity = 500.f;
 	GetCharacterMovement()->AirControl = 0.35f;
-	GetCharacterMovement()->MaxWalkSpeed = 200.f;
+	GetCharacterMovement()->MaxWalkSpeed = 300.f;
 	GetCharacterMovement()->MinAnalogWalkSpeed = 20.f;
 
 	// Mesh

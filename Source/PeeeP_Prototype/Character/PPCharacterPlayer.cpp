@@ -16,6 +16,8 @@
 #include "Parts/PartsData/PPPartsDataBase.h"
 #include "Component/PPElectricDischargeComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "GameMode/PPPlayerController.h"
+#include "NiagaraComponent.h"
 
 
 APPCharacterPlayer::APPCharacterPlayer()
@@ -56,30 +58,41 @@ APPCharacterPlayer::APPCharacterPlayer()
 	{
 		ElectricDischargeModeChangeAction = ElectricDischargeModeChangeActionRef.Object;
 	}
+	static ConstructorHelpers::FObjectFinder<UInputAction> OpenMenuActionRef(TEXT("/Script/EnhancedInput.InputAction'/Game/Input/Actions/IA_OpenMenu.IA_OpenMenu'"));
+	if (!OpenMenuActionRef.Object)
+	{
+		OpenMenuInteract = OpenMenuActionRef.Object;
+	}
 
 	// Camera
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));	// CameraBoom 컴포넌트를 가져옴
 	CameraBoom->SetupAttachment(RootComponent);
-	CameraBoom->TargetArmLength = 400.0f;
+	CameraBoom->TargetArmLength = 100.0f;
 	CameraBoom->bUsePawnControlRotation = true;
-	CameraBoom->SetRelativeLocation(FVector(0.0f, 0.0f, 100.f));
+	CameraBoom->SetRelativeLocation(FVector(0.0f, 0.0f, 15.0f));
 	CameraBoom->bEnableCameraLag = true;
 	CameraBoom->bEnableCameraRotationLag = true;
 	CameraBoom->CameraLagSpeed = 5.0f;
 	CameraBoom->CameraRotationLagSpeed = 20.f;
-	CameraBoom->CameraLagMaxDistance = 300.f;
+	CameraBoom->CameraLagMaxDistance = 500.f;
+	CameraBoom->ProbeSize = 8.0f;
 
 	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));	// FollowCamera 컴포넌트를 가져옴
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
 	FollowCamera->bUsePawnControlRotation = false;
+	FollowCamera->FieldOfView = 80.0f;
 
 	ElectricDischargeComponent = CreateDefaultSubobject<UPPElectricDischargeComponent>(TEXT("ElectricDischargeComponent"));
 
 	GetCharacterMovement()->BrakingDecelerationWalking = 2000.f;
 	GetCharacterMovement()->GravityScale = 1.6f;
-	this->MaxWalkSpeed = 120.0f;
+	this->MaxWalkSpeed = 150.0f;
 	GetCharacterMovement()->MaxWalkSpeed = this->MaxWalkSpeed;
+	GetCharacterMovement()->MaxStepHeight = 10.0f;
 	GetCharacterMovement()->SetWalkableFloorAngle(50.f);
+
+	PlayerCharacterNiagaraComponent = CreateDefaultSubobject<UNiagaraComponent>(TEXT("EffectComponent"));
+	PlayerCharacterNiagaraComponent->SetupAttachment(RootComponent);
 }
 
 void APPCharacterPlayer::BeginPlay()
@@ -114,6 +127,7 @@ void APPCharacterPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 	EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &APPCharacterPlayer::Move);
 	EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &APPCharacterPlayer::Look);
 	EnhancedInputComponent->BindAction(ButtonInteract, ETriggerEvent::Triggered, this, &APPCharacterPlayer::ButtonInteraction);
+	EnhancedInputComponent->BindAction(OpenMenuInteract, ETriggerEvent::Triggered, this, &APPCharacterPlayer::OpenMenu);
 	if (ElectricDischargeComponent)
 	{
 		EnhancedInputComponent->BindAction(ElectricDischargeAction, ETriggerEvent::Ongoing, ElectricDischargeComponent.Get(), &UPPElectricDischargeComponent::Charging);
@@ -237,9 +251,25 @@ void APPCharacterPlayer::RevertMaxWalkSpeed()
 	GetCharacterMovement()->MaxWalkSpeed = this->MaxWalkSpeed;
 }
 
+
+UNiagaraComponent* APPCharacterPlayer::GetPlayerCharacterNiagaraComponent() const
+{
+	return PlayerCharacterNiagaraComponent;;
+}
+
+void APPCharacterPlayer::OpenMenu()
+{
+	APPPlayerController* PlayerController = Cast<APPPlayerController>(GetController());
+	if (PlayerController)
+	{
+		PlayerController->OpenMenu();
+	}
+}
+
 UPPElectricDischargeComponent* APPCharacterPlayer::GetElectricDischargeComponent()
 {
 	return ElectricDischargeComponent;
+
 }
 
 

@@ -1,9 +1,10 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
+#include "InteractionObject/Electric/PPElectricCharageStation.h"
 #include "Components/BoxComponent.h"
 #include "Character/PPCharacterPlayer.h"
 #include "Component/PPElectricDischargeComponent.h"
-#include "InteractionObject/Electric/PPElectricCharageStation.h"
+
 
 // Sets default values
 APPElectricCharageStation::APPElectricCharageStation()
@@ -36,7 +37,7 @@ void APPElectricCharageStation::Tick(float DeltaTime)
 
 	if (bIsActivate)
 	{
-		ElectricDischargeComponent->ChargeElectric(0.01f);
+		ElectricDischargeComponent->ChargeElectric(1.0f * DeltaTime);
 	}
 }
 

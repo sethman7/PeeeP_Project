@@ -9,9 +9,8 @@ public class PeeeP_Prototype : ModuleRules
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 
 		PublicIncludePaths.AddRange(new string[] { "PeeeP_Prototype" });
-		
-		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput", "Niagara" ,"UMG"});
 
+		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput", "Niagara", "UMG", "MediaAssets" });
 
 		//PrivateDependencyModuleNames.AddRange(new string[] {  });
 

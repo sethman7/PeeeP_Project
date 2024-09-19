@@ -111,7 +111,8 @@ protected:
 
 	void OpenMenu();
 
-	// ElectricDischargeComponent�� �������� �޼���
+public:
+	// ElectricDischargeComponent
 	UPPElectricDischargeComponent* GetElectricDischargeComponent();
 
 };

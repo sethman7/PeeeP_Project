@@ -36,7 +36,7 @@ UPPElectricDischargeComponent::UPPElectricDischargeComponent()
 	MaxElectricCapacity = 3.0f;
 	bElectricIsEmpty = true;
 
-	DischaegeEffectComponent = CreateDefaultSubobject<UNiagaraComponent>(TEXT("NiagaraComponent"));
+	DischargeEffectComponent = CreateDefaultSubobject<UNiagaraComponent>(TEXT("NiagaraComponent"));
 }
 
 
@@ -93,7 +93,7 @@ void UPPElectricDischargeComponent::Charging()
 		bChargeStart = true;
 	}
 
-	/*
+	
 	if (CurrentChargeLevel >= MaxChargeLevel)
 	{
 		// 1.0�� �� �ڵ����� DisCharge
@@ -104,8 +104,6 @@ void UPPElectricDischargeComponent::Charging()
 		}
 		return;
 	}
-	*/
-	
 
 	CurrentChargingTime += GetWorld()->GetDeltaSeconds();
 	// ��¡ ���� ��� ����ؼ� ���� ���� �������� ����
@@ -180,7 +178,7 @@ void UPPElectricDischargeComponent::Discharge()
 	{
 		FHitResult OutHitResult;
 
-		float DefaultEndRange = 25.0f;
+		float DefaultEndRange = 15.0f;
 		float FinalEndRange = DefaultEndRange + CurrentChargingTime * 55.0f;
 
 		float CapsuleRadius = 10.0f;

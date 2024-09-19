@@ -89,6 +89,7 @@ APPCharacterPlayer::APPCharacterPlayer()
 	this->MaxWalkSpeed = 150.0f;
 	GetCharacterMovement()->MaxWalkSpeed = this->MaxWalkSpeed;
 	GetCharacterMovement()->MaxStepHeight = 10.0f;
+	GetCharacterMovement()->SetWalkableFloorAngle(50.f);
 
 	PlayerCharacterNiagaraComponent = CreateDefaultSubobject<UNiagaraComponent>(TEXT("EffectComponent"));
 	PlayerCharacterNiagaraComponent->SetupAttachment(RootComponent);

@@ -154,6 +154,7 @@ void UPPElectricDischargeComponent::Charging()
 void UPPElectricDischargeComponent::Discharge()
 {
 	APPCharacterPlayer* OwnerCharacter = Cast<APPCharacterPlayer>(GetOwner());
+
 	if (!bRechargingEnable || CurrentChargeLevel == 0)
 	{
 		CurrentChargingTime = 0.0f;
@@ -232,7 +233,6 @@ void UPPElectricDischargeComponent::Discharge()
 
 		UE_LOG(LogTemp, Log, TEXT("Discharge Sphere %f"), CurrentChargingTime);
 	}
-
 
 	if (OwnerCharacter)
 	{

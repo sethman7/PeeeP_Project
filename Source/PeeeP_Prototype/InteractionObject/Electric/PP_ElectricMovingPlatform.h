@@ -23,6 +23,9 @@ protected:
 	UPROPERTY(EditAnywhere)
 	TObjectPtr<class UInterpToMovementComponent> InterpToMovement;
 
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<class UMaterialInterface> NewMaterial;
+
 	bool bIsCharged;
 
 	// Called when the game starts or when spawned

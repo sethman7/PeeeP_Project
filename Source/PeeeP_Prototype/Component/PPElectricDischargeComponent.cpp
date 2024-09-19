@@ -125,9 +125,16 @@ void UPPElectricDischargeComponent::Charging()
 
 void UPPElectricDischargeComponent::Discharge()
 {
+
 	if (!bRechargingEnable || CurrentChargeLevel == 0)
 	{
 		return;
+	}
+
+	APPCharacterPlayer* OwnerCharacter = Cast<APPCharacterPlayer>(GetOwner());
+	if (OwnerCharacter)
+	{
+		OwnerCharacter->RevertMaxWalkSpeed();
 	}
 
 	if (bElectricIsEmpty)
@@ -195,11 +202,7 @@ void UPPElectricDischargeComponent::Discharge()
 		UE_LOG(LogTemp, Log, TEXT("Discharge Sphere %f"), CurrentChargingTime);
 	}
 
-	APPCharacterPlayer* OwnerCharacter = Cast<APPCharacterPlayer>(GetOwner());
-	if (OwnerCharacter)
-	{
-		OwnerCharacter->RevertMaxWalkSpeed();
-	}
+
 	
 	// ������ ���ⷮ�� 0 ������ ���
 	if (CurrentElectricCapacity <= 0.0f)

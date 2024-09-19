@@ -52,13 +52,10 @@ void APPAlertUIArea::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor*
 					UE_LOG(LogTemp, Log, TEXT("Succeessed to Bound ShowKeyManualDelegate."));
 					ElectircHUDInterface->ShowKeyManualDelegate.Broadcast(KeyManualIndex);
 
-					if (!AutoHiddenTimer.IsValid())
-					{
-						FTimerDelegate TimerDelegate;
-						TimerDelegate.BindUObject(this, &APPAlertUIArea::SetKeyMaunalWidgetHiddenByTimer, ElectircHUDInterface);
-						GetWorld()->GetTimerManager().SetTimer(AutoHiddenTimer, TimerDelegate, 3.0f, false);
-						UE_LOG(LogTemp, Warning, TEXT("Timer"));
-					}
+					FTimerDelegate TimerDelegate;
+					TimerDelegate.BindUObject(this, &APPAlertUIArea::SetKeyMaunalWidgetHiddenByTimer, ElectircHUDInterface);
+					GetWorld()->GetTimerManager().SetTimer(AutoHiddenTimer, TimerDelegate, 3.0f, false);
+					UE_LOG(LogTemp, Warning, TEXT("Timer"));
 				}
 			}
 		}
@@ -78,6 +75,8 @@ void APPAlertUIArea::OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* O
 
 void APPAlertUIArea::SetKeyMaunalWidgetHiddenByTimer(IPPElectricHUDInterface* ElectircHUDInterface)
 {
+	UE_LOG(LogTemp, Warning, TEXT("Hidden"));
 	ElectircHUDInterface->ShowKeyManualDelegate.Broadcast(0);
+	// GetWorld()->GetTimerManager().ClearTimer(AutoHiddenTimer);
 }
 

@@ -22,6 +22,7 @@ APPGear::APPGear()
 	Mesh->SetSimulatePhysics(false);								// 물리 영향을 받지 않는다면 반드시 false로 설정.
 	Mesh->SetCollisionProfileName(TEXT("ElectricObjectProfile"));	// 플레이어의 전기 방출을 받기 위한 콜리전 프로필 세팅.
 
+	bIsCharged = false;
 }
 
 /// <summary>
@@ -58,25 +59,26 @@ void APPGear::NotifyHit(UPrimitiveComponent* MyComp, AActor* Other, UPrimitiveCo
 	if (Other && Other->IsA(APPCharacterPlayer::StaticClass()))
 	{
 		UE_LOG(LogTemp, Log, TEXT("Player Hit"));
-
-		APPCharacterPlayer* Player = Cast<APPCharacterPlayer>(Other);
-
-		if (Player != nullptr)
+		if (!bIsCharged)
 		{
-			UE_LOG(LogTemp, Log, TEXT("Cast Completed to APPCharacterPlayer"));
-			UCharacterMovementComponent* CharacterMovementComponent = Player->GetCharacterMovement();
-			if (CharacterMovementComponent != nullptr)
+			APPCharacterPlayer* Player = Cast<APPCharacterPlayer>(Other);
+
+			if (Player != nullptr)
 			{
-				UE_LOG(LogTemp, Log, TEXT("Succeed to Getting A UCharacterMovementComponent"));
+				UE_LOG(LogTemp, Log, TEXT("Cast Completed to APPCharacterPlayer"));
+				UCharacterMovementComponent* CharacterMovementComponent = Player->GetCharacterMovement();
+				if (CharacterMovementComponent != nullptr)
+				{
+					UE_LOG(LogTemp, Log, TEXT("Succeed to Getting A UCharacterMovementComponent"));
 
-				FVector dir = HitLocation - GetActorLocation();
-				FVector normalDir = dir.GetSafeNormal2D();
+					FVector dir = HitLocation - GetActorLocation();
+					FVector normalDir = dir.GetSafeNormal2D();
 
 
-				ApplyKnockback(CharacterMovementComponent, normalDir, 500.0f);
+					ApplyKnockback(CharacterMovementComponent, normalDir, 500.0f);
+				}
 			}
 		}
-
 	}
 
 }
@@ -109,7 +111,9 @@ void APPGear::ApplyKnockback(UCharacterMovementComponent* CharacterMovementCompo
 
 void APPGear::Charge()
 {
-
+	Mesh->SetSimulatePhysics(true);
+	bIsCharged = true;
+	
 }
 
 

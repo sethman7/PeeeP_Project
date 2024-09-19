@@ -159,12 +159,14 @@ void UPPElectricDischargeComponent::Discharge()
 		CurrentChargingTime = 0.0f;
 		DischargeEffectComponent->Deactivate();
 		OwnerCharacter->RevertMaxWalkSpeed();
+		bChargeStart = false;
 		return;
 	}
 
 	if (bElectricIsEmpty)
 	{
 		UE_LOG(LogTemp, Log, TEXT("Not Enough Electric"));
+		bChargeStart = false;
 		return;
 	}
 

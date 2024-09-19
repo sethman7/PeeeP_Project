@@ -86,7 +86,7 @@ APPCharacterPlayer::APPCharacterPlayer()
 
 	GetCharacterMovement()->BrakingDecelerationWalking = 2000.f;
 	GetCharacterMovement()->GravityScale = 1.6f;
-	this->MaxWalkSpeed = 120.0f;
+	this->MaxWalkSpeed = 150.0f;
 	GetCharacterMovement()->MaxWalkSpeed = this->MaxWalkSpeed;
 	GetCharacterMovement()->MaxStepHeight = 10.0f;
 

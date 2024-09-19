@@ -15,7 +15,7 @@ APPCharacterBase::APPCharacterBase()
 	bUseControllerRotationRoll = false;
 
 	// Capsule
-	GetCapsuleComponent()->InitCapsuleSize(10.f, 10.0f);
+	GetCapsuleComponent()->InitCapsuleSize(10.f, 10.f);
 	GetCapsuleComponent()->SetCollisionProfileName(TEXT("Pawn"));
 
 	// Movement

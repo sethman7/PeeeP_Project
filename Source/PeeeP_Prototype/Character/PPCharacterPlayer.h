@@ -6,13 +6,14 @@
 #include "PPCharacterBase.h"
 #include "InputActionValue.h"
 #include "PhysicsEngine/PhysicsHandleComponent.h"
+#include "Interface/UI/PPElectricHUDInterface.h"
 #include "PPCharacterPlayer.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class PEEEP_PROTOTYPE_API APPCharacterPlayer : public APPCharacterBase
+class PEEEP_PROTOTYPE_API APPCharacterPlayer : public APPCharacterBase, public IPPElectricHUDInterface
 {
 	GENERATED_BODY()	
 	
@@ -96,4 +97,7 @@ protected:
 public:
 	void ReduationMaxWalkSpeedRatio(float InReductionRatio);
 	void RevertMaxWalkSpeed();
+
+	// ElectricDischargeComponent를 가져오는 메서드
+	UPPElectricDischargeComponent* GetElectricDischargeComponent();
 };

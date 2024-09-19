@@ -9,6 +9,9 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Character/PPCharacterPlayer.h"
 #include "Components/WidgetComponent.h"
+#include "NiagaraComponent.h"
+#include "NiagaraSystem.h"
+
 
 // Sets default values for this component's properties
 UPPElectricDischargeComponent::UPPElectricDischargeComponent()
@@ -22,16 +25,18 @@ UPPElectricDischargeComponent::UPPElectricDischargeComponent()
 	CurrentChargingTime = 0.0f;
 	RechargingDelay = 1.0f;
 	MoveSpeedReductionRate = 0.5f;
+	CurrentChargeLevel = 0;
+	MaxChargeLevel = 3;
 	bRechargingEnable = true;
 
 	bChargeStart = false;
 
-	// ÄÄÆ÷³ÍÆ®(ÇÃ·¹ÀÌ¾î)ÀÇ Àü±â·® ÃÊ±âÈ­
+	// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ®(ï¿½Ã·ï¿½ï¿½Ì¾ï¿½)ï¿½ï¿½ ï¿½ï¿½ï¿½â·® ï¿½Ê±ï¿½È­
 	CurrentElectricCapacity = 0.0f;
 	MaxElectricCapacity = 3.0f;
 	bElectricIsEmpty = true;
 
-
+	DischaegeEffectComponent = CreateDefaultSubobject<UNiagaraComponent>(TEXT("NiagaraComponent"));
 }
 
 
@@ -57,13 +62,13 @@ void UPPElectricDischargeComponent::Charging()
 		return;
 	}
 
-	// ÇöÀç º¸À¯ÇÑ Àü±â·®ÀÌ 0.0 ÀÌÇÏÀÏ °æ¿ì
-	// Â÷Â¡ ½Ã ¼Óµµ °¨¼Ò Àü¿¡ Ã¼Å©ÇÏ¿© º¸À¯ Àü±â·®ÀÌ 0ÀÏ °æ¿ì ¼Óµµ °¨¼Ò°¡ ¾ÈµÇµµ·Ï ¸ÕÀú °Ë»ç
+	// ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½â·®ï¿½ï¿½ 0.0 ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½
+	// ï¿½ï¿½Â¡ ï¿½ï¿½ ï¿½Óµï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ Ã¼Å©ï¿½Ï¿ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½â·®ï¿½ï¿½ 0ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½Óµï¿½ ï¿½ï¿½ï¿½Ò°ï¿½ ï¿½ÈµÇµï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ë»ï¿½
 	if (CurrentElectricCapacity <= 0.0f)
 	{
 		UE_LOG(LogTemp, Log, TEXT("Not Enough Electric."));
 
-		// 1.0ÃÊ ÈÄ ÀÚµ¿À¸·Î Discharge
+		// 1.0ï¿½ï¿½ ï¿½ï¿½ ï¿½Úµï¿½ï¿½ï¿½ï¿½ï¿½ Discharge
 		if (!AutoDischargeTimeHandler.IsValid())
 		{
 			GetWorld()->GetTimerManager().SetTimer(AutoDischargeTimeHandler, this, &UPPElectricDischargeComponent::Discharge, 1.0f, false);
@@ -84,9 +89,9 @@ void UPPElectricDischargeComponent::Charging()
 	}
 
 	/*
-	if (CurrentChargingTime >= MaxChargingTime)
+	if (CurrentChargeLevel >= MaxChargeLevel)
 	{
-		// 1.0ÃÊ ÈÄ ÀÚµ¿À¸·Î DisCharge
+		// 1.0ï¿½ï¿½ ï¿½ï¿½ ï¿½Úµï¿½ï¿½ï¿½ï¿½ï¿½ DisCharge
 		if (!AutoDischargeTimeHandler.IsValid())
 		{
 			GetWorld()->GetTimerManager().SetTimer(AutoDischargeTimeHandler, this, &UPPElectricDischargeComponent::Discharge, 1.0f, false);
@@ -95,16 +100,24 @@ void UPPElectricDischargeComponent::Charging()
 		return;
 	}
 	*/
+	
 
 	CurrentChargingTime += GetWorld()->GetDeltaSeconds();
-	// Â÷Â¡ ÁßÀÏ °æ¿ì °è¼ÓÇØ¼­ ÇöÀç Àü±â º¸À¯·®À» »©ÁÜ
+	// ï¿½ï¿½Â¡ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Ø¼ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 	CurrentElectricCapacity -= GetWorld()->GetDeltaSeconds();
 
 	CurrentChargingTime = FMath::Clamp(CurrentChargingTime, 0, MaxChargingTime);
 	CurrentElectricCapacity = FMath::Clamp(CurrentElectricCapacity, 0, MaxElectricCapacity);
 
-	// UI¿¡ ºê·ÎµåÄ³½ºÆ®
+	// UIï¿½ï¿½ ï¿½ï¿½Îµï¿½Ä³ï¿½ï¿½Æ®
 	BroadCastToUI();
+
+	int32 IntCurrentChargingTime = FMath::TruncToInt(CurrentChargingTime);
+
+	if (CurrentChargeLevel < IntCurrentChargingTime)
+	{
+		CurrentChargeLevel = IntCurrentChargingTime;
+	}
 
 	UE_LOG(LogTemp, Log, TEXT("Charging Time: %f"), CurrentChargingTime);
 	UE_LOG(LogTemp, Log, TEXT("Electric Capacity: %f / %f"), CurrentElectricCapacity, MaxElectricCapacity);
@@ -112,7 +125,7 @@ void UPPElectricDischargeComponent::Charging()
 
 void UPPElectricDischargeComponent::Discharge()
 {
-	if (!bRechargingEnable)
+	if (!bRechargingEnable || CurrentChargeLevel == 0)
 	{
 		return;
 	}
@@ -134,15 +147,15 @@ void UPPElectricDischargeComponent::Discharge()
 		FHitResult OutHitResult;
 
 		float DefaultEndRange = 300.0f;
+		float FinalEndRange = DefaultEndRange + CurrentChargingTime * 50.0f;
 
-		float SphereRadius = 50.0f;
+		float CapsuleRadius = 50.0f;
 
-		FVector Start = Owner->GetActorLocation() + Owner->GetActorForwardVector()* SphereRadius;
-		FVector End = Start + Owner->GetActorForwardVector() * (DefaultEndRange + CurrentChargingTime * 50.0f);
+		FVector Start = Owner->GetActorLocation() + Owner->GetActorForwardVector()* CapsuleRadius;
+		FVector End = Start + Owner->GetActorForwardVector() * FinalEndRange;
 
 		bool bIsHit = GetWorld()->SweepSingleByChannel(OutHitResult, Start, End, FQuat::Identity, ECC_GameTraceChannel5,
-
-			FCollisionShape::MakeSphere(SphereRadius), CollisionParam);
+			FCollisionShape::MakeCapsule(CapsuleRadius, FinalEndRange * 0.5f), CollisionParam);
 
 		if (bIsHit)
 		{
@@ -154,15 +167,13 @@ void UPPElectricDischargeComponent::Discharge()
 				UE_LOG(LogTemp, Log, TEXT("IsHit : Capsule"))
 			}
 		}
-
 		UE_LOG(LogTemp, Log, TEXT("Discharge Capsule %f"), CurrentChargingTime);
 	}
 	else if (DischargeMode == EDischargeMode::Sphere)
 	{
 		TArray<FOverlapResult> OutOverlapResults;
 
-		float DefaultSphereRadius = 300.0f;
-		float SphereRadius = DefaultSphereRadius + CurrentChargingTime * 50.0f;
+		float SphereRadius = CurrentChargeLevel * 60.0f;
 
 		bool bIsHit = GetWorld()->OverlapMultiByChannel(OutOverlapResults, Owner->GetActorLocation(), FQuat::Identity, ECC_GameTraceChannel5,
 			FCollisionShape::MakeSphere(SphereRadius), CollisionParam);
@@ -175,7 +186,8 @@ void UPPElectricDischargeComponent::Discharge()
 				if (HitElectricObject)
 				{
 					HitElectricObject->Charge();
-					UE_LOG(LogTemp, Log, TEXT("IsHit : Sphere Num: %d"), OutOverlapResults.Num());
+					UE_LOG(LogTemp, Log, TEXT("IsHit : Sphere HitObjectNum: %d"), OutOverlapResults.Num());
+					UE_LOG(LogTemp, Log, TEXT("ChargeLevel: %d"), CurrentChargeLevel);
 				}
 			}
 		}
@@ -189,7 +201,7 @@ void UPPElectricDischargeComponent::Discharge()
 		OwnerCharacter->RevertMaxWalkSpeed();
 	}
 	
-	// º¸À¯ÇÑ Àü±â·®ÀÌ 0 ÀÌÇÏÀÏ °æ¿ì
+	// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½â·®ï¿½ï¿½ 0 ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½
 	if (CurrentElectricCapacity <= 0.0f)
 	{
 		bElectricIsEmpty = true;
@@ -197,6 +209,7 @@ void UPPElectricDischargeComponent::Discharge()
 	
 
 	CurrentChargingTime = 0.0f;
+	CurrentChargeLevel = 0;
 	bRechargingEnable = false;
 
 	if (!AutoDischargeTimeHandler.IsValid())
@@ -229,9 +242,9 @@ void UPPElectricDischargeComponent::SetbRecharging()
 }
 
 /// <summary>
-/// ElectricDischargeComponentÀÇ CurrentElectricCapacity¸¦ Áõ°¡½ÃÄÑÁÖ´Â ÇÔ¼ö
+/// ElectricDischargeComponentï¿½ï¿½ CurrentElectricCapacityï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö´ï¿½ ï¿½Ô¼ï¿½
 /// </summary>
-/// <param name="amount">CurrentElectricCapacityÀÇ Áõ°¡·®</param>
+/// <param name="amount">CurrentElectricCapacityï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½</param>
 void UPPElectricDischargeComponent::ChargeElectric(float amount)
 {
 	if (bElectricIsEmpty)
@@ -244,14 +257,14 @@ void UPPElectricDischargeComponent::ChargeElectric(float amount)
 		UE_LOG(LogTemp, Log, TEXT("Charing +%f"), amount);
 		CurrentElectricCapacity += amount;
 		CurrentElectricCapacity = FMath::Clamp(CurrentElectricCapacity, 0, MaxElectricCapacity);
-		// UI¿¡ ºê·ÎµåÄ³½ºÆ®
+		// UIï¿½ï¿½ ï¿½ï¿½Îµï¿½Ä³ï¿½ï¿½Æ®
 		BroadCastToUI();
 	}
 }
 
 void UPPElectricDischargeComponent::BroadCastToUI()
 {
-	// ÇöÀç Àü±â ¿ë·®À» ºñÀ²·Î ¸¸µé¾î UI¿¡ Àû¿ëµÉ ¼ö ÀÖ°Ô ºê·Îµå Ä³½ºÆ®
+	// ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ë·®ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ UIï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½Ö°ï¿½ ï¿½ï¿½Îµï¿½ Ä³ï¿½ï¿½Æ®
 	float CurrentElectircCapacityRate = FMath::Clamp((CurrentElectricCapacity / MaxElectricCapacity), 0, 1);
 	IPPElectricHUDInterface* ElectircHUDInterface = Cast<IPPElectricHUDInterface>(GetOwner());
 	if (ElectircHUDInterface)

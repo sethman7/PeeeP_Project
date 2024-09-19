@@ -44,12 +44,21 @@ protected:
 	bool bRechargingEnable;
 	bool bChargeStart;
 
-	// ÄÄÆ÷³ÍÆ®(ÇÃ·¹ÀÌ¾î) ¹èÅÍ¸® ¾ç
+	// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ®(ï¿½Ã·ï¿½ï¿½Ì¾ï¿½) ï¿½ï¿½ï¿½Í¸ï¿½ ï¿½ï¿½
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	float CurrentElectricCapacity;	// ÄÄÆ÷³ÍÆ®(ÇÃ·¹ÀÌ¾î)°¡ ÇöÀç º¸À¯ÁßÀÎ Àü±â·®
-	float MaxElectricCapacity;		// ÄÄÆ÷³ÍÆ®(ÇÃ·¹ÀÌ¾î)°¡ ÃÖ´ë º¸À¯ÇÒ ¼ö ÀÖ´Â Àü±â·®
+	float CurrentElectricCapacity;	// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ®(ï¿½Ã·ï¿½ï¿½Ì¾ï¿½)ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½â·®
+	float MaxElectricCapacity;		// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ®(ï¿½Ã·ï¿½ï¿½Ì¾ï¿½)ï¿½ï¿½ ï¿½Ö´ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½Ö´ï¿½ ï¿½ï¿½ï¿½â·®
 
-	bool bElectricIsEmpty;			// º¸À¯ ÁßÀÎ Àü±â·®ÀÌ ¾øÀ» °æ¿ì
+	bool bElectricIsEmpty;			// ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½â·®ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½
+
+	int8 CurrentChargeLevel;
+	int8 MaxChargeLevel;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Electric)
+	TObjectPtr<class UNiagaraSystem> DischaegeEffect;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Electric)
+	TObjectPtr<class UNiagaraComponent> DischaegeEffectComponent;
 
 public:	
 	// Called every frame
@@ -65,7 +74,7 @@ public:
 	void ChangeDischargeMode();
 	void SetbRecharging();
 
-	// ÄÄÆ÷³ÍÆ®(ÇÃ·¹ÀÌ¾î) Àü±â ÃæÀü ÇÔ¼ö
+	// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ®(ï¿½Ã·ï¿½ï¿½Ì¾ï¿½) ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ô¼ï¿½
 	void ChargeElectric(float amount);
 
 private:

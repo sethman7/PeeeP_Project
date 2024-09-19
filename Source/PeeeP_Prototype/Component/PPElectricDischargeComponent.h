@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "Blueprint/UserWidget.h"
 #include "PPElectricDischargeComponent.generated.h"
 
 UENUM()
@@ -43,6 +44,13 @@ protected:
 	bool bRechargingEnable;
 	bool bChargeStart;
 
+	// ������Ʈ(�÷��̾�) ���͸� ��
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	float CurrentElectricCapacity;	// ������Ʈ(�÷��̾�)�� ���� �������� ���ⷮ
+	float MaxElectricCapacity;		// ������Ʈ(�÷��̾�)�� �ִ� ������ �� �ִ� ���ⷮ
+
+	bool bElectricIsEmpty;			// ���� ���� ���ⷮ�� ���� ���
+
 	int8 CurrentChargeLevel;
 	int8 MaxChargeLevel;
 
@@ -70,4 +78,10 @@ public:
 	void SetbRecharging();
 
 	void PlayDischargeEffect(FName EffectType, int8 ChargingLevel, FVector Location, FRotator Rotation);
+
+	// ������Ʈ(�÷��̾�) ���� ���� �Լ�
+	void ChargeElectric(float amount);
+
+private:
+	void BroadCastToUI();
 };

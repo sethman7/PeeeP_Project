@@ -86,7 +86,7 @@ APPCharacterPlayer::APPCharacterPlayer()
 
 	GetCharacterMovement()->BrakingDecelerationWalking = 2000.f;
 	GetCharacterMovement()->GravityScale = 1.6f;
-	this->MaxWalkSpeed = 150.0f;
+	this->MaxWalkSpeed = 120.0f;
 	GetCharacterMovement()->MaxWalkSpeed = this->MaxWalkSpeed;
 	GetCharacterMovement()->MaxStepHeight = 10.0f;
 
@@ -250,6 +250,7 @@ void APPCharacterPlayer::RevertMaxWalkSpeed()
 	GetCharacterMovement()->MaxWalkSpeed = this->MaxWalkSpeed;
 }
 
+
 UNiagaraComponent* APPCharacterPlayer::GetPlayerCharacterNiagaraComponent() const
 {
 	return PlayerCharacterNiagaraComponent;;
@@ -262,6 +263,12 @@ void APPCharacterPlayer::OpenMenu()
 	{
 		PlayerController->OpenMenu();
 	}
+}
+
+UPPElectricDischargeComponent* APPCharacterPlayer::GetElectricDischargeComponent()
+{
+	return ElectricDischargeComponent;
+
 }
 
 

@@ -3,6 +3,8 @@
 
 #include "PPPlayerController.h"
 #include "UI/Menu/PPPauseMenyHUD.h"
+#include "Blueprint/UserWidget.h"
+#include "UI/PPInGameUIMain.h"
 
 APPPlayerController::APPPlayerController()
 {
@@ -10,6 +12,12 @@ APPPlayerController::APPPlayerController()
 	if (PauseMenuRef.Class)
 	{
 		PauseUIClass = PauseMenuRef.Class;
+	}
+
+	static ConstructorHelpers::FClassFinder<UPPInGameUIMain> InGameUIClassRef(TEXT("/Game/UI/WBP_InGameMain.WBP_InGameMain_C"));
+	if (InGameUIClassRef.Class)
+	{
+		InGameUIMainClass = InGameUIClassRef.Class;
 	}
 }
 
@@ -48,5 +56,21 @@ void APPPlayerController::BeginPlay()
 	{
 		PauseMenu->AddToViewport(1);
 		CloseMenu();
+	}
+	//SetInputMode(FInputModeGameAndUI());
+
+	if (IsLocalController())
+	{
+		UE_LOG(LogTemp, Log, TEXT("LocalController"));
+		if (InGameUIMainClass)
+		{
+			UE_LOG(LogTemp, Log, TEXT("InGameUIClass"));
+			InGameUIMain = CreateWidget<UPPInGameUIMain>(this, InGameUIMainClass);
+			if (InGameUIMain)
+			{
+				InGameUIMain->AddToViewport();	// ȭ�鿡 ǥ��
+			}
+		}
+
 	}
 }

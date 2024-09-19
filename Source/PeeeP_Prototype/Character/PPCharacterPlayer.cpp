@@ -79,6 +79,7 @@ APPCharacterPlayer::APPCharacterPlayer()
 	GetCharacterMovement()->GravityScale = 1.6f;
 	this->MaxWalkSpeed = 120.0f;
 	GetCharacterMovement()->MaxWalkSpeed = this->MaxWalkSpeed;
+	GetCharacterMovement()->SetWalkableFloorAngle(50.f);
 }
 
 void APPCharacterPlayer::BeginPlay()

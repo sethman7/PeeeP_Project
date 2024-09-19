@@ -22,6 +22,8 @@ protected:
 	TObjectPtr <class UImage> KeyManualImage_Jump;
 	UPROPERTY()
 	TObjectPtr <class UImage> KeyManualImage_Charge;
+	UPROPERTY()
+	TObjectPtr <class UImage> KeyManualImage_Discharge;
 
 public:
 	void SetAllKeyManualImageHidden();

@@ -77,7 +77,7 @@ APPCharacterPlayer::APPCharacterPlayer()
 
 	GetCharacterMovement()->BrakingDecelerationWalking = 2000.f;
 	GetCharacterMovement()->GravityScale = 1.6f;
-	this->MaxWalkSpeed = 200.0f;
+	this->MaxWalkSpeed = 120.0f;
 	GetCharacterMovement()->MaxWalkSpeed = this->MaxWalkSpeed;
 }
 
@@ -234,6 +234,11 @@ void APPCharacterPlayer::ReduationMaxWalkSpeedRatio(float InReductionRatio)
 void APPCharacterPlayer::RevertMaxWalkSpeed()
 {
 	GetCharacterMovement()->MaxWalkSpeed = this->MaxWalkSpeed;
+}
+
+UPPElectricDischargeComponent* APPCharacterPlayer::GetElectricDischargeComponent()
+{
+	return ElectricDischargeComponent;
 }
 
 

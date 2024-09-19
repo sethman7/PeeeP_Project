@@ -4,10 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "Blueprint/UserWidget.h"
 #include "PPElectricDischargeComponent.generated.h"
-
-
-DECLARE_DELEGATE(FDischargeEndDelegate);
 
 UENUM()
 enum class EDischargeMode : uint8
@@ -46,6 +44,13 @@ protected:
 	bool bRechargingEnable;
 	bool bChargeStart;
 
+	// 컴포넌트(플레이어) 배터리 양
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	float CurrentElectricCapacity;	// 컴포넌트(플레이어)가 현재 보유중인 전기량
+	float MaxElectricCapacity;		// 컴포넌트(플레이어)가 최대 보유할 수 있는 전기량
+
+	bool bElectricIsEmpty;			// 보유 중인 전기량이 없을 경우
+
 public:	
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
@@ -60,4 +65,9 @@ public:
 	void ChangeDischargeMode();
 	void SetbRecharging();
 
+	// 컴포넌트(플레이어) 전기 충전 함수
+	void ChargeElectric(float amount);
+
+private:
+	void BroadCastToUI();
 };

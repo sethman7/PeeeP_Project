@@ -8,6 +8,7 @@
 #include "GameFramework/Character.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Character/PPCharacterPlayer.h"
+#include "Components/WidgetComponent.h"
 
 // Sets default values for this component's properties
 UPPElectricDischargeComponent::UPPElectricDischargeComponent()
@@ -24,6 +25,13 @@ UPPElectricDischargeComponent::UPPElectricDischargeComponent()
 	bRechargingEnable = true;
 
 	bChargeStart = false;
+
+	// 컴포넌트(플레이어)의 전기량 초기화
+	CurrentElectricCapacity = 0.0f;
+	MaxElectricCapacity = 3.0f;
+	bElectricIsEmpty = true;
+
+
 }
 
 
@@ -49,6 +57,21 @@ void UPPElectricDischargeComponent::Charging()
 		return;
 	}
 
+	// 현재 보유한 전기량이 0.0 이하일 경우
+	// 차징 시 속도 감소 전에 체크하여 보유 전기량이 0일 경우 속도 감소가 안되도록 먼저 검사
+	if (CurrentElectricCapacity <= 0.0f)
+	{
+		UE_LOG(LogTemp, Log, TEXT("Not Enough Electric."));
+
+		// 1.0초 후 자동으로 Discharge
+		if (!AutoDischargeTimeHandler.IsValid())
+		{
+			GetWorld()->GetTimerManager().SetTimer(AutoDischargeTimeHandler, this, &UPPElectricDischargeComponent::Discharge, 1.0f, false);
+			UE_LOG(LogTemp, Warning, TEXT("Timer"));
+		}
+		return;
+	}
+
 	if (!bChargeStart)
 	{
 		APPCharacterPlayer* OwnerCharacter = Cast<APPCharacterPlayer>(GetOwner());
@@ -60,8 +83,10 @@ void UPPElectricDischargeComponent::Charging()
 		bChargeStart = true;
 	}
 
+	/*
 	if (CurrentChargingTime >= MaxChargingTime)
 	{
+		// 1.0초 후 자동으로 DisCharge
 		if (!AutoDischargeTimeHandler.IsValid())
 		{
 			GetWorld()->GetTimerManager().SetTimer(AutoDischargeTimeHandler, this, &UPPElectricDischargeComponent::Discharge, 1.0f, false);
@@ -69,18 +94,32 @@ void UPPElectricDischargeComponent::Charging()
 		}
 		return;
 	}
+	*/
 
 	CurrentChargingTime += GetWorld()->GetDeltaSeconds();
+	// 차징 중일 경우 계속해서 현재 전기 보유량을 빼줌
+	CurrentElectricCapacity -= GetWorld()->GetDeltaSeconds();
 
 	CurrentChargingTime = FMath::Clamp(CurrentChargingTime, 0, MaxChargingTime);
+	CurrentElectricCapacity = FMath::Clamp(CurrentElectricCapacity, 0, MaxElectricCapacity);
+
+	// UI에 브로드캐스트
+	BroadCastToUI();
 
 	UE_LOG(LogTemp, Log, TEXT("Charging Time: %f"), CurrentChargingTime);
+	UE_LOG(LogTemp, Log, TEXT("Electric Capacity: %f / %f"), CurrentElectricCapacity, MaxElectricCapacity);
 }
 
 void UPPElectricDischargeComponent::Discharge()
 {
 	if (!bRechargingEnable)
 	{
+		return;
+	}
+
+	if (bElectricIsEmpty)
+	{
+		UE_LOG(LogTemp, Log, TEXT("Not Enough Electric"));
 		return;
 	}
 
@@ -101,7 +140,7 @@ void UPPElectricDischargeComponent::Discharge()
 		FVector Start = Owner->GetActorLocation() + Owner->GetActorForwardVector()* SphereRadius;
 		FVector End = Start + Owner->GetActorForwardVector() * (DefaultEndRange + CurrentChargingTime * 50.0f);
 
-		bool bIsHit = GetWorld()->SweepSingleByChannel(OutHitResult, Start, End, FQuat::Identity, ECC_GameTraceChannel5 /*임시로 그랩 넣어둠*/,
+		bool bIsHit = GetWorld()->SweepSingleByChannel(OutHitResult, Start, End, FQuat::Identity, ECC_GameTraceChannel5,
 
 			FCollisionShape::MakeSphere(SphereRadius), CollisionParam);
 
@@ -125,8 +164,8 @@ void UPPElectricDischargeComponent::Discharge()
 		float DefaultSphereRadius = 300.0f;
 		float SphereRadius = DefaultSphereRadius + CurrentChargingTime * 50.0f;
 
-		bool bIsHit = GetWorld()->OverlapMultiByChannel(OutOverlapResults, Owner->GetActorLocation(), FQuat::Identity, ECC_GameTraceChannel5 /*임시로 그랩 넣어둠*/,
-			FCollisionShape::MakeSphere(CurrentChargingTime), CollisionParam);
+		bool bIsHit = GetWorld()->OverlapMultiByChannel(OutOverlapResults, Owner->GetActorLocation(), FQuat::Identity, ECC_GameTraceChannel5,
+			FCollisionShape::MakeSphere(SphereRadius), CollisionParam);
 
 		if (bIsHit)
 		{
@@ -149,6 +188,13 @@ void UPPElectricDischargeComponent::Discharge()
 	{
 		OwnerCharacter->RevertMaxWalkSpeed();
 	}
+	
+	// 보유한 전기량이 0 이하일 경우
+	if (CurrentElectricCapacity <= 0.0f)
+	{
+		bElectricIsEmpty = true;
+	}
+	
 
 	CurrentChargingTime = 0.0f;
 	bRechargingEnable = false;
@@ -180,5 +226,42 @@ void UPPElectricDischargeComponent::ChangeDischargeMode()
 void UPPElectricDischargeComponent::SetbRecharging()
 {
 	bRechargingEnable = true;
+}
+
+/// <summary>
+/// ElectricDischargeComponent의 CurrentElectricCapacity를 증가시켜주는 함수
+/// </summary>
+/// <param name="amount">CurrentElectricCapacity의 증가량</param>
+void UPPElectricDischargeComponent::ChargeElectric(float amount)
+{
+	if (bElectricIsEmpty)
+	{
+		bElectricIsEmpty = false;
+	}
+
+	if (CurrentElectricCapacity < MaxElectricCapacity)
+	{
+		UE_LOG(LogTemp, Log, TEXT("Charing +%f"), amount);
+		CurrentElectricCapacity += amount;
+		CurrentElectricCapacity = FMath::Clamp(CurrentElectricCapacity, 0, MaxElectricCapacity);
+		// UI에 브로드캐스트
+		BroadCastToUI();
+	}
+}
+
+void UPPElectricDischargeComponent::BroadCastToUI()
+{
+	// 현재 전기 용량을 비율로 만들어 UI에 적용될 수 있게 브로드 캐스트
+	float CurrentElectircCapacityRate = FMath::Clamp((CurrentElectricCapacity / MaxElectricCapacity), 0, 1);
+	IPPElectricHUDInterface* ElectircHUDInterface = Cast<IPPElectricHUDInterface>(GetOwner());
+	if (ElectircHUDInterface)
+	{
+		UE_LOG(LogTemp, Log, TEXT("Succeessed Cast to IPPElectricHUDInterface."));
+		if (ElectircHUDInterface->ElectircCapacityDelegate.IsBound())
+		{
+			UE_LOG(LogTemp, Log, TEXT("Succeessed to Bound ElectircCapacityDelegate."));
+			ElectircHUDInterface->ElectircCapacityDelegate.Broadcast(CurrentElectircCapacityRate);
+		}
+	}
 }
 

@@ -14,6 +14,8 @@ class PEEEP_PROTOTYPE_API UPPPauseMenyHUD : public UUserWidget
 {
 	GENERATED_BODY()
 	
+public:
+	UPPPauseMenyHUD(const FObjectInitializer& ObjectInitializer);
 	
 protected:
 
@@ -28,6 +30,11 @@ protected:
 	UPROPERTY(VisibleAnywhere, Category = Button)
 	TObjectPtr<class UPPMenuButtonWidget> ExitButton;
 
+	UPROPERTY(VisibleAnywhere, Category = Button)
+	TObjectPtr<class APPLobbyActor> LobbyActor;
+
+	TSubclassOf<class APPLobbyActor> LobbyActorClass;
+
 protected:
 
 	virtual FReply NativeOnKeyDown(const FGeometry& InGeometry, const FKeyEvent& InKeyEvent) override;
@@ -40,4 +47,13 @@ protected:
 
 	UFUNCTION()
 	void ExitButtonClick();
+
+	UFUNCTION()
+	void ContinueButtonHovered();
+
+	UFUNCTION()
+	void SettingButtonHovered();
+
+	UFUNCTION()
+	void ExitButtonHovered();
 };

@@ -33,6 +33,11 @@ protected:
 	UPROPERTY(VisibleAnywhere, Category = Button)
 	TObjectPtr<class UPPMenuButtonWidget> ExitButton;
 
+	UPROPERTY(VisibleAnywhere, Category = Button)
+	TObjectPtr<class APPLobbyActor> LobbyActor;
+
+	TSubclassOf<class APPLobbyActor> LobbyActorClass;
+
 protected:
 
 	UFUNCTION()
@@ -46,4 +51,16 @@ protected:
 
 	UFUNCTION()
 	void ExitButtonClick();
+
+	UFUNCTION()
+	void StartButtonHover();
+
+	UFUNCTION()
+	void LoadButtonHover();
+
+	UFUNCTION()
+	void SettingButtonHover();
+
+	UFUNCTION()
+	void ExitButtonHover();
 };

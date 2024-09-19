@@ -4,6 +4,8 @@
 #include "UI/Menu/PPLobbyActor.h"
 #include "Components/SceneCaptureComponent2D.h"
 #include "Engine/TextureRenderTarget2D.h"
+#include "Materials/MaterialInstanceDynamic.h"
+
 
 // Sets default values
 APPLobbyActor::APPLobbyActor()
@@ -34,15 +36,14 @@ APPLobbyActor::APPLobbyActor()
 		SceneCapture->TextureTarget = RenderTarget;
 	}
 
-
+	SceneCapture->ShowOnlyActorComponents(this);
 }
 
 // Called when the game starts or when spawned
 void APPLobbyActor::BeginPlay()
 {
 	Super::BeginPlay();
-
-	SceneCapture->ShowOnlyActors.Add(this);
+	
 }
 
 // Called every frame
@@ -57,3 +58,11 @@ UMaterialInstance* APPLobbyActor::GetMaterial()
 	return Material.Get();
 }
 
+void APPLobbyActor::ChangeEmessive(float Type)
+{
+	UMaterialInstanceDynamic* NewMaterial = UMaterialInstanceDynamic::Create(Material, this);
+
+	NewMaterial->SetScalarParameterValue(FName("Emessive_Array_Count"), Type);
+
+	Mesh->SetMaterial(0, NewMaterial);
+}

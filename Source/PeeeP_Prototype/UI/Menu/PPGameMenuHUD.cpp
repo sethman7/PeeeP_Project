@@ -6,10 +6,11 @@
 #include "Components/Button.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "Kismet/GameplayStatics.h"
+#include "PPLobbyActor.h"
 
 UPPGameMenuHUD::UPPGameMenuHUD(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
-
+	LobbyActorClass = APPLobbyActor::StaticClass();
 }
 
 void UPPGameMenuHUD::NativeConstruct()
@@ -21,26 +22,32 @@ void UPPGameMenuHUD::NativeConstruct()
 	SettingButton = Cast<UPPMenuButtonWidget>(GetWidgetFromName(TEXT("WBP_SettingButton")));
 	ExitButton = Cast<UPPMenuButtonWidget>(GetWidgetFromName(TEXT("WBP_ExitButton")));
 
+	LobbyActor = Cast<APPLobbyActor>(UGameplayStatics::GetActorOfClass(GetWorld(), LobbyActorClass));
+
 	if (StartButton && StartButton->Button)
 	{
 		UE_LOG(LogTemp, Log, TEXT("Start"));
 		StartButton->Button->OnClicked.AddDynamic(this, &UPPGameMenuHUD::StartButtonClick);
+		StartButton->Button->OnHovered.AddDynamic(this, &UPPGameMenuHUD::StartButtonHover);
 	}
 
 	if (LoadButton && LoadButton->Button)
 	{
 		UE_LOG(LogTemp, Log, TEXT("Load"));
 		LoadButton->Button->OnClicked.AddDynamic(this, &UPPGameMenuHUD::LoadButtonClick);
+		LoadButton->Button->OnHovered.AddDynamic(this, &UPPGameMenuHUD::LoadButtonHover);
 	}
 
 	if (SettingButton && SettingButton->Button)
 	{
 		SettingButton->Button->OnClicked.AddDynamic(this, &UPPGameMenuHUD::SettingButtonClick);
+		SettingButton->Button->OnHovered.AddDynamic(this, &UPPGameMenuHUD::SettingButtonHover);
 	}
 
 	if (ExitButton && ExitButton->Button)
 	{
 		ExitButton->Button->OnClicked.AddDynamic(this, &UPPGameMenuHUD::ExitButtonClick);
+		ExitButton->Button->OnHovered.AddDynamic(this, &UPPGameMenuHUD::ExitButtonHover);
 	}
 }
 
@@ -63,4 +70,28 @@ void UPPGameMenuHUD::SettingButtonClick()
 void UPPGameMenuHUD::ExitButtonClick()
 {
 	UKismetSystemLibrary::QuitGame(GetWorld(), GetOwningPlayer(), EQuitPreference::Quit, true);
+}
+
+void UPPGameMenuHUD::StartButtonHover()
+{
+	UE_LOG(LogTemp, Log, TEXT("Hovered"));
+	LobbyActor->ChangeEmessive(2);
+}
+
+void UPPGameMenuHUD::LoadButtonHover()
+{
+	UE_LOG(LogTemp, Log, TEXT("Hovered"));
+	LobbyActor->ChangeEmessive(1);
+}
+
+void UPPGameMenuHUD::SettingButtonHover()
+{
+	UE_LOG(LogTemp, Log, TEXT("Hovered"));
+	LobbyActor->ChangeEmessive(0);
+}
+
+void UPPGameMenuHUD::ExitButtonHover()
+{
+	UE_LOG(LogTemp, Log, TEXT("Hovered"));
+	LobbyActor->ChangeEmessive(3);
 }

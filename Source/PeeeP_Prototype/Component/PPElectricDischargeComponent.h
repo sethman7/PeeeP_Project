@@ -47,10 +47,13 @@ protected:
 	int8 MaxChargeLevel;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Electric)
-	TObjectPtr<class UNiagaraSystem> DischaegeEffect;
+	TObjectPtr<class UNiagaraSystem> ChargingEffect;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Electric)
-	TObjectPtr<class UNiagaraComponent> DischaegeEffectComponent;
+	TObjectPtr<class UNiagaraComponent> DischargeEffectComponent;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Electric)
+	TMap<FName, TObjectPtr<class UNiagaraSystem>> DischargeEffects;
 
 public:	
 	// Called every frame
@@ -66,4 +69,5 @@ public:
 	void ChangeDischargeMode();
 	void SetbRecharging();
 
+	void PlayDischargeEffect(FName EffectType, int8 ChargingLevel, FVector Location, FRotator Rotation);
 };

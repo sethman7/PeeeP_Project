@@ -36,4 +36,6 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	class UMaterialInstance* GetMaterial();
+
+	void ChangeEmessive(float Type);
 };

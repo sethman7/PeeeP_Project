@@ -9,7 +9,13 @@
 #include "Kismet/KismetSystemLibrary.h"
 #include "Kismet/GameplayStatics.h"
 #include "InputCoreTypes.h"
+#include "PPLobbyActor.h"
 
+
+UPPPauseMenyHUD::UPPPauseMenyHUD(const FObjectInitializer& ObjectInitializer): Super(ObjectInitializer)
+{
+	LobbyActorClass = APPLobbyActor::StaticClass();
+}
 
 void UPPPauseMenyHUD::NativeConstruct()
 {
@@ -19,20 +25,25 @@ void UPPPauseMenyHUD::NativeConstruct()
 	SettingButton = Cast<UPPMenuButtonWidget>(GetWidgetFromName(TEXT("WBP_PauseSettingButton")));
 	ExitButton = Cast<UPPMenuButtonWidget>(GetWidgetFromName(TEXT("WBP_TitleButton")));
 
+	LobbyActor = Cast<APPLobbyActor>(UGameplayStatics::GetActorOfClass(GetWorld(), LobbyActorClass));
+
 	if (ContinueButton && ContinueButton->Button)
 	{
 		UE_LOG(LogTemp, Log, TEXT("Start"));
 		ContinueButton->Button->OnClicked.AddDynamic(this, &UPPPauseMenyHUD::ContinueButtonClick);
+		ContinueButton->Button->OnHovered.AddDynamic(this, &UPPPauseMenyHUD::ContinueButtonHovered);
 	}
 
 	if (SettingButton && SettingButton->Button)
 	{
 		SettingButton->Button->OnClicked.AddDynamic(this, &UPPPauseMenyHUD::SettingButtonClick);
+		SettingButton->Button->OnHovered.AddDynamic(this, &UPPPauseMenyHUD::SettingButtonHovered);
 	}
 
 	if (ExitButton && ExitButton->Button)
 	{
 		ExitButton->Button->OnClicked.AddDynamic(this, &UPPPauseMenyHUD::ExitButtonClick);
+		ExitButton->Button->OnHovered.AddDynamic(this, &UPPPauseMenyHUD::ExitButtonHovered);
 	}
 }
 
@@ -72,4 +83,22 @@ void UPPPauseMenyHUD::SettingButtonClick()
 void UPPPauseMenyHUD::ExitButtonClick()
 {
 	UGameplayStatics::OpenLevel(GetWorld(), TEXT("MainLobby"));
+}
+
+void UPPPauseMenyHUD::ContinueButtonHovered()
+{
+	UE_LOG(LogTemp, Log, TEXT("Hovered"));
+	LobbyActor->ChangeEmessive(2);
+}
+
+void UPPPauseMenyHUD::SettingButtonHovered()
+{
+	UE_LOG(LogTemp, Log, TEXT("Hovered"));
+	LobbyActor->ChangeEmessive(0);
+}
+
+void UPPPauseMenyHUD::ExitButtonHovered()
+{
+	UE_LOG(LogTemp, Log, TEXT("Hovered"));
+	LobbyActor->ChangeEmessive(3);
 }

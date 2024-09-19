@@ -29,7 +29,7 @@ UPPElectricDischargeComponent::UPPElectricDischargeComponent()
 
 	bChargeStart = false;
 
-	DischaegeEffectComponent = CreateDefaultSubobject<UNiagaraComponent>(TEXT("NiagaraComponent"));
+	DischargeEffectComponent = CreateDefaultSubobject<UNiagaraComponent>(TEXT("NiagaraComponent"));
 }
 
 
@@ -38,6 +38,11 @@ void UPPElectricDischargeComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
+	APPCharacterPlayer* OwnerCharacter = Cast<APPCharacterPlayer>(GetOwner());
+	if (OwnerCharacter)
+	{
+		DischargeEffectComponent = OwnerCharacter->GetPlayerCharacterNiagaraComponent();
+	}
 }
 
 
@@ -82,6 +87,31 @@ void UPPElectricDischargeComponent::Charging()
 
 	int32 IntCurrentChargingTime = FMath::TruncToInt(CurrentChargingTime);
 
+	if (ChargingEffect != nullptr)
+	{
+		UE_LOG(LogTemp, Log, TEXT("ChargingEffect Is Valid"));
+
+		if (DischargeEffectComponent == nullptr)
+		{
+			return;
+		}
+
+		if (DischargeEffectComponent->GetAsset() != ChargingEffect)
+		{
+			DischargeEffectComponent->Deactivate();
+		}
+
+		if (!DischargeEffectComponent->IsActive())
+		{
+			if (DischargeEffectComponent->GetAsset() != ChargingEffect)
+			{
+				DischargeEffectComponent->SetAsset(ChargingEffect);
+				DischargeEffectComponent->SetRelativeLocationAndRotation(FVector::ZeroVector, FRotator::ZeroRotator);
+			}
+			DischargeEffectComponent->Activate(true);
+		}
+	}
+
 	if (CurrentChargeLevel < IntCurrentChargingTime)
 	{
 		CurrentChargeLevel = IntCurrentChargingTime;
@@ -92,8 +122,12 @@ void UPPElectricDischargeComponent::Charging()
 
 void UPPElectricDischargeComponent::Discharge()
 {
+	APPCharacterPlayer* OwnerCharacter = Cast<APPCharacterPlayer>(GetOwner());
 	if (!bRechargingEnable || CurrentChargeLevel == 0)
 	{
+		CurrentChargingTime = 0.0f;
+		DischargeEffectComponent->Deactivate();
+		OwnerCharacter->RevertMaxWalkSpeed();
 		return;
 	}
 
@@ -107,16 +141,18 @@ void UPPElectricDischargeComponent::Discharge()
 	{
 		FHitResult OutHitResult;
 
-		float DefaultEndRange = 300.0f;
-		float FinalEndRange = DefaultEndRange + CurrentChargingTime * 50.0f;
+		float DefaultEndRange = 25.0f;
+		float FinalEndRange = DefaultEndRange + CurrentChargingTime * 55.0f;
 
-		float CapsuleRadius = 50.0f;
+		float CapsuleRadius = 10.0f;
 
-		FVector Start = Owner->GetActorLocation() + Owner->GetActorForwardVector()* CapsuleRadius;
+		FVector Start = Owner->GetActorLocation() + Owner->GetActorForwardVector() * CapsuleRadius;
 		FVector End = Start + Owner->GetActorForwardVector() * FinalEndRange;
 
 		bool bIsHit = GetWorld()->SweepSingleByChannel(OutHitResult, Start, End, FQuat::Identity, ECC_GameTraceChannel5 /*ÀÓ½Ã·Î ±×·¦ ³Ö¾îµÒ*/,
 			FCollisionShape::MakeCapsule(CapsuleRadius, FinalEndRange * 0.5f), CollisionParam);
+
+		PlayDischargeEffect(TEXT("Capsule"), CurrentChargeLevel, FVector::ForwardVector * CapsuleRadius, FRotator(0.0f,-90.0f,0.0f));
 
 		if (bIsHit)
 		{
@@ -144,6 +180,8 @@ void UPPElectricDischargeComponent::Discharge()
 		bool bIsHit = GetWorld()->OverlapMultiByChannel(OutOverlapResults, Owner->GetActorLocation(), FQuat::Identity, ECC_GameTraceChannel5 /*ÀÓ½Ã·Î ±×·¦ ³Ö¾îµÒ*/,
 			FCollisionShape::MakeSphere(SphereRadius), CollisionParam);
 
+		PlayDischargeEffect(TEXT("Sphere"), CurrentChargeLevel, FVector::ZeroVector, FRotator::ZeroRotator);
+
 		if (bIsHit)
 		{
 			for (const FOverlapResult OverlapResult : OutOverlapResults)
@@ -161,7 +199,7 @@ void UPPElectricDischargeComponent::Discharge()
 		UE_LOG(LogTemp, Log, TEXT("Discharge Sphere %f"), CurrentChargingTime);
 	}
 
-	APPCharacterPlayer* OwnerCharacter = Cast<APPCharacterPlayer>(GetOwner());
+
 	if (OwnerCharacter)
 	{
 		OwnerCharacter->RevertMaxWalkSpeed();
@@ -171,10 +209,8 @@ void UPPElectricDischargeComponent::Discharge()
 	CurrentChargeLevel = 0;
 	bRechargingEnable = false;
 
-	if (!AutoDischargeTimeHandler.IsValid())
-	{
-		GetWorld()->GetTimerManager().ClearTimer(AutoDischargeTimeHandler);
-	}
+	GetWorld()->GetTimerManager().ClearTimer(AutoDischargeTimeHandler);
+
 	GetWorld()->GetTimerManager().SetTimer(RechargingDelayTimeHandler, this, &UPPElectricDischargeComponent::SetbRecharging, RechargingDelay, false);
 
 }
@@ -187,7 +223,7 @@ void UPPElectricDischargeComponent::ChangeDischargeMode()
 
 		UE_LOG(LogTemp, Log, TEXT("Change Discharge Mode from Capsule to Sphere"));
 	}
-	else if(DischargeMode == EDischargeMode::Sphere)
+	else if (DischargeMode == EDischargeMode::Sphere)
 	{
 		DischargeMode = EDischargeMode::Capsule;
 
@@ -198,5 +234,21 @@ void UPPElectricDischargeComponent::ChangeDischargeMode()
 void UPPElectricDischargeComponent::SetbRecharging()
 {
 	bRechargingEnable = true;
+}
+
+void UPPElectricDischargeComponent::PlayDischargeEffect(FName EffectType, int8 ChargingLevel, FVector Location, FRotator Rotation)
+{
+	FString EffectKey = EffectType.ToString() + FString::FromInt(ChargingLevel);
+
+	UE_LOG(LogTemp, Log, TEXT("%s"), *EffectKey);
+
+	UNiagaraSystem* bHasEffect = DischargeEffects.Find(*EffectKey)->Get();
+	if (bHasEffect)
+	{
+		DischargeEffectComponent->Deactivate();
+		DischargeEffectComponent->SetRelativeLocationAndRotation(Location, Rotation);
+		DischargeEffectComponent->SetAsset(bHasEffect);
+		DischargeEffectComponent->Activate(true);
+	}
 }
 

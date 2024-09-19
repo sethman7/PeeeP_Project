@@ -90,12 +90,17 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Electric)
 	TObjectPtr<class UPPElectricDischargeComponent> ElectricDischargeComponent;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Electric)
+	TObjectPtr<class UNiagaraComponent> PlayerCharacterNiagaraComponent;
+
 	float ChargeTime;
 	float MaxWalkSpeed;
 
 public:
 	void ReduationMaxWalkSpeedRatio(float InReductionRatio);
 	void RevertMaxWalkSpeed();
+
+	class UNiagaraComponent* GetPlayerCharacterNiagaraComponent() const;
 
 protected:
 

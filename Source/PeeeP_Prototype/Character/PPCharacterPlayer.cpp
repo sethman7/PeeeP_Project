@@ -17,6 +17,7 @@
 #include "Component/PPElectricDischargeComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameMode/PPPlayerController.h"
+#include "NiagaraComponent.h"
 
 
 APPCharacterPlayer::APPCharacterPlayer()
@@ -79,6 +80,7 @@ APPCharacterPlayer::APPCharacterPlayer()
 	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));	// FollowCamera 컴포넌트를 가져옴
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
 	FollowCamera->bUsePawnControlRotation = false;
+	FollowCamera->FieldOfView = 80.0f;
 
 	ElectricDischargeComponent = CreateDefaultSubobject<UPPElectricDischargeComponent>(TEXT("ElectricDischargeComponent"));
 
@@ -88,6 +90,8 @@ APPCharacterPlayer::APPCharacterPlayer()
 	GetCharacterMovement()->MaxWalkSpeed = this->MaxWalkSpeed;
 	GetCharacterMovement()->MaxStepHeight = 10.0f;
 
+	PlayerCharacterNiagaraComponent = CreateDefaultSubobject<UNiagaraComponent>(TEXT("EffectComponent"));
+	PlayerCharacterNiagaraComponent->SetupAttachment(RootComponent);
 }
 
 void APPCharacterPlayer::BeginPlay()
@@ -244,6 +248,11 @@ void APPCharacterPlayer::ReduationMaxWalkSpeedRatio(float InReductionRatio)
 void APPCharacterPlayer::RevertMaxWalkSpeed()
 {
 	GetCharacterMovement()->MaxWalkSpeed = this->MaxWalkSpeed;
+}
+
+UNiagaraComponent* APPCharacterPlayer::GetPlayerCharacterNiagaraComponent() const
+{
+	return PlayerCharacterNiagaraComponent;;
 }
 
 void APPCharacterPlayer::OpenMenu()

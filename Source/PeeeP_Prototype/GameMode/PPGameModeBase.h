@@ -16,4 +16,16 @@ class PEEEP_PROTOTYPE_API APPGameModeBase : public AGameModeBase
 	
 public:
 	APPGameModeBase();
+
+	UFUNCTION(BlueprintCallable, Category = "UMG_Game")
+	void ChangeMenuWidget(TSubclassOf<UUserWidget> NewWidgetClass);
+
+protected:
+	virtual void BeginPlay() override;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "UMG_Game")
+	TSubclassOf<UUserWidget> StartingWidgetClass;
+
+	UPROPERTY()
+	UUserWidget* CurrentWidget;
 };

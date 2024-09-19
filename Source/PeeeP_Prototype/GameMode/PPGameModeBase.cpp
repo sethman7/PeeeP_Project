@@ -2,6 +2,7 @@
 
 #include "PPGameModeBase.h"
 #include "PPPlayerController.h"
+#include "Blueprint/UserWidget.h"
 
 APPGameModeBase::APPGameModeBase()
 {
@@ -16,4 +17,28 @@ APPGameModeBase::APPGameModeBase()
 	{
 		PlayerControllerClass = PlayerControllerClassRef.Class;
 	}
+}
+
+void APPGameModeBase::ChangeMenuWidget(TSubclassOf<UUserWidget> NewWidgetClass)
+{
+	if (CurrentWidget != nullptr)
+	{
+		CurrentWidget->RemoveFromParent();
+		CurrentWidget = nullptr;
+	}
+
+	if (NewWidgetClass != nullptr)
+	{
+		CurrentWidget = CreateWidget(GetWorld(), NewWidgetClass);
+		if (CurrentWidget != nullptr)
+		{
+			CurrentWidget->AddToViewport();
+		}
+	}
+}
+
+void APPGameModeBase::BeginPlay()
+{
+	Super::BeginPlay();
+	ChangeMenuWidget(StartingWidgetClass);
 }

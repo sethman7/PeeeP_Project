@@ -6,13 +6,14 @@
 #include "PPCharacterBase.h"
 #include "InputActionValue.h"
 #include "PhysicsEngine/PhysicsHandleComponent.h"
+#include "Interface/UI/PPElectricHUDInterface.h"
 #include "PPCharacterPlayer.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class PEEEP_PROTOTYPE_API APPCharacterPlayer : public APPCharacterBase
+class PEEEP_PROTOTYPE_API APPCharacterPlayer : public APPCharacterBase, public IPPElectricHUDInterface
 {
 	GENERATED_BODY()	
 	
@@ -28,14 +29,14 @@ protected:
 // Character Control Section
 protected:
 	// Character Movement Component
-	// ¿ÜºÎ¿¡ ÀÇÇØ¼­ ÇÃ·¹ÀÌ¾î°¡ ¿òÁ÷ÀÏ ÀÏÀÌ »ý±æ ¶§ ¿øÀÎÀ¸·ÎºÎÅÍ ÂüÁ¶ÇÏ¿© »ç¿ë
+	// ï¿½ÜºÎ¿ï¿½ ï¿½ï¿½ï¿½Ø¼ï¿½ ï¿½Ã·ï¿½ï¿½Ì¾î°¡ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Îºï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï¿ï¿½ ï¿½ï¿½ï¿½
 	UPROPERTY(EditAnywhere)
 	TObjectPtr<class UCharacterMovementComponent> CharacterMovementComponent;
 
 	void SetCharacterControl(ECharacterControlType NewCharacterControlType);
 	virtual void SetCharacterControlData(const class UPPCharacterControlData* CharacterControlData) override;
 
-// ÀÔ·Â ¼ÂÆÃ
+// ï¿½Ô·ï¿½ ï¿½ï¿½ï¿½ï¿½
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class UInputMappingContext> DefaultMappingContext;
@@ -90,10 +91,28 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Electric)
 	TObjectPtr<class UPPElectricDischargeComponent> ElectricDischargeComponent;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Electric)
+	TObjectPtr<class UNiagaraComponent> PlayerCharacterNiagaraComponent;
+
 	float ChargeTime;
 	float MaxWalkSpeed;
 
 public:
 	void ReduationMaxWalkSpeedRatio(float InReductionRatio);
 	void RevertMaxWalkSpeed();
+
+
+	class UNiagaraComponent* GetPlayerCharacterNiagaraComponent() const;
+
+protected:
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, Meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class UInputAction> OpenMenuInteract;
+
+	void OpenMenu();
+
+public:
+	// ElectricDischargeComponent
+	UPPElectricDischargeComponent* GetElectricDischargeComponent();
+
 };

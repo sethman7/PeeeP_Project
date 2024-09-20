@@ -6,6 +6,7 @@
 #include "Blueprint/UserWidget.h"
 #include "UI/PPInGameUIMain.h"
 
+
 APPPlayerController::APPPlayerController()
 {
 	static ConstructorHelpers::FClassFinder<UPPPauseMenyHUD> PauseMenuRef(TEXT("/Game/UI/MenuHUD/WBP_PauseMenu.WBP_PauseMenu_C"));
@@ -23,7 +24,8 @@ APPPlayerController::APPPlayerController()
 
 void APPPlayerController::OpenMenu()
 {
-	SetPause(true);
+	//SetPause(true);
+	GetWorld()->GetWorldSettings()->SetTimeDilation(0.001f);
 
 	PauseUI->SetVisibility(ESlateVisibility::Visible);
 	
@@ -40,7 +42,8 @@ void APPPlayerController::CloseMenu()
 	SetInputMode(GameOnlyInputMode);
 	bShowMouseCursor = false;
 
-	SetPause(false);
+	GetWorld()->GetWorldSettings()->SetTimeDilation(1.0f);
+	//SetPause(false);
 }
 
 void APPPlayerController::BeginPlay()

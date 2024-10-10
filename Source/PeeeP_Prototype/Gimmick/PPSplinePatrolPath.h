@@ -21,13 +21,10 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "SplineController")
 	class USplineComponent* Spline;
 
-	UPROPERTY(EditAnyWhere, Category = "SplineController")
-	float TotalPathTime;
+	UPROPERTY(EditAnywhere, Category = "Spline")
+	uint8 bIsLoop;
 
-	UPROPERTY(EditAnyWhere, Category = "SplineController")
-	bool bSplineInLoop;
-
-	UPROPERTY(EditDefaultsOnly, Category = "SplineController")
+	UPROPERTY(EditAnywhere, Category = "Spline")
 	TSubclassOf<class AActor> ActorToMoveClass;
 
 
@@ -35,15 +32,18 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spline", Meta = (AllowPrivateAccess = "true"))
+	uint8 bCanMoveActor;
+
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
-
+	void MoveActor();
 
 private:
-	void MoveActor(float Distance);
+	void SetActorRotationAndLocation(float Distance);
 	float StartTime;
-	bool bCanMoveActor;
 	bool bIsMovingForward;
 	class AActor* ActorToMove;
 

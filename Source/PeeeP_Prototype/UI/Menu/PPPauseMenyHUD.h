@@ -21,14 +21,14 @@ protected:
 
 	virtual void NativeConstruct() override;
 
-	UPROPERTY(VisibleAnywhere, Category = Button)
-	TObjectPtr<class UPPMenuButtonWidget> ContinueButton;
+	UPROPERTY(VisibleAnywhere, Category = Button, meta = (BindWidget))
+	TObjectPtr<class UPPMenuButtonWidget> WBP_ResomeButton;
 
-	UPROPERTY(VisibleAnywhere, Category = Button)
-	TObjectPtr<class UPPMenuButtonWidget> SettingButton;
+	UPROPERTY(VisibleAnywhere, Category = Button, meta = (BindWidget))
+	TObjectPtr<class UPPMenuButtonWidget> WBP_PauseSettingButton;
 
-	UPROPERTY(VisibleAnywhere, Category = Button)
-	TObjectPtr<class UPPMenuButtonWidget> ExitButton;
+	UPROPERTY(VisibleAnywhere, Category = Button, meta = (BindWidget))
+	TObjectPtr<class UPPMenuButtonWidget> WBP_TitleButton;
 
 	UPROPERTY(VisibleAnywhere, Category = Button)
 	TObjectPtr<class APPLobbyActor> LobbyActor;

@@ -21,29 +21,29 @@ void UPPPauseMenyHUD::NativeConstruct()
 {
 	Super::NativeConstruct();
 
-	ContinueButton = Cast<UPPMenuButtonWidget>(GetWidgetFromName(TEXT("WBP_ResomeButton")));
+	/*ContinueButton = Cast<UPPMenuButtonWidget>(GetWidgetFromName(TEXT("WBP_ResomeButton")));
 	SettingButton = Cast<UPPMenuButtonWidget>(GetWidgetFromName(TEXT("WBP_PauseSettingButton")));
-	ExitButton = Cast<UPPMenuButtonWidget>(GetWidgetFromName(TEXT("WBP_TitleButton")));
+	ExitButton = Cast<UPPMenuButtonWidget>(GetWidgetFromName(TEXT("WBP_TitleButton")));*/
 
 	LobbyActor = Cast<APPLobbyActor>(UGameplayStatics::GetActorOfClass(GetWorld(), LobbyActorClass));
 
-	if (ContinueButton && ContinueButton->Button)
+	if (WBP_ResomeButton && WBP_ResomeButton->Button)
 	{
 		UE_LOG(LogTemp, Log, TEXT("Start"));
-		ContinueButton->Button->OnClicked.AddDynamic(this, &UPPPauseMenyHUD::ContinueButtonClick);
-		ContinueButton->Button->OnHovered.AddDynamic(this, &UPPPauseMenyHUD::ContinueButtonHovered);
+		WBP_ResomeButton->Button->OnClicked.AddDynamic(this, &UPPPauseMenyHUD::ContinueButtonClick);
+		WBP_ResomeButton->Button->OnHovered.AddDynamic(this, &UPPPauseMenyHUD::ContinueButtonHovered);
 	}
 
-	if (SettingButton && SettingButton->Button)
+	if (WBP_PauseSettingButton && WBP_PauseSettingButton->Button)
 	{
-		SettingButton->Button->OnClicked.AddDynamic(this, &UPPPauseMenyHUD::SettingButtonClick);
-		SettingButton->Button->OnHovered.AddDynamic(this, &UPPPauseMenyHUD::SettingButtonHovered);
+		WBP_PauseSettingButton->Button->OnClicked.AddDynamic(this, &UPPPauseMenyHUD::SettingButtonClick);
+		WBP_PauseSettingButton->Button->OnHovered.AddDynamic(this, &UPPPauseMenyHUD::SettingButtonHovered);
 	}
 
-	if (ExitButton && ExitButton->Button)
+	if (WBP_TitleButton && WBP_TitleButton->Button)
 	{
-		ExitButton->Button->OnClicked.AddDynamic(this, &UPPPauseMenyHUD::ExitButtonClick);
-		ExitButton->Button->OnHovered.AddDynamic(this, &UPPPauseMenyHUD::ExitButtonHovered);
+		WBP_TitleButton->Button->OnClicked.AddDynamic(this, &UPPPauseMenyHUD::ExitButtonClick);
+		WBP_TitleButton->Button->OnHovered.AddDynamic(this, &UPPPauseMenyHUD::ExitButtonHovered);
 	}
 }
 

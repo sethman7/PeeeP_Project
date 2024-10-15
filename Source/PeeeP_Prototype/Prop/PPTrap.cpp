@@ -23,7 +23,7 @@ void APPTrap::BeginPlay()
 void APPTrap::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	FRotator Rotator = FRotator(0.0f, DeltaTime * Rotation, 0.0f);
-	AddActorLocalRotation(Rotator);
+	//FRotator Rotator = FRotator(0.0f, DeltaTime * Rotation, 0.0f);
+	//AddActorLocalRotation(Rotator);
 }
 

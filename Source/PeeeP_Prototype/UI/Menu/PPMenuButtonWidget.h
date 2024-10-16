@@ -24,8 +24,10 @@ public:
 
 	class UButton* GetButton();
 
+	UPROPERTY(VisibleAnywhere, Category = Button, meta = (BindWidget))
 	TObjectPtr<class UButton> Button;
 
+	UPROPERTY(VisibleAnywhere, Category = Button, meta = (BindWidget))
 	TObjectPtr<class UImage> ButtonImage;
 
 protected:

@@ -17,7 +17,7 @@ class PEEEP_PROTOTYPE_API UPPPartsDataBase : public UPrimaryDataAsset
 	
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	TObjectPtr<class UStaticMesh> PartsMesh;
+	TObjectPtr<class USkeletalMesh> PartsMesh;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TObjectPtr<class UInputMappingContext> PartsMappingContext;

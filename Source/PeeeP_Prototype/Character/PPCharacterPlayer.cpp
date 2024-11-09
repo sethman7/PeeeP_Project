@@ -237,7 +237,7 @@ void APPCharacterPlayer::SwitchParts(UPPPartsDataBase* InPartsData)
 	}
 
 	UE_LOG(LogTemp, Log, TEXT("Creat New Parts"));
-	UActorComponent* PartsComponent = AddComponentByClass(InPartsData->PartsComponent, true, FTransform::Identity, false);
+	UActorComponent* PartsComponent = AddComponentByClass(InPartsData->PartsComponentClass, true, FTransform::Identity, false);
 	Parts = CastChecked<UPPPartsBase>(PartsComponent);
 }
 

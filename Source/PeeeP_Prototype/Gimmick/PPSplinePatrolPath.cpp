@@ -120,6 +120,7 @@ void APPSplinePatrolPath::Tick(float DeltaTime)
 				StartTime = GetWorld()->GetTimeSeconds();
 				bCanMoveActor = true;
 			}
+			//무한 반복 아닌 경우
 			else
 			{
 				bCanMoveActor = false;

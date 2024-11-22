@@ -100,7 +100,7 @@ void UPPGrabParts::GrabInteraction()
 		DrawDebugLine(GetWorld(), CameraPos, EndPos, DebugColor, false, 5.0f);
 	}
 }
-// 그랩 끝날 씨 작용
+// 그랩 끝날 때 작동
 void UPPGrabParts::GrabRelease()
 {
 	UE_LOG(LogTemp, Log, TEXT("Grab End"));

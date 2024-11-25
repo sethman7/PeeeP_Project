@@ -25,4 +25,6 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TSubclassOf<class UPPPartsBase> PartsComponent;
 
+public:
+	virtual FPrimaryAssetId GetPrimaryAssetId() const override;
 };

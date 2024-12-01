@@ -4,6 +4,7 @@
 #include "Inventory/PPInventoryComponent.h"
 #include "Engine/AssetManager.h"
 
+
 // Sets default values for this component's properties
 UPPInventoryComponent::UPPInventoryComponent()
 {
@@ -14,6 +15,8 @@ UPPInventoryComponent::UPPInventoryComponent()
 
 	// 초기 사이즈 지정
 	PartsItems.Init(nullptr, MaxInventorySlotNum);
+	ConsumableItems.Init(nullptr, MaxInventorySlotNum);
+	OtherItems.Init(nullptr, MaxInventorySlotNum);
 }
 
 void UPPInventoryComponent::InitializeComponent()
@@ -79,20 +82,26 @@ bool UPPInventoryComponent::AddItem(FName InItemName, int32 InItemQuantity, int3
 			}
 		}
 
-		// 해당 아이템 타입(이 프로젝트에서는 파츠)의 잉ㄴ벤토리의 빈 칸 찾아 데이터 추가하기
+		// 해당 아이템 타입(이 프로젝트에서는 파츠)의 인벤토리의 빈 칸 찾아 데이터 추가하기
 		// 이 프로젝트에서는 아이템 타입이 파츠만 있고, 인벤토리 슬롯 또한 파츠만 있기에 그냥 인벤토리 슬롯에 하나 추가한다고 보면 된다.
 		int32 Index = 0;
-		for (UPPInventoryPartsItem* Item : PartsItems)
+		switch (NewItem->PartsData->ItemType)
 		{
-			if (!IsValid(Item))
+		case EItemType::IT_Parts:
+			for (UPPInventoryPartsItem* Item : PartsItems)
 			{
-				PartsItems[Index] = NewItem;	// ?
-				bIsResult = true;
-				OnChangeInven.Broadcast();
-				break;
+				if (!IsValid(Item))
+				{
+					PartsItems[Index] = NewItem;	// ?
+					bIsResult = true;
+					OnChangeInven.Broadcast();
+					break;
+				}
+				Index++;
 			}
-			Index++;
+			break;
 		}
+		
 
 		if (!bIsResult)
 		{
@@ -109,7 +118,7 @@ bool UPPInventoryComponent::AddItem(FName InItemName, int32 InItemQuantity, int3
 	return bIsResult;
 }
 
-void UPPInventoryComponent::UseItem(int32 InSlotIndex)
+void UPPInventoryComponent::UseItem(int32 InSlotIndex, ESlotType InventoryType)
 {
 	/// 아이템 사용 함수에서는 아이템 슬롯의 타입과 인덱스를 받아와서 해당 인벤토리의 아이템을 사용하는 로직을 추가할 것입니다.
 	/// 앞으로도 소비 아이템만 사용할 것 같지만 혹시 몰라 Switch문을 사용해 타입별로 동작을 변경해주도록 설정했습니다. (ex.무기 장착 등)
@@ -117,25 +126,46 @@ void UPPInventoryComponent::UseItem(int32 InSlotIndex)
 	/// 소비 아이템 사용 시 수량을 감소시키고, 만약 남은 수가 0이라면 해당 아이템을 소멸시켜주도록 하였습니다.
 	/// https://velog.io/@apth1023/13.-12.-%EC%95%84%EC%9D%B4%ED%85%9C-%EC%9D%B8%EB%B2%A4%ED%86%A0%EB%A6%AC-%EC%8B%9C%EC%8A%A4%ED%85%9C-2
 	
-	if (PartsItems.IsValidIndex(InSlotIndex) && IsValid(PartsItems[InSlotIndex]))
+	switch (InventoryType)
 	{
-		// 수량을 줄어들게 할 것인지, 아니면 사용한다는 flag로 할 것인지는 추후 논의
-		// 사실 장착 중이면 못쓰게 flag하는 것이 맞긴한데 일단 예재대로 한다고 하자.
-		// PartsItems[InSlotIndex]->ItemQuantity--;
-		
-		// 아이템 사용
-		UE_LOG(LogTemp, Warning, TEXT("Parts Item Use"));
+	case ESlotType::ST_InventoryParts:
+		if (PartsItems.IsValidIndex(InSlotIndex) && IsValid(PartsItems[InSlotIndex]))
+		{
+			// 수량을 줄어들게 할 것인지, 아니면 사용한다는 flag로 할 것인지는 추후 논의
+			// 사실 장착 중이면 못쓰게 flag하는 것이 맞긴한데 일단 예재대로 한다고 하자.
+			// PartsItems[InSlotIndex]->ItemQuantity--;
 
-		// 수량이 0 이하라면 소멸시켜주는 부분
-		// 이 프로젝트에서는 파츠가 소멸되면 안되므로 적용하지 않음.
+			// 아이템 사용
+			UE_LOG(LogTemp, Warning, TEXT("Parts Item Use"));
+
+			// 수량이 0 이하라면 소멸시켜주는 부분
+			// 이 프로젝트에서는 파츠가 소멸되면 안되므로 적용하지 않음.
+		}
+		break;
 	}
+
+	
 }
 
-void UPPInventoryComponent::RemoveItem(int32 InSlotIndex)
+void UPPInventoryComponent::RemoveItem(int32 InSlotIndex, ESlotType InventoryType)
 {
-	if (PartsItems.IsValidIndex(InSlotIndex) && IsValid(PartsItems[InSlotIndex]))
+	// 해당 인벤토리 슬롯의 유효성을 체크하고 소멸시켜준다.
+	switch (InventoryType)
 	{
-		PartsItems[InSlotIndex] = nullptr;
+	case ESlotType::ST_None:
+		break;
+	case ESlotType::ST_InventoryParts:
+		if (PartsItems.IsValidIndex(InSlotIndex) && IsValid(PartsItems[InSlotIndex]))
+		{
+			PartsItems[InSlotIndex] = nullptr;
+		}
+		break;
+	case ESlotType::ST_InventoryConsumable:
+		break;
+	case ESlotType::ST_InventoryOther:
+		break;
+	default:
+		break;
 	}
 }
 
@@ -164,9 +194,11 @@ void UPPInventoryComponent::InitInventory()
 	if (Assets.Num() > 0)
 	{
 		TMap<int32, TPair<FName, int32>> InventoryPartsArray;
+		//TMap<int32, TPair<FName, int32>> InventoryConstableArray;
+		
 		// 테스트 블록(실제로는 저장된 파일에서 데이터를 읽어와야 함)
 		{
-			InventoryPartsArray.Add(1, { TEXT("GrabParts"), 1 });
+			InventoryPartsArray.Add(1, { TEXT("TEST_GRAB_PARTS"), 1 });
 		}
 
 		for (const auto& InvItem : InventoryPartsArray)

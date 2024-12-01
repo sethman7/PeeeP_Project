@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
 #include "PPInventoryPartsItem.h"
+#include "Inventory/ESlotType.h"
 #include "PPInventoryComponent.generated.h"
 
 // 인벤토리 내용 변경 델리게이트
@@ -31,6 +32,12 @@ protected:
 	// 파츠
 	UPROPERTY(VisibleAnywhere, Category = "Inventory", meta = (AllowPrivateAccess = "true"))
 	TArray<TObjectPtr<class UPPInventoryPartsItem>> PartsItems;
+	// 소비
+	UPROPERTY(VisibleAnywhere, Category = "Inventory", meta = (AllowPrivateAccess = "true"))
+	TArray<TObjectPtr<class UPPInventoryPartsItem>> ConsumableItems;
+	// 기타
+	UPROPERTY(VisibleAnywhere, Category = "Inventory", meta = (AllowPrivateAccess = "true"))
+	TArray<TObjectPtr<class UPPInventoryPartsItem>> OtherItems;
 
 	// 최대 인벤토리 슬롯 수
 	UPROPERTY(EditAnywhere, Category = "Inventory", meta = (AllowPrivateAccess = "true"))
@@ -43,12 +50,14 @@ protected:
 public:
 	// Getter
 	FORCEINLINE TArray<TObjectPtr<class UPPInventoryPartsItem>> GetPartsItems() { return PartsItems; }
+	FORCEINLINE TArray<TObjectPtr<class UPPInventoryPartsItem>> GetConsumableItems() { return ConsumableItems; }
+	FORCEINLINE TArray<TObjectPtr<class UPPInventoryPartsItem>> GetOtherItems() { return OtherItems; }
 
-	// 아이템(파츠) 추가
+	// 아이템 추가
 	bool AddItem(FName InItemName, int32 InItemQuantity, int32& OutItemQuantity);
-	// 아이템(파츠) 사용
-	void UseItem(int32 InSlotIndex);
-	// 아이템(파츠) 교체
+	// 아이템 사용
+	void UseItem(int32 InSlotIndex, ESlotType InventoryType);
+	// 아이템 교체
 	void SwapItem(int32 InprevIndex, int32 InCurrentIndex);
 
 	// 인벤토리 정렬
@@ -58,7 +67,7 @@ protected:
 	// 인벤토리 초기화
 	void InitInventory();
 	// 아이템 삭제
-	void RemoveItem(int32 InSlotIndex);
+	void RemoveItem(int32 InSlotIndex, ESlotType InventoryType);
 
 public:	
 	// Called every frame

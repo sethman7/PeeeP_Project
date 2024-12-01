@@ -4,14 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "UI/Inventory/PPCustomWidget.h"
+#include "../../Inventory/ESlotType.h"
 #include "PPSlot.generated.h"
-
-UENUM(BlueprintType)
-enum class ESlotType : uint8
-{
-	ST_None,
-	ST_InventoryParts,	// 인벤토리(파츠)
-};
 
 // 업데이트 델리게이트 선언
 DECLARE_DELEGATE(FOnUpdateSlotDelegate);

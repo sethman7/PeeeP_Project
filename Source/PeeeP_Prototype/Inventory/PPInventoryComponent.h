@@ -8,7 +8,7 @@
 #include "PPInventoryComponent.generated.h"
 
 // 인벤토리 내용 변경 델리게이트
-DECLARE_MULTICAST_DELEGATE(FonChangedInventoryDelegate);
+DECLARE_MULTICAST_DELEGATE(FOnChangedInventoryDelegate);
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class PEEEP_PROTOTYPE_API UPPInventoryComponent : public UActorComponent
@@ -20,6 +20,9 @@ public:
 	UPPInventoryComponent();
 
 	virtual void InitializeComponent() override;
+
+public:
+	FOnChangedInventoryDelegate OnChangeInven;
 
 protected:
 	// Called when the game starts
@@ -45,6 +48,11 @@ public:
 	bool AddItem(FName InItemName, int32 InItemQuantity, int32& OutItemQuantity);
 	// 아이템(파츠) 사용
 	void UseItem(int32 InSlotIndex);
+	// 아이템(파츠) 교체
+	void SwapItem(int32 InprevIndex, int32 InCurrentIndex);
+
+	// 인벤토리 정렬
+	void SortItem();
 
 protected:
 	// 인벤토리 초기화

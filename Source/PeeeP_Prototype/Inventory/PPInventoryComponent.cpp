@@ -78,12 +78,75 @@ bool UPPInventoryComponent::AddItem(FName InItemName, int32 InItemQuantity, int3
 				return bIsResult;
 			}
 		}
+
+		// 해당 아이템 타입(이 프로젝트에서는 파츠)의 잉ㄴ벤토리의 빈 칸 찾아 데이터 추가하기
+		// 이 프로젝트에서는 아이템 타입이 파츠만 있고, 인벤토리 슬롯 또한 파츠만 있기에 그냥 인벤토리 슬롯에 하나 추가한다고 보면 된다.
+		int32 Index = 0;
+		for (UPPInventoryPartsItem* Item : PartsItems)
+		{
+			if (!IsValid(Item))
+			{
+				PartsItems[Index] = NewItem;	// ?
+				bIsResult = true;
+				OnChangeInven.Broadcast();
+				break;
+			}
+			Index++;
+		}
+
+		if (!bIsResult)
+		{
+			OutItemQuantity = NewItem->ItemQuantity;
+			return bIsResult;
+		}
+		else
+		{
+			return bIsResult;
+		}
 	}
 
+	OutItemQuantity = InItemQuantity;
+	return bIsResult;
 }
 
 void UPPInventoryComponent::UseItem(int32 InSlotIndex)
 {
+	/// 아이템 사용 함수에서는 아이템 슬롯의 타입과 인덱스를 받아와서 해당 인벤토리의 아이템을 사용하는 로직을 추가할 것입니다.
+	/// 앞으로도 소비 아이템만 사용할 것 같지만 혹시 몰라 Switch문을 사용해 타입별로 동작을 변경해주도록 설정했습니다. (ex.무기 장착 등)
+	/// 아이템 사용 함수는 실제 스탯에 반영할 일이 많을 것 같아 플레이어의 함수를 호출하는 쪽으로 구현 방향을 잡았습니다.
+	/// 소비 아이템 사용 시 수량을 감소시키고, 만약 남은 수가 0이라면 해당 아이템을 소멸시켜주도록 하였습니다.
+	/// https://velog.io/@apth1023/13.-12.-%EC%95%84%EC%9D%B4%ED%85%9C-%EC%9D%B8%EB%B2%A4%ED%86%A0%EB%A6%AC-%EC%8B%9C%EC%8A%A4%ED%85%9C-2
+	
+	if (PartsItems.IsValidIndex(InSlotIndex) && IsValid(PartsItems[InSlotIndex]))
+	{
+		// 수량을 줄어들게 할 것인지, 아니면 사용한다는 flag로 할 것인지는 추후 논의
+		// 사실 장착 중이면 못쓰게 flag하는 것이 맞긴한데 일단 예재대로 한다고 하자.
+		// PartsItems[InSlotIndex]->ItemQuantity--;
+		
+		// 아이템 사용
+		UE_LOG(LogTemp, Warning, TEXT("Parts Item Use"));
+
+		// 수량이 0 이하라면 소멸시켜주는 부분
+		// 이 프로젝트에서는 파츠가 소멸되면 안되므로 적용하지 않음.
+	}
+}
+
+void UPPInventoryComponent::RemoveItem(int32 InSlotIndex)
+{
+	if (PartsItems.IsValidIndex(InSlotIndex) && IsValid(PartsItems[InSlotIndex]))
+	{
+		PartsItems[InSlotIndex] = nullptr;
+	}
+}
+
+void UPPInventoryComponent::SwapItem(int32 InprevIndex, int32 InCurrentIndex)
+{
+	// 추후 인벤토리 내에서 교체 기능이 있을 때 구현 예정
+}
+
+void UPPInventoryComponent::SortItem()
+{
+	// 추후 인벤토리 아이템 정렬 기능 구현 예정
 }
 
 void UPPInventoryComponent::InitInventory()
@@ -139,9 +202,7 @@ void UPPInventoryComponent::InitInventory()
 	}
 }
 
-void UPPInventoryComponent::RemoveItem(int32 InSlotIndex)
-{
-}
+
 
 // Called every frame
 void UPPInventoryComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)

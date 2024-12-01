@@ -182,7 +182,7 @@ void UPPInventoryComponent::InitInventory()
 				UPPInventoryPartsItem* NewItem = NewObject<UPPInventoryPartsItem>();
 				if (NewItem)
 				{
-					FSoftObjectPtr AssetPtr(Manager.GetPrimaryAssetPath(Assets.FindByKey(Key)[0]);
+					FSoftObjectPtr AssetPtr(Manager.GetPrimaryAssetPath(Assets.FindByKey(Key)[0]));
 					if (AssetPtr.IsPending())
 					{
 						AssetPtr.LoadSynchronous();

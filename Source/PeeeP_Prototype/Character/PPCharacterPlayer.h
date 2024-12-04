@@ -7,13 +7,14 @@
 #include "InputActionValue.h"
 #include "PhysicsEngine/PhysicsHandleComponent.h"
 #include "Interface/UI/PPElectricHUDInterface.h"
+#include "Interface/PPAnimationGrabInterface.h"
 #include "PPCharacterPlayer.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class PEEEP_PROTOTYPE_API APPCharacterPlayer : public APPCharacterBase, public IPPElectricHUDInterface
+class PEEEP_PROTOTYPE_API APPCharacterPlayer : public APPCharacterBase, public IPPElectricHUDInterface , public IPPAnimationGrabInterface
 {
 	GENERATED_BODY()	
 	
@@ -72,12 +73,26 @@ public:
 
 
 protected:
+//Animation
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Animation)
+	TObjectPtr<class UAnimMontage> GrabAnimMontage;
+
+
 //Parts
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Parts, Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class UPPPartsBase> Parts;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Parts, Meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class USkeletalMeshComponent> AttachedMesh;
+
+	//임시
+	TArray<TObjectPtr<class UPPPartsBase>> PartsArray;
+
 public:
 	void SwitchParts(class UPPPartsDataBase* InPartsData);
+	void AddParts(class UActorComponent* InComponent);
+
+	virtual void GrabHitCheck() override;
 
 
 	

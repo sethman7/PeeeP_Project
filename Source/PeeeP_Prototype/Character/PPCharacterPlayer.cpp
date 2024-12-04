@@ -2,6 +2,7 @@
 
 
 #include "PPCharacterPlayer.h"
+#include "Components/CapsuleComponent.h"
 #include "Camera/CameraComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "GameFramework/DefaultPawn.h"
@@ -93,6 +94,10 @@ APPCharacterPlayer::APPCharacterPlayer()
 
 	PlayerCharacterNiagaraComponent = CreateDefaultSubobject<UNiagaraComponent>(TEXT("EffectComponent"));
 	PlayerCharacterNiagaraComponent->SetupAttachment(RootComponent);
+
+
+	AttachedMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("AttachedMesh"));
+
 }
 
 void APPCharacterPlayer::BeginPlay()
@@ -209,11 +214,20 @@ void APPCharacterPlayer::ButtonInteraction(const FInputActionValue& Value)
 	{
 		AActor* HitActor = HitResult.GetActor();
 		IPPInteractableObjectInterface* ButtonActor = Cast<IPPInteractableObjectInterface>(HitActor);
-		ensure(ButtonActor);
+		//ensure(ButtonActor);
 		if (ButtonActor != nullptr)
 		{
 			UE_LOG(LogTemp, Log, TEXT("FindButton"));
 			ButtonActor->Interact();
+		}
+
+		//파츠 상호작용 테스트용
+		UPPPartsBase* PartsBase = HitActor->FindComponentByClass<UPPPartsBase>();
+		if (PartsBase)
+		{
+			UActorComponent* Component = CastChecked<UActorComponent>(PartsBase);
+			AddParts(Component);
+			HitActor->Destroy();
 		}
 	}
 
@@ -228,17 +242,72 @@ UCameraComponent* APPCharacterPlayer::GetCamera()
 }
 
 
+
+//임시, 바꿔도 상관X 
 void APPCharacterPlayer::SwitchParts(UPPPartsDataBase* InPartsData)
 {
-	if (Parts)
+	UPPPartsBase* NextParts = CastChecked<UPPPartsBase>(InPartsData->PartsComponentClass);
+	if (NextParts == nullptr) return;
+	
+	if (PartsArray.Contains(NextParts))
 	{
-		UE_LOG(LogTemp, Log, TEXT("Destroy Parts"));
-		Parts->DestroyComponent();
+		int idx = PartsArray.Find(NextParts);
+		UPPPartsBase* FoundPart = PartsArray[idx];
+
+		Parts->SetPartsActive(false);
+		Parts = FoundPart;
+		Parts->SetPartsActive(true);
+
+	}
+}
+
+void APPCharacterPlayer::AddParts(UActorComponent* InComponent)
+{
+	UActorComponent* PartsComponent = AddComponentByClass(InComponent->GetClass(), true, FTransform::Identity, false);
+	Parts = CastChecked<UPPPartsBase>(PartsComponent);
+	Parts->SetPartsActive(true);
+
+	PartsArray.Add(Parts); //임시 인벤토리 
+	
+	AttachedMesh->SetSkeletalMesh(Parts->GetPartsData()->PartsMesh);
+	FName GrabSocket = GetMesh()->GetSocketBoneName(TEXT("Bip001-R-Hand"));
+	AttachedMesh->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, GrabSocket);  // 파츠별로 부착시킬 플레이어의 FName변수 만들 예정
+	
+	//파츠별 애니메이션 연결
+	if (CastChecked<UPPGrabParts>(Parts))
+	{
+		Parts->OnPlayAnimation.AddLambda([this]()->void { GrabHitCheck(); });
+	}
+}
+
+void APPCharacterPlayer::GrabHitCheck()
+{
+	//테스트 중.  GrabParts.CPP 에 옮길 예정.
+	UPPGrabParts* GrabParts = Cast<UPPGrabParts>(Parts);
+	if (GrabParts == nullptr) return;
+	
+	FHitResult HitResult;
+	FCollisionQueryParams Params(SCENE_QUERY_STAT(Grab), false, this);
+
+
+	const FVector StartPos = AttachedMesh->GetSocketLocation(TEXT("Bone010Socket")) + GetActorForwardVector() * GetCapsuleComponent()->GetScaledCapsuleRadius();
+	const FVector EndPos = StartPos + GetActorForwardVector() * 5.0f;
+
+	bool HitDetected = GetWorld()->SweepSingleByChannel(HitResult, StartPos, EndPos, FQuat::Identity, ECC_GameTraceChannel2, FCollisionShape::MakeSphere(50.0f), Params);
+	if (HitDetected)
+	{
+		GrabParts->GrabHandle->GrabComponentAtLocationWithRotation(HitResult.GetComponent(), TEXT("None"), HitResult.GetComponent()->GetComponentLocation(), FRotator::ZeroRotator);
+		UE_LOG(LogTemp, Log, TEXT("GrabHit"));
 	}
 
-	UE_LOG(LogTemp, Log, TEXT("Creat New Parts"));
-	UActorComponent* PartsComponent = AddComponentByClass(InPartsData->PartsComponentClass, true, FTransform::Identity, false);
-	Parts = CastChecked<UPPPartsBase>(PartsComponent);
+
+#if ENABLE_DRAW_DEBUG
+	FVector CapsuleOrigin = StartPos + (EndPos - StartPos) * 0.5f;
+	float CapsuleHalfHeight = 5.0f * 0.5f;
+	FColor DrawColor = HitDetected ? FColor::Green : FColor::Red;
+
+	DrawDebugCapsule(GetWorld(), CapsuleOrigin, CapsuleHalfHeight, 50.0f, FRotationMatrix::MakeFromZ(GetActorForwardVector()).ToQuat(), DrawColor, false, 5.0f);
+#endif
 }
 
 void APPCharacterPlayer::ReduationMaxWalkSpeedRatio(float InReductionRatio)

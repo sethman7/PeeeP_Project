@@ -11,6 +11,11 @@
 // 해당 파츠의 생성자에서 파츠 데이터에 있는 정보들을 갖고 해당 파츠를 초기화함
 // 베이스 클래스에서는 파츠 교체시 착용중인 파츠 삭제과정만 구현 나머지 파츠별 구현은 하위 클래스에서 구현
 
+
+//파츠별로 개별 애니메이션이 있으니, 애니메이션 델리게이트 추가.
+DECLARE_MULTICAST_DELEGATE(FOnPlayAnimationDelegate);
+
+
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class PEEEP_PROTOTYPE_API UPPPartsBase : public UActorComponent
 {
@@ -20,7 +25,7 @@ public:
 	// Sets default values for this component's properties
 	UPPPartsBase();
 
-	virtual void BeginDestroy() override;
+	/*virtual void BeginDestroy() override;*/
 
 protected:
 	// Called when the game starts
@@ -30,8 +35,21 @@ public:
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
+	inline TObjectPtr<class UPPPartsDataBase> GetPartsData() { return PartsData; }
+
+
+	virtual void SetPartsActive(bool flag);
+	virtual void SetUp() {};
+
+
+	FOnPlayAnimationDelegate OnPlayAnimation;
+
 protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 	TObjectPtr<class UPPPartsDataBase> PartsData;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	TObjectPtr<class APawn> Owner;
+
 };

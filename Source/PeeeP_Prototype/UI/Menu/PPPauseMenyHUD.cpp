@@ -26,7 +26,7 @@ void UPPPauseMenyHUD::NativeConstruct()
 	ExitButton = Cast<UPPMenuButtonWidget>(GetWidgetFromName(TEXT("WBP_TitleButton")));*/
 
 	LobbyActor = Cast<APPLobbyActor>(UGameplayStatics::GetActorOfClass(GetWorld(), LobbyActorClass));
-	check(LobbyActor);
+	//check(LobbyActor);
 
 	if (WBP_ResomeButton && WBP_ResomeButton->Button)
 	{

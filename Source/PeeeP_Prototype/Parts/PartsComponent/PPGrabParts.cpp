@@ -11,6 +11,8 @@
 
 UPPGrabParts::UPPGrabParts()
 {
+	PrimaryComponentTick.bCanEverTick = true;
+	PrimaryComponentTick.bStartWithTickEnabled = false;
 	SetPartsActive(false);
 
 	// 파츠에 대한 데이터 갖고있는 파츠 데이터 연결
@@ -22,8 +24,15 @@ UPPGrabParts::UPPGrabParts()
 
 	ensure(PartsData);
 
+	AttachmentSocket = TEXT("Bip001-R-Hand");	//플레이어 오른손
+	HitSocket = TEXT("Bone010Socket");		    //그랩 매쉬 받으면 변경할 예정.
 }
 
+
+void UPPGrabParts::BeginPlay()
+{
+	Super::BeginPlay();
+}
 
 // 그랩 파츠로 그랩 한 오브젝트 이동 업데이트
 void UPPGrabParts::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
@@ -91,4 +100,6 @@ void UPPGrabParts::SetUp()
 void UPPGrabParts::SetPartsActive(bool flag)
 {
 	Super::SetPartsActive(flag);
+	SetActive(flag);
+	PrimaryComponentTick.bStartWithTickEnabled = flag;
 }

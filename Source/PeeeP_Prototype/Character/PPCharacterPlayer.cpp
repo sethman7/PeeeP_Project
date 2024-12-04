@@ -257,10 +257,11 @@ void APPCharacterPlayer::SwitchParts(UPPPartsDataBase* InPartsData)
 		Parts->SetPartsActive(false);
 		Parts = FoundPart;
 		Parts->SetPartsActive(true);
-
+		SetAttachedMesh(Parts);
 	}
 }
 
+//파츠를 처음 먹을 경우, 파츠 클래스를 새로 생성 후 초기화 작업.
 void APPCharacterPlayer::AddParts(UActorComponent* InComponent)
 {
 	UActorComponent* PartsComponent = AddComponentByClass(InComponent->GetClass(), true, FTransform::Identity, false);
@@ -268,18 +269,18 @@ void APPCharacterPlayer::AddParts(UActorComponent* InComponent)
 	Parts->SetPartsActive(true);
 
 	PartsArray.Add(Parts); //임시 인벤토리 
-	
-	AttachedMesh->SetSkeletalMesh(Parts->GetPartsData()->PartsMesh);
-	FName GrabSocket = GetMesh()->GetSocketBoneName(TEXT("Bip001-R-Hand"));
-	AttachedMesh->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, GrabSocket);  // 파츠별로 부착시킬 플레이어의 FName변수 만들 예정
+
+	SetAttachedMesh(Parts); //플레이어의 현재 파츠 설정.
 	
 	//파츠별 애니메이션 연결
 	if (CastChecked<UPPGrabParts>(Parts))
 	{
-		Parts->OnPlayAnimation.AddLambda([this]()->void { GrabHitCheck(); });
+		Parts->OnPlayAnimation.AddLambda([this]()->void { PlayAnimMontage(GrabAnimMontage); });
 	}
 }
 
+
+//그랩 애니메이션 작동 후, Notify를 통해 호출됨. 그랩에 닿은 오브젝트가 있는지 체크. 
 void APPCharacterPlayer::GrabHitCheck()
 {
 	//테스트 중.  GrabParts.CPP 에 옮길 예정.
@@ -290,7 +291,7 @@ void APPCharacterPlayer::GrabHitCheck()
 	FCollisionQueryParams Params(SCENE_QUERY_STAT(Grab), false, this);
 
 
-	const FVector StartPos = AttachedMesh->GetSocketLocation(TEXT("Bone010Socket")) + GetActorForwardVector() * GetCapsuleComponent()->GetScaledCapsuleRadius();
+	const FVector StartPos = AttachedMesh->GetSocketLocation(Parts->HitSocket) + GetActorForwardVector() * GetCapsuleComponent()->GetScaledCapsuleRadius();
 	const FVector EndPos = StartPos + GetActorForwardVector() * 5.0f;
 
 	bool HitDetected = GetWorld()->SweepSingleByChannel(HitResult, StartPos, EndPos, FQuat::Identity, ECC_GameTraceChannel2, FCollisionShape::MakeSphere(50.0f), Params);
@@ -308,6 +309,13 @@ void APPCharacterPlayer::GrabHitCheck()
 
 	DrawDebugCapsule(GetWorld(), CapsuleOrigin, CapsuleHalfHeight, 50.0f, FRotationMatrix::MakeFromZ(GetActorForwardVector()).ToQuat(), DrawColor, false, 5.0f);
 #endif
+}
+
+//현재 착용 중인 파츠 변경.
+void APPCharacterPlayer::SetAttachedMesh(UPPPartsBase* InParts)
+{
+	AttachedMesh->SetSkeletalMesh(InParts->GetPartsData()->PartsMesh);
+	AttachedMesh->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, InParts->AttachmentSocket);
 }
 
 void APPCharacterPlayer::ReduationMaxWalkSpeedRatio(float InReductionRatio)

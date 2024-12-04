@@ -93,7 +93,7 @@ public:
 	void AddParts(class UActorComponent* InComponent);
 
 	virtual void GrabHitCheck() override;
-
+	void SetAttachedMesh(class UPPPartsBase* InParts);
 
 	
 protected:

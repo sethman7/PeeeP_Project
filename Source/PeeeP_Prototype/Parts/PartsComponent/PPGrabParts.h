@@ -22,18 +22,19 @@ public:
 	
 	virtual void SetUp() override;
 	virtual void SetPartsActive(bool flag) override;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-	TObjectPtr<class UPhysicsHandleComponent> GrabHandle;
+	void Grab(FHitResult& InHitResult);
 
 protected:
 	virtual void BeginPlay() override;
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	TObjectPtr<class UPhysicsHandleComponent> GrabHandle;
 
-
-	void Grab();
+	void HandleGrabAnimation();
 	void GrabRelease();
+	void UpdateGrabbedObjectPosition();
 
+	bool IsReleased;
 
 };

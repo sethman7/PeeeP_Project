@@ -77,6 +77,8 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Animation)
 	TObjectPtr<class UAnimMontage> GrabAnimMontage;
 
+	void PlayAnimation(UAnimMontage* InAnimMontage);
+
 
 //Parts
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Parts, Meta = (AllowPrivateAccess = "true"))

@@ -26,6 +26,14 @@ UPPGrabParts::UPPGrabParts()
 
 	AttachmentSocket = TEXT("Bip001-R-Hand");	//플레이어 오른손
 	HitSocket = TEXT("Bone010Socket");		    //그랩 매쉬 받으면 변경할 예정.
+
+
+
+	// Grab() -> GrabRelease() 호출 순서가 무조건 보장되어야만 함. 하지만 그랩 애니메이션 발동 후 overlap된 오브젝트가 있을때만 Grab()이 호출되므로, 호출 직전에 키를 때버려서
+	// GrabRelase()가 호출되버리면 순서가 다음과 같이 GrabRelease() -> Grab() 바뀌는 경우가 생길 수 있음.  
+	// 그렇게 될 경우, 키를 누르고 있지 않은 상황에서도 오브젝트를 계속 들고있게 되버림. 
+	IsReleased = true;
+
 }
 
 
@@ -39,32 +47,53 @@ void UPPGrabParts::TickComponent(float DeltaTime, ELevelTick TickType, FActorCom
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-	if (GrabHandle->GetGrabbedComponent())
+
+	//GrabHandle 이 컴포넌트를 잡고 있고 Owner가 유효할 때만, 잡고있는 오브젝트 위치 업데이트.
+	if (GrabHandle->GetGrabbedComponent() && Owner)
 	{
-		if (Owner)
-		{
-			GrabHandle->SetTargetLocation((Owner->GetActorForwardVector() * 100.0f) + Owner->GetActorLocation());
-		}
+		UpdateGrabbedObjectPosition();
 	}
 }
 
 
-void UPPGrabParts::Grab()
+void UPPGrabParts::HandleGrabAnimation()
+{
+	IsReleased = false;
+	if (OnPlayAnimation.IsBound())
+	{
+		OnPlayAnimation.Broadcast();  // 델리게이트 호출
+	}
+}
+
+void UPPGrabParts::Grab(FHitResult& InHitResult)
 {
 	UE_LOG(LogTemp, Log, TEXT("Grab Start"));
-	OnPlayAnimation.Broadcast(); // 애니메이션 호출 
+	if (IsReleased) return;
+	GrabHandle->GrabComponentAtLocationWithRotation(InHitResult.GetComponent(), TEXT("None"), InHitResult.GetComponent()->GetComponentLocation(), FRotator::ZeroRotator);
 }
+
+
 
 
 // 그랩 끝날 때 작동
 void UPPGrabParts::GrabRelease()
-{
+{	
 	UE_LOG(LogTemp, Log, TEXT("Grab End"));
-
+	IsReleased = true;
 	if (GrabHandle->GetGrabbedComponent())
 	{
 		GrabHandle->ReleaseComponent();
 	}
+}
+
+void UPPGrabParts::UpdateGrabbedObjectPosition()
+{
+	UCameraComponent* FollowCamera = Owner->FindComponentByClass<UCameraComponent>();
+	FVector Start = Owner->GetActorLocation();
+	FVector ForwardVector = FollowCamera->GetForwardVector();
+	FVector GrabbedObjectPosition = (Start + (ForwardVector * 300.0f));
+
+	GrabHandle->SetTargetLocation(GrabbedObjectPosition);
 }
 
 
@@ -90,7 +119,7 @@ void UPPGrabParts::SetUp()
 			Subsystem->AddMappingContext(GrabPartsData->PartsMappingContext, 1);
 			UEnhancedInputComponent* EnhancedInputComponent = CastChecked<UEnhancedInputComponent>(PlayerController->InputComponent);
 
-			EnhancedInputComponent->BindAction(GrabPartsData->GrabAction, ETriggerEvent::Triggered, this, &UPPGrabParts::Grab);
+			EnhancedInputComponent->BindAction(GrabPartsData->GrabAction, ETriggerEvent::Started, this, &UPPGrabParts::HandleGrabAnimation);
 			EnhancedInputComponent->BindAction(GrabPartsData->GrabAction, ETriggerEvent::Completed, this, &UPPGrabParts::GrabRelease);
 		}
 	}

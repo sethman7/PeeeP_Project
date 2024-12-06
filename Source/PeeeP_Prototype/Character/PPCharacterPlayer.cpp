@@ -241,6 +241,15 @@ UCameraComponent* APPCharacterPlayer::GetCamera()
 	return FollowCamera;
 }
 
+void APPCharacterPlayer::PlayAnimation(UAnimMontage* InAnimMontage)
+{
+	UAnimMontage* CurrentMontage = GetMesh()->GetAnimInstance()->GetCurrentActiveMontage();
+	if (CurrentMontage == nullptr)
+	{
+		PlayAnimMontage(InAnimMontage);
+	}
+}
+
 
 
 //임시, 바꿔도 상관X 
@@ -275,7 +284,7 @@ void APPCharacterPlayer::AddParts(UActorComponent* InComponent)
 	//파츠별 애니메이션 연결
 	if (CastChecked<UPPGrabParts>(Parts))
 	{
-		Parts->OnPlayAnimation.AddLambda([this]()->void { PlayAnimMontage(GrabAnimMontage); });
+		Parts->OnPlayAnimation.AddLambda([this]()->void { PlayAnimation(GrabAnimMontage); });
 	}
 }
 
@@ -283,7 +292,6 @@ void APPCharacterPlayer::AddParts(UActorComponent* InComponent)
 //그랩 애니메이션 작동 후, Notify를 통해 호출됨. 그랩에 닿은 오브젝트가 있는지 체크. 
 void APPCharacterPlayer::GrabHitCheck()
 {
-	//테스트 중.  GrabParts.CPP 에 옮길 예정.
 	UPPGrabParts* GrabParts = Cast<UPPGrabParts>(Parts);
 	if (GrabParts == nullptr) return;
 	
@@ -297,8 +305,8 @@ void APPCharacterPlayer::GrabHitCheck()
 	bool HitDetected = GetWorld()->SweepSingleByChannel(HitResult, StartPos, EndPos, FQuat::Identity, ECC_GameTraceChannel2, FCollisionShape::MakeSphere(50.0f), Params);
 	if (HitDetected)
 	{
-		GrabParts->GrabHandle->GrabComponentAtLocationWithRotation(HitResult.GetComponent(), TEXT("None"), HitResult.GetComponent()->GetComponentLocation(), FRotator::ZeroRotator);
 		UE_LOG(LogTemp, Log, TEXT("GrabHit"));
+		GrabParts->Grab(HitResult);
 	}
 
 

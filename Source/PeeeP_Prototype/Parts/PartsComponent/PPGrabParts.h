@@ -23,6 +23,7 @@ public:
 	virtual void SetUp() override;
 	virtual void SetPartsActive(bool flag) override;
 	void Grab(FHitResult& InHitResult);
+	void SetIsGrabbed(bool b) { IsGrabbed = b; }
 
 protected:
 	virtual void BeginPlay() override;
@@ -35,6 +36,6 @@ protected:
 	void GrabRelease();
 	void UpdateGrabbedObjectPosition();
 
-	bool IsReleased;
+	bool IsGrabbed;
 
 };

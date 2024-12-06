@@ -29,10 +29,11 @@ UPPGrabParts::UPPGrabParts()
 
 
 
-	// Grab() -> GrabRelease() 호출 순서가 무조건 보장되어야만 함. 하지만 그랩 애니메이션 발동 후 overlap된 오브젝트가 있을때만 Grab()이 호출되므로, 호출 직전에 키를 때버려서
+	// Grab() -> GrabRelease() 호출 순서가 무조건 보장되어야만 함. 하지만 그랩 애니메이션 발동 후 overlap된 오브젝트가 있을때 만 Grab()이 호출되므로, 호출 직전에 키를 때버려서
 	// GrabRelase()가 호출되버리면 순서가 다음과 같이 GrabRelease() -> Grab() 바뀌는 경우가 생길 수 있음.  
-	// 그렇게 될 경우, 키를 누르고 있지 않은 상황에서도 오브젝트를 계속 들고있게 되버림. 
-	IsReleased = true;
+	// 그렇게 될 경우, 키를 누르고 있지 않은 상황에서도 오브젝트를 계속 들고있게 되버림. 따라서 그랩 애니메이션 동작 중에 GrabRelease() 호출 되는 경우 Grab()함수내에서
+	// 그랩을 하지못하도록 bool변수 IsGrabbed으로 체크함. 
+	IsGrabbed = false;
 
 }
 
@@ -58,7 +59,6 @@ void UPPGrabParts::TickComponent(float DeltaTime, ELevelTick TickType, FActorCom
 
 void UPPGrabParts::HandleGrabAnimation()
 {
-	IsReleased = false;
 	if (OnPlayAnimation.IsBound())
 	{
 		OnPlayAnimation.Broadcast();  // 델리게이트 호출
@@ -68,7 +68,7 @@ void UPPGrabParts::HandleGrabAnimation()
 void UPPGrabParts::Grab(FHitResult& InHitResult)
 {
 	UE_LOG(LogTemp, Log, TEXT("Grab Start"));
-	if (IsReleased) return;
+	if (!IsGrabbed) return;
 	GrabHandle->GrabComponentAtLocationWithRotation(InHitResult.GetComponent(), TEXT("None"), InHitResult.GetComponent()->GetComponentLocation(), FRotator::ZeroRotator);
 }
 
@@ -79,7 +79,7 @@ void UPPGrabParts::Grab(FHitResult& InHitResult)
 void UPPGrabParts::GrabRelease()
 {	
 	UE_LOG(LogTemp, Log, TEXT("Grab End"));
-	IsReleased = true;
+	IsGrabbed = false;
 	if (GrabHandle->GetGrabbedComponent())
 	{
 		GrabHandle->ReleaseComponent();

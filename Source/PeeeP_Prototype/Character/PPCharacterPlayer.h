@@ -26,13 +26,17 @@ protected:
 	virtual void Tick(float DeltaTime) override;
 protected:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
-
+	
 // Character Control Section
 protected:
 	// Character Movement Component
 	// �ܺο� ���ؼ� �÷��̾ ������ ���� ���� �� �������κ��� �����Ͽ� ���
 	UPROPERTY(EditAnywhere)
 	TObjectPtr<class UCharacterMovementComponent> CharacterMovementComponent;
+
+
+	UFUNCTION()
+	void OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse,const FHitResult& Hit);
 
 	void SetCharacterControl(ECharacterControlType NewCharacterControlType);
 	virtual void SetCharacterControlData(const class UPPCharacterControlData* CharacterControlData) override;

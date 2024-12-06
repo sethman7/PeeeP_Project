@@ -146,6 +146,6 @@ void APPSplinePatrolPath::SetActorRotationAndLocation(float Distance)
 
 	//얻어온 값들에 플레이어를 위치시킨다.
 	ActorToMove->SetActorRotation(Rotator);
-	ActorToMove->SetActorLocation(Position);
+	ActorToMove->SetActorLocation(Position,true);
 }
 

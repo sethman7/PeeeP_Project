@@ -18,8 +18,11 @@
 #include "Component/PPElectricDischargeComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameMode/PPPlayerController.h"
+//#include "Animation/AnimMontage.h"
 #include "NiagaraComponent.h"
-
+#include "Prop/PPCleaningRobot.h"
+#include "Kismet/KismetMathLibrary.h"
+#include "Kismet/KismetSystemLibrary.h"
 
 APPCharacterPlayer::APPCharacterPlayer()
 {
@@ -97,7 +100,7 @@ APPCharacterPlayer::APPCharacterPlayer()
 
 
 	AttachedMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("AttachedMesh"));
-
+	GetCapsuleComponent()->OnComponentHit.AddDynamic(this, &APPCharacterPlayer::OnHit);
 }
 
 void APPCharacterPlayer::BeginPlay()
@@ -140,6 +143,49 @@ void APPCharacterPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 		EnhancedInputComponent->BindAction(ElectricDischargeModeChangeAction, ETriggerEvent::Completed, ElectricDischargeComponent.Get(), &UPPElectricDischargeComponent::ChangeDischargeMode);
 	}
 	
+}
+
+
+void APPCharacterPlayer::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
+{
+	
+	if (Cast<APPCleaningRobot>(OtherActor))
+	{
+		//FVector Start = OtherActor->GetActorLocation();
+		// 플레이어와 충돌한 지점 사이의 벡터 계산
+		FVector Direction = GetActorLocation() - Hit.Location; // 충돌 지점에서 플레이어로 향하는 벡터
+		Direction.Normalize(); // 벡터를 정규화하여 방향만 남기기
+
+		// 넉백 효과를 위한 속도 계산 (예: 1000.0f는 넉백 강도)
+		FVector KnockbackVelocity = Direction * 1000.0f;
+
+		// Z축 방향 넉백 수치를 제한
+		float MaxKnockbackZ = 500.0f; // 최대 넉백 강도 (Z축)
+
+		// Z축 넉백 수치가 MaxKnockbackZ를 초과하지 않도록 제한
+		if (FMath::Abs(KnockbackVelocity.Z) > MaxKnockbackZ)
+		{
+			KnockbackVelocity.Z = FMath::Sign(KnockbackVelocity.Z) * MaxKnockbackZ;
+		}
+
+		// X, Y는 원래 벡터의 값을 그대로 사용하고, Z축만 제한된 값을 사용
+		KnockbackVelocity.X = KnockbackVelocity.X;
+		KnockbackVelocity.Y = KnockbackVelocity.Y;
+
+		// 플레이어에게 넉백 적용
+		LaunchCharacter(KnockbackVelocity, false, false); 
+		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("Player Hit!"));
+		//TArray<AActor*> ActorsToIgnore;
+		//TArray<TEnumAsByte<EObjectTypeQuery>> ObjectTypesArray; // 히트 가능한 오브젝트 유형들.
+		//TEnumAsByte<EObjectTypeQuery> Pawn = UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_Pawn);
+		//TEnumAsByte<EObjectTypeQuery> WorldDynamic = UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_WorldDynamic);
+		//ObjectTypesArray.Add(Pawn);
+		//ObjectTypesArray.Add(WorldDynamic);
+		//FHitResult OutHit;
+		//bool hit = UKismetSystemLibrary::SphereTraceSingleForObjects(GetWorld(), Start, End, 500.f, ObjectTypesArray, false, ActorsToIgnore, EDrawDebugTrace::ForDuration, OutHit, true);
+
+	}
+
 }
 
 void APPCharacterPlayer::SetCharacterControl(ECharacterControlType NewCharacterControlType)
@@ -294,11 +340,9 @@ void APPCharacterPlayer::GrabHitCheck()
 {
 	UPPGrabParts* GrabParts = Cast<UPPGrabParts>(Parts);
 	if (GrabParts == nullptr) return;
-	
+
 	FHitResult HitResult;
 	FCollisionQueryParams Params(SCENE_QUERY_STAT(Grab), false, this);
-
-
 	const FVector StartPos = AttachedMesh->GetSocketLocation(Parts->HitSocket) + GetActorForwardVector() * GetCapsuleComponent()->GetScaledCapsuleRadius();
 	const FVector EndPos = StartPos + GetActorForwardVector() * 5.0f;
 
@@ -306,6 +350,7 @@ void APPCharacterPlayer::GrabHitCheck()
 	if (HitDetected)
 	{
 		UE_LOG(LogTemp, Log, TEXT("GrabHit"));
+		GrabParts->SetIsGrabbed(true);
 		GrabParts->Grab(HitResult);
 	}
 

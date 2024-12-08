@@ -93,6 +93,9 @@ APPCharacterPlayer::APPCharacterPlayer()
 
 	PlayerCharacterNiagaraComponent = CreateDefaultSubobject<UNiagaraComponent>(TEXT("EffectComponent"));
 	PlayerCharacterNiagaraComponent->SetupAttachment(RootComponent);
+	
+	// 인벤토리 컴포넌트
+	InventoryComponent = CreateDefaultSubobject<UPPInventoryComponent>(TEXT("InventoryComponent"));
 }
 
 void APPCharacterPlayer::BeginPlay()
@@ -255,6 +258,11 @@ void APPCharacterPlayer::RevertMaxWalkSpeed()
 UNiagaraComponent* APPCharacterPlayer::GetPlayerCharacterNiagaraComponent() const
 {
 	return PlayerCharacterNiagaraComponent;;
+}
+
+UPPInventoryComponent* APPCharacterPlayer::GetInventoryComponent()
+{
+	return InventoryComponent;
 }
 
 void APPCharacterPlayer::OpenMenu()

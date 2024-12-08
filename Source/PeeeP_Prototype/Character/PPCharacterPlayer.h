@@ -7,13 +7,15 @@
 #include "InputActionValue.h"
 #include "PhysicsEngine/PhysicsHandleComponent.h"
 #include "Interface/UI/PPElectricHUDInterface.h"
+#include "../Inventory/PPInventoryComponent.h"
+#include "Interface/UI/PPInventoryInterface.h"
 #include "PPCharacterPlayer.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class PEEEP_PROTOTYPE_API APPCharacterPlayer : public APPCharacterBase, public IPPElectricHUDInterface
+class PEEEP_PROTOTYPE_API APPCharacterPlayer : public APPCharacterBase, public IPPElectricHUDInterface, public IPPInventoryInterface
 {
 	GENERATED_BODY()	
 	
@@ -78,8 +80,6 @@ protected:
 
 public:
 	void SwitchParts(class UPPPartsDataBase* InPartsData);
-
-
 	
 protected:
 //ElectricComponent
@@ -97,10 +97,13 @@ protected:
 	float ChargeTime;
 	float MaxWalkSpeed;
 
+//InventoryComponent
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Electric)
+	TObjectPtr<class UPPInventoryComponent> InventoryComponent;
+
 public:
 	void ReduationMaxWalkSpeedRatio(float InReductionRatio);
 	void RevertMaxWalkSpeed();
-
 
 	class UNiagaraComponent* GetPlayerCharacterNiagaraComponent() const;
 
@@ -112,7 +115,9 @@ protected:
 	void OpenMenu();
 
 public:
+	// Getter
 	// ElectricDischargeComponent
 	UPPElectricDischargeComponent* GetElectricDischargeComponent();
-
+	// InventoryComponent(IPPInventoryInterface에 의해)
+	virtual class UPPInventoryComponent* GetInventoryComponent() override;
 };

@@ -2,6 +2,7 @@
 
 
 #include "Prop/PPCleaningRobot.h"
+#include "InteractionObject/PPGrabableObject.h"
 
 // Sets default values
 APPCleaningRobot::APPCleaningRobot()
@@ -13,6 +14,8 @@ APPCleaningRobot::APPCleaningRobot()
 
 	ElectricLossRate = -1.0f;
 	KnockbackStrength = 1000.0f;
+	//Body->OnComponentHit.AddDynamic(this, &APPCleaningRobot::NotifyHit);
+	IsGrab = false;
 }
 
 // Called when the game starts or when spawned
@@ -22,11 +25,19 @@ void APPCleaningRobot::BeginPlay()
 	
 }
 
+void APPCleaningRobot::NotifyHit(UPrimitiveComponent* MyComp, AActor* Other, UPrimitiveComponent* OtherComp, bool bSelfMoved, FVector HitLocation, FVector HitNormal, FVector NormalImpulse, const FHitResult& Hit)
+{
+	if (Cast<APPGrabableObject>(Other) && !IsGrab)
+	{
+		IsGrab = true;
+	}
+}
+
+
 // Called every frame
 void APPCleaningRobot::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
 }
 
 

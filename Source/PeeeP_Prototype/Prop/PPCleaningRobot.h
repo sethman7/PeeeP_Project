@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -21,6 +21,8 @@ public:
 	UPROPERTY(EditAnywhere)
 	float ElectricLossRate;
 
+	UPROPERTY(VisibleAnywhere)
+	AActor* GrabbedObject;
 
 protected:
 	// Called when the game starts or when spawned
@@ -29,9 +31,15 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = StaticMeshComponent)
 	TObjectPtr<UStaticMeshComponent> Body;
 
+	UFUNCTION()
+	virtual void NotifyHit(class UPrimitiveComponent* MyComp, AActor* Other, class UPrimitiveComponent* OtherComp, bool bSelfMoved, FVector HitLocation, FVector HitNormal, FVector NormalImpulse, const FHitResult& Hit) override;
+
+	bool IsGrab;
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
+
 
 
 };

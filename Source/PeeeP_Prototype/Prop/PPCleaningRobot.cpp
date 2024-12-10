@@ -8,7 +8,11 @@ APPCleaningRobot::APPCleaningRobot()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
+	Body = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Body"));
+	Body->SetCollisionProfileName(TEXT("MovableObjectProfile"));
 
+	ElectricLossRate = -1.0f;
+	KnockbackStrength = 1000.0f;
 }
 
 // Called when the game starts or when spawned
@@ -25,8 +29,4 @@ void APPCleaningRobot::Tick(float DeltaTime)
 
 }
 
-void APPCleaningRobot::NotifyHit(UPrimitiveComponent* MyComp, AActor* Other, UPrimitiveComponent* OtherComp, bool bSelfMoved, FVector HitLocation, FVector HitNormal, FVector NormalImpulse, const FHitResult& Hit)
-{
-	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Blue, TEXT("Robot Hit!"));
-}
 

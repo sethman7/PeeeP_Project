@@ -15,24 +15,23 @@ public:
 	// Sets default values for this actor's properties
 	APPCleaningRobot();
 
+	UPROPERTY(EditAnywhere)
+	float KnockbackStrength;
+
+	UPROPERTY(EditAnywhere)
+	float ElectricLossRate;
+
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = StaticMeshComponent)
+	TObjectPtr<UStaticMeshComponent> Body;
 
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-UFUNCTION()
-	virtual void NotifyHit(
-		UPrimitiveComponent* MyComp
-		, AActor* Other
-		, UPrimitiveComponent* OtherComp
-		, bool bSelfMoved
-		, FVector HitLocation
-		, FVector HitNormal
-		, FVector NormalImpulse
-		, const FHitResult& Hit
-	) override;
 
 };

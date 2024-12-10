@@ -100,7 +100,7 @@ APPCharacterPlayer::APPCharacterPlayer()
 
 
 	AttachedMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("AttachedMesh"));
-	GetCapsuleComponent()->OnComponentHit.AddDynamic(this, &APPCharacterPlayer::OnHit);
+	GetCapsuleComponent()->OnComponentBeginOverlap.AddDynamic(this, &APPCharacterPlayer::OnBeginOverlap);
 }
 
 void APPCharacterPlayer::BeginPlay()
@@ -121,7 +121,10 @@ void APPCharacterPlayer::BeginPlay()
 
 void APPCharacterPlayer::Tick(float DeltaTime)
 {
-
+	//Idle상태에서의 플레이어가 움직이는 actor와의 충돌을 무시하게 되버려 다음 코드를 추가함.
+	FHitResult OutHit;
+	GetCharacterMovement()->SafeMoveUpdatedComponent(FVector(0.f, 0.f, 0.03f), GetActorRotation(), true, OutHit);
+	GetCharacterMovement()->SafeMoveUpdatedComponent(FVector(0.f, 0.f, -0.03f), GetActorRotation(), true, OutHit);
 }
 
 void APPCharacterPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -145,47 +148,17 @@ void APPCharacterPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 	
 }
 
-
-void APPCharacterPlayer::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
+void APPCharacterPlayer::OnBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	
-	if (Cast<APPCleaningRobot>(OtherActor))
+	if (APPCleaningRobot* CleaingRobotRef = Cast<APPCleaningRobot>(OtherActor))
 	{
-		//FVector Start = OtherActor->GetActorLocation();
-		// 플레이어와 충돌한 지점 사이의 벡터 계산
-		FVector Direction = GetActorLocation() - Hit.Location; // 충돌 지점에서 플레이어로 향하는 벡터
-		Direction.Normalize(); // 벡터를 정규화하여 방향만 남기기
-
-		// 넉백 효과를 위한 속도 계산 (예: 1000.0f는 넉백 강도)
-		FVector KnockbackVelocity = Direction * 1000.0f;
-
-		// Z축 방향 넉백 수치를 제한
-		float MaxKnockbackZ = 500.0f; // 최대 넉백 강도 (Z축)
-
-		// Z축 넉백 수치가 MaxKnockbackZ를 초과하지 않도록 제한
-		if (FMath::Abs(KnockbackVelocity.Z) > MaxKnockbackZ)
-		{
-			KnockbackVelocity.Z = FMath::Sign(KnockbackVelocity.Z) * MaxKnockbackZ;
-		}
-
-		// X, Y는 원래 벡터의 값을 그대로 사용하고, Z축만 제한된 값을 사용
-		KnockbackVelocity.X = KnockbackVelocity.X;
-		KnockbackVelocity.Y = KnockbackVelocity.Y;
+		FRotator Rotation = CleaingRobotRef->GetActorRotation();
+		FVector KnockbackVelocity = UKismetMathLibrary::GetForwardVector(Rotation) * CleaingRobotRef->KnockbackStrength;
 
 		// 플레이어에게 넉백 적용
-		LaunchCharacter(KnockbackVelocity, false, false); 
-		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("Player Hit!"));
-		//TArray<AActor*> ActorsToIgnore;
-		//TArray<TEnumAsByte<EObjectTypeQuery>> ObjectTypesArray; // 히트 가능한 오브젝트 유형들.
-		//TEnumAsByte<EObjectTypeQuery> Pawn = UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_Pawn);
-		//TEnumAsByte<EObjectTypeQuery> WorldDynamic = UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_WorldDynamic);
-		//ObjectTypesArray.Add(Pawn);
-		//ObjectTypesArray.Add(WorldDynamic);
-		//FHitResult OutHit;
-		//bool hit = UKismetSystemLibrary::SphereTraceSingleForObjects(GetWorld(), Start, End, 500.f, ObjectTypesArray, false, ActorsToIgnore, EDrawDebugTrace::ForDuration, OutHit, true);
-
+		LaunchCharacter(KnockbackVelocity, true, true);
+		ElectricDischargeComponent->ChargeElectric(CleaingRobotRef->ElectricLossRate);
 	}
-
 }
 
 void APPCharacterPlayer::SetCharacterControl(ECharacterControlType NewCharacterControlType)

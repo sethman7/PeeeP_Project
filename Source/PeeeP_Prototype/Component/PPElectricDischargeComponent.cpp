@@ -304,7 +304,7 @@ void UPPElectricDischargeComponent::ChargeElectric(float amount)
 		bElectricIsEmpty = false;
 	}
 
-	if (CurrentElectricCapacity < MaxElectricCapacity)
+	if (CurrentElectricCapacity <= MaxElectricCapacity)
 	{
 		UE_LOG(LogTemp, Log, TEXT("Charing +%f"), amount);
 		CurrentElectricCapacity += amount;

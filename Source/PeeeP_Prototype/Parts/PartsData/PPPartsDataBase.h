@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -10,6 +10,11 @@
  * 
  */
 
+//파츠를 생성하기 위한 데이터를 보관하는 클래스
+//기본적으로 파츠 매쉬, 맵핑 컨텍스트, 해당 파츠 컴포넌트 클래스에 대한 정보를 갖고있음
+//해당 클래스를 상속받아서 각 개별 파츠에 대한 정보를 추가 구성한다(인풋 액션 등)
+//
+
 UCLASS()
 class PEEEP_PROTOTYPE_API UPPPartsDataBase : public UPrimaryDataAsset
 {
@@ -17,12 +22,12 @@ class PEEEP_PROTOTYPE_API UPPPartsDataBase : public UPrimaryDataAsset
 	
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	TObjectPtr<class UStaticMesh> PartsMesh;
+	TObjectPtr<class USkeletalMesh> PartsMesh;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TObjectPtr<class UInputMappingContext> PartsMappingContext;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	TSubclassOf<class UPPPartsBase> PartsComponent;
+	TSubclassOf<class UPPPartsBase> PartsComponentClass;
 
 };

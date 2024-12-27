@@ -10,14 +10,19 @@
 
 void UPPSlot::NativeConstruct()
 {
+	TXT_Quantity = Cast<UTextBlock>(GetWidgetFromName(TEXT("TEXT_Quantity")));
 }
 
 void UPPSlot::Init()
 {
 	// 개별 함수를 연동하여 맵에 저장(현재는 파츠 슬롯만)
+	SlotUpdateActions.Add(ESlotType::ST_None, FUpdateSlotDelegateWrapper(FOnUpdateSlotDelegate::CreateUObject(this, &UPPSlot::UpdatePartsSlot)));
 	SlotUpdateActions.Add(ESlotType::ST_InventoryParts, FUpdateSlotDelegateWrapper(FOnUpdateSlotDelegate::CreateUObject(this, &UPPSlot::UpdatePartsSlot)));
-	// 초기화 시 업데이트 진행
-	UpdateSlot();
+
+	for (auto& item : SlotUpdateActions)
+	{
+		item.Value.SlotDelegate.ExecuteIfBound();
+	}
 }
 
 void UPPSlot::SetType(ESlotType Type)

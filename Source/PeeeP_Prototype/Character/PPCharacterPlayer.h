@@ -120,4 +120,20 @@ public:
 	UPPElectricDischargeComponent* GetElectricDischargeComponent();
 	// InventoryComponent(IPPInventoryInterface에 의해)
 	virtual class UPPInventoryComponent* GetInventoryComponent() override;
+
+
+protected:	// Quick Slot Section
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, Meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class UInputAction> QuickSlotMoveAction;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, Meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class UInputAction> QuickSlotUseAction;
+
+	FTimerHandle QuickSlotMoveTimer;
+	bool bIsAllowWheelInput;
+
+	void QuickSlotMove(const FInputActionValue& Value);
+	void QuickSlotUse(const FInputActionValue& Value);
+
+	void SetWheelInputAllow(bool Value);
 };

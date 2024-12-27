@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Parts/PartsData/PPPartsDataBase.h"
+#include "../PartsComponent/PPPartsBase.h"
 #include "PPGrabPartsData.generated.h"
 
 /**
@@ -17,6 +18,16 @@ class PEEEP_PROTOTYPE_API UPPGrabPartsData : public UPPPartsDataBase
 public:
 	UPPGrabPartsData();
 
+	virtual FPrimaryAssetId GetPrimaryAssetId() const override
+	{
+		return FPrimaryAssetId("PPPartsData", GetFName());
+	}
+
+public:
+	// 생성할 파츠 클래스
+	UPROPERTY(EditAnywhere, Category = Parts)
+	TSubclassOf<class UPPGrabParts> GrabPartsClass;
+	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TObjectPtr<class UInputAction> GrabAction;
 };

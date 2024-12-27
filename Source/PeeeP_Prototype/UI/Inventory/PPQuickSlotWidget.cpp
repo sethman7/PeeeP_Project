@@ -1,29 +1,22 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "UI/Inventory/PPInventoryWidget.h"
-#include "Components/Button.h"
+#include "UI/Inventory/PPQuickSlotWidget.h"
+#include "Inventory/PPInventoryComponent.h"
 #include "Blueprint/WidgetTree.h"
-#include "UI/Inventory/PPSlot.h"
 
-void UPPInventoryWidget::NativeConstruct()
+void UPPQuickSlotWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 }
 
-void UPPInventoryWidget::Init()
+void UPPQuickSlotWidget::Init()
 {
 	// 기본 타입 설정(파츠)
 	SetType(ESlotType::ST_InventoryParts);
 
-	// 버튼 클릭 이벤트와 함수 연동
-	if (BTN_Parts)
-	{
-		BTN_Parts->OnClicked.AddDynamic(this, &UPPInventoryWidget::SetPartsType);
-	}
-
 	// 슬롯을 저장하기 위한 배열 초기화(일단 5칸)
-	Slots.Init(nullptr, 5);
+	Slots.Init(nullptr, 6);
 
 	TArray<UWidget*> Widgets;
 	// 모든 위젯들을 가져와 Widgets 배열에 저장
@@ -45,12 +38,14 @@ void UPPInventoryWidget::Init()
 			Slots[InvSlot->SlotIndex] = InvSlot;
 		}
 	}
-
-	// 퀵슬롯 위젯 초기화가 완료되었다는 델리게이트
-
+	UPPInventoryComponent* InventoryComponent = Cast<UPPInventoryComponent>(OwningActor->GetComponentByClass(UPPInventoryComponent::StaticClass()));
+	if (InventoryComponent != nullptr)
+	{
+		InventoryComponent->SetQuickSlotWidget(this);
+	}
 }
 
-void UPPInventoryWidget::UpdateInventorySlot()
+void UPPQuickSlotWidget::UpdateQuickSlot()
 {
 	// 슬롯을 현재 인벤토리 타입으로 업데이트
 	for (const auto& InvSlot : Slots)
@@ -60,14 +55,16 @@ void UPPInventoryWidget::UpdateInventorySlot()
 	}
 }
 
-void UPPInventoryWidget::SetPartsType()
+void UPPQuickSlotWidget::SetQuickSlotWidget(UPPQuickSlotWidget* source)
 {
-	SetType(ESlotType::ST_InventoryParts);
+	source = this;
 }
 
-void UPPInventoryWidget::SetType(ESlotType Type)
+void UPPQuickSlotWidget::SetType(ESlotType Type)
 {
 	// 현재 인벤토리 타입 변경
 	InventorySlotType = Type;
-	UpdateInventorySlot();
+	UpdateQuickSlot();
 }
+
+

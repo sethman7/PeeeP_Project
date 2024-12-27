@@ -17,6 +17,8 @@ UPPInventoryComponent::UPPInventoryComponent()
 	PartsItems.Init(nullptr, MaxInventorySlotNum);
 	ConsumableItems.Init(nullptr, MaxInventorySlotNum);
 	OtherItems.Init(nullptr, MaxInventorySlotNum);
+
+	CurrentSlotIndex = 0;
 }
 
 void UPPInventoryComponent::InitializeComponent()
@@ -143,8 +145,21 @@ void UPPInventoryComponent::UseItem(int32 InSlotIndex, ESlotType InventoryType)
 		}
 		break;
 	}
-
 	
+}
+
+void UPPInventoryComponent::UseItemCurrentIndex(ESlotType InventoryType)
+{
+	switch (InventoryType)
+	{
+	case ESlotType::ST_InventoryParts:
+		if (PartsItems.IsValidIndex(CurrentSlotIndex) && IsValid(PartsItems[CurrentSlotIndex]))
+		{
+			// 아이템 사용
+			UE_LOG(LogTemp, Warning, TEXT("Parts Item Use: %d Slot"), CurrentSlotIndex);
+		}
+		break;
+	}
 }
 
 void UPPInventoryComponent::RemoveItem(int32 InSlotIndex, ESlotType InventoryType)
@@ -193,20 +208,19 @@ void UPPInventoryComponent::InitInventory()
 
 	if (Assets.Num() > 0)
 	{
+		// Slot Index, <종류, 수량>
 		TMap<int32, TPair<FName, int32>> InventoryPartsArray;
 		//TMap<int32, TPair<FName, int32>> InventoryConstableArray;
 		
 		// 테스트 블록(실제로는 저장된 파일에서 데이터를 읽어와야 함)
 		{
-			InventoryPartsArray.Add(1, { TEXT("TEST_GRAB_PARTS"), 1 });
+			InventoryPartsArray.Add(0, { TEXT("GrabPartsData"), 1 });
 		}
 
 		for (const auto& InvItem : InventoryPartsArray)
 		{
 			// 특정 아이템 키 생성
-			FPrimaryAssetId Key;
-			Key.PrimaryAssetType = TEXT("PPPartsData");
-			Key.PrimaryAssetName = InvItem.Value.Key;
+			FPrimaryAssetId Key(TEXT("PPPartsData"), InvItem.Value.Key);
 
 			if (Assets.Contains(Key))
 			{
@@ -230,11 +244,10 @@ void UPPInventoryComponent::InitInventory()
 				}
 			}
 		}
-
 	}
+
+
 }
-
-
 
 // Called every frame
 void UPPInventoryComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
@@ -242,5 +255,26 @@ void UPPInventoryComponent::TickComponent(float DeltaTime, ELevelTick TickType, 
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
 	// ...
+}
+
+void UPPInventoryComponent::ModifyCurrentSlotIndex(int32 Value)
+{
+	CurrentSlotIndex += Value;
+
+	// 인덱스 제한
+	CurrentSlotIndex = FMath::Clamp(CurrentSlotIndex, 0, PartsItems.Num() - 1);
+
+	UE_LOG(LogTemp, Log, TEXT("Current Slot Index: %d"), CurrentSlotIndex);
+}
+
+void UPPInventoryComponent::SetQuickSlotWidget(UPPQuickSlotWidget* widget)
+{
+	if (widget == nullptr)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("SetQuickSlotWidget() Error!, The Parameter was nullptr."));
+		return;
+	}
+	QuickSlotWidget = widget;
+	UE_LOG(LogTemp, Log, TEXT("Successfully getting QuickSlotWidget."));
 }
 

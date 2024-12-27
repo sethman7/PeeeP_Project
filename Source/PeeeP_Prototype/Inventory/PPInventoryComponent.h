@@ -6,6 +6,8 @@
 #include "Components/ActorComponent.h"
 #include "PPInventoryPartsItem.h"
 #include "Inventory/ESlotType.h"
+#include "../UI/Inventory/PPSlot.h"
+#include "../UI/Inventory/PPQuickSlotWidget.h"
 #include "PPInventoryComponent.generated.h"
 
 // 인벤토리 내용 변경 델리게이트
@@ -57,6 +59,8 @@ public:
 	bool AddItem(FName InItemName, int32 InItemQuantity, int32& OutItemQuantity);
 	// 아이템 사용
 	void UseItem(int32 InSlotIndex, ESlotType InventoryType);
+	// 현재 인덱스 기반 아이템 사용
+	void UseItemCurrentIndex(ESlotType InventoryType);
 	// 아이템 교체
 	void SwapItem(int32 InprevIndex, int32 InCurrentIndex);
 
@@ -73,5 +77,24 @@ public:
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
-		
+protected:
+	// 현재 선택된 슬롯 인덱스
+	int32 CurrentSlotIndex;
+
+public:
+	void ModifyCurrentSlotIndex(int32 Value);
+
+private:
+	// 퀵슬롯 위젯
+	UPROPERTY()
+	TObjectPtr <class UPPQuickSlotWidget> QuickSlotWidget;
+
+	// 슬롯들을 저장하기 위한 배열
+	UPROPERTY(VisibleAnywhere, Category = "Inventory")
+	TArray<TObjectPtr<class UPPSlot>> Slots;
+
+public:
+
+	UFUNCTION()
+	void SetQuickSlotWidget(UPPQuickSlotWidget* widget);
 };

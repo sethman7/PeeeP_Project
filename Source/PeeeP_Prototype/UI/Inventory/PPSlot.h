@@ -40,7 +40,7 @@ public:
 
 public:
 	// 현재 슬롯의 타입
-	UPROPERTY(VisibleAnywhere, Category = "Slot")
+	UPROPERTY(EditAnywhere, Category = "Slot")
 	ESlotType SlotType;
 
 	// 슬롯에 지정될 이미지

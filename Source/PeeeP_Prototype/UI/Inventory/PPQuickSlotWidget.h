@@ -26,6 +26,8 @@ public:
 	UFUNCTION()
 	void SetQuickSlotWidget	(UPPQuickSlotWidget* source);
 
+	TArray<TObjectPtr<class UPPSlot>> GetSlots();
+
 private:
 	void SetType(ESlotType Type);
 

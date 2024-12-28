@@ -286,25 +286,24 @@ void APPCharacterPlayer::QuickSlotMove(const FInputActionValue& Value)
 	float MoveDir = Value.Get<float>();
 
 	// 마우스 휠 연속된 입력 방지
-	float InputInterval = 0.2f;	// 다음 인풋까지 간격
+	float InputInterval = 0.5f;	// 다음 인풋까지 간격
 	if (bIsAllowWheelInput)
 	{
 		UE_LOG(LogTemp, Log, TEXT("Quick Slot Move: %f"), MoveDir);
 		bIsAllowWheelInput = false;
 		GetWorld()->GetTimerManager().SetTimer(QuickSlotMoveTimer, [&]() {bIsAllowWheelInput = true; }, InputInterval, false);
-	}
 
-	// 슬롯 움직임 구현부
-	// 슬롯이 처음이나 끝에 다다랐을 경우 화살표는 사라지지 않지만 더이상 움직이지 않아야 함.
-	if (MoveDir < 0)		// Wheel Down
-	{
-		InventoryComponent->ModifyCurrentSlotIndex(1);
+		// 슬롯 움직임 구현부
+		// 슬롯이 처음이나 끝에 다다랐을 경우 화살표는 사라지지 않지만 더이상 움직이지 않아야 함.
+		if (MoveDir < 0)		// Wheel Down
+		{
+			InventoryComponent->ModifyCurrentSlotIndex(1);
+		}
+		else if (MoveDir > 0)	// Wheel Up
+		{
+			InventoryComponent->ModifyCurrentSlotIndex(-1);
+		}
 	}
-	else if (MoveDir > 0)	// Wheel Up
-	{
-		InventoryComponent->ModifyCurrentSlotIndex(-1);
-	}
-
 }
 
 void APPCharacterPlayer::QuickSlotUse(const FInputActionValue& Value)

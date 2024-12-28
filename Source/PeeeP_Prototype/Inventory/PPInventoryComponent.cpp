@@ -264,6 +264,13 @@ void UPPInventoryComponent::ModifyCurrentSlotIndex(int32 Value)
 	// ¿Œµ¶Ω∫ ¡¶«—
 	CurrentSlotIndex = FMath::Clamp(CurrentSlotIndex, 0, PartsItems.Num() - 1);
 
+	TArray<TObjectPtr<class UPPSlot>> Slots = QuickSlotWidget->GetSlots();
+	for (auto& item : Slots)
+	{
+		item->SetVisibility(ESlateVisibility::Hidden);
+	}
+	Slots[CurrentSlotIndex]->SetVisibility(ESlateVisibility::Visible);
+
 	UE_LOG(LogTemp, Log, TEXT("Current Slot Index: %d"), CurrentSlotIndex);
 }
 

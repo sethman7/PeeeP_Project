@@ -90,11 +90,11 @@ private:
 	TObjectPtr <class UPPQuickSlotWidget> QuickSlotWidget;
 
 	// 슬롯들을 저장하기 위한 배열
-	UPROPERTY(VisibleAnywhere, Category = "Inventory")
-	TArray<TObjectPtr<class UPPSlot>> Slots;
+	/*UPROPERTY(VisibleAnywhere, Category = "Inventory")
+	TArray<TObjectPtr<class UPPSlot>> Slots;*/
 
 public:
-
+	// 인벤토리 컴포넌트 내 퀵슬롯 위젯 설정을 위한 함수
 	UFUNCTION()
 	void SetQuickSlotWidget(UPPQuickSlotWidget* widget);
 };

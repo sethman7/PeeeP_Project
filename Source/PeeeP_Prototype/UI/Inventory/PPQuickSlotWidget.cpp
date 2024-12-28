@@ -23,6 +23,8 @@ void UPPQuickSlotWidget::Init()
 	WidgetTree->GetAllWidgets(Widgets);
 
 	// 배열을 순회하여 커스텀 Slot을 찾음
+	// 궁금해진 점: 이렇게 찾아오면 UMG에서 순서를 지정한대로 저장할 수 있을까?
+	// 일단은 순서대로 저장됨.
 	for (UWidget* Widget : Widgets)
 	{
 		UPPSlot* InvSlot = Cast<UPPSlot>(Widget);
@@ -43,6 +45,12 @@ void UPPQuickSlotWidget::Init()
 	{
 		InventoryComponent->SetQuickSlotWidget(this);
 	}
+
+	for (auto& InvSlot : Slots)
+	{
+		InvSlot->SetVisibility(ESlateVisibility::Hidden);
+	}
+	Slots[0]->SetVisibility(ESlateVisibility::Visible);
 }
 
 void UPPQuickSlotWidget::UpdateQuickSlot()
@@ -58,6 +66,11 @@ void UPPQuickSlotWidget::UpdateQuickSlot()
 void UPPQuickSlotWidget::SetQuickSlotWidget(UPPQuickSlotWidget* source)
 {
 	source = this;
+}
+
+TArray<TObjectPtr<class UPPSlot>> UPPQuickSlotWidget::GetSlots()
+{
+	return Slots;
 }
 
 void UPPQuickSlotWidget::SetType(ESlotType Type)

@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "../PartsData/PPPartsDataBase.h"
 #include "PPPartsBase.generated.h"
 
 
@@ -16,7 +17,9 @@ public:
 	// Sets default values for this component's properties
 	UPPPartsBase();
 
-	virtual void BeginDestroy() override;
+	virtual void OnComponentDestroyed(bool bDestroyingHierarchy) override;
+
+	void DetachParts();
 
 protected:
 	// Called when the game starts

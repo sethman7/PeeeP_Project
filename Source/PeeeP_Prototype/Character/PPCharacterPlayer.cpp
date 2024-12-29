@@ -109,6 +109,8 @@ APPCharacterPlayer::APPCharacterPlayer()
 	
 	// 인벤토리 컴포넌트
 	InventoryComponent = CreateDefaultSubobject<UPPInventoryComponent>(TEXT("InventoryComponent"));
+
+	//UsePartsDelegate.AddUObject(this, &APPCharacterPlayer::SetPartsEquipment);
 }
 
 void APPCharacterPlayer::BeginPlay()
@@ -245,18 +247,22 @@ UCameraComponent* APPCharacterPlayer::GetCamera()
 	return FollowCamera;
 }
 
-
 void APPCharacterPlayer::SwitchParts(UPPPartsDataBase* InPartsData)
+{
+	RemoveParts();
+
+	UE_LOG(LogTemp, Log, TEXT("Creat New Parts"));
+	UActorComponent* PartsComponent = AddComponentByClass(InPartsData->PartsComponent, true, FTransform::Identity, false);
+	Parts = CastChecked<UPPPartsBase>(PartsComponent);
+}
+
+void APPCharacterPlayer::RemoveParts()
 {
 	if (Parts)
 	{
 		UE_LOG(LogTemp, Log, TEXT("Destroy Parts"));
 		Parts->DestroyComponent();
 	}
-
-	UE_LOG(LogTemp, Log, TEXT("Creat New Parts"));
-	UActorComponent* PartsComponent = AddComponentByClass(InPartsData->PartsComponent, true, FTransform::Identity, false);
-	Parts = CastChecked<UPPPartsBase>(PartsComponent);
 }
 
 void APPCharacterPlayer::ReduationMaxWalkSpeedRatio(float InReductionRatio)
@@ -268,7 +274,6 @@ void APPCharacterPlayer::RevertMaxWalkSpeed()
 {
 	GetCharacterMovement()->MaxWalkSpeed = this->MaxWalkSpeed;
 }
-
 
 UNiagaraComponent* APPCharacterPlayer::GetPlayerCharacterNiagaraComponent() const
 {

@@ -24,10 +24,6 @@ public:
 	}
 
 public:
-	// 생성할 파츠 클래스
-	UPROPERTY(EditAnywhere, Category = Parts)
-	TSubclassOf<class UPPGrabParts> GrabPartsClass;
-	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TObjectPtr<class UInputAction> GrabAction;
 };

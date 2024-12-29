@@ -4,6 +4,7 @@
 #include "Parts/PartsComponent/PPPartsBase.h"
 #include "Parts/PartsData/PPGrabPartsData.h"
 #include "Character/PPCharacterPlayer.h"
+#include "Kismet/GameplayStatics.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 
@@ -17,14 +18,46 @@ UPPPartsBase::UPPPartsBase()
 	// ...
 }
 
-void UPPPartsBase::BeginDestroy()
+//void UPPPartsBase::OnComponentDestroyed(bool bDestroyingHierarchy)
+//{
+//	// 임시방편 해결법(with Github Copilot)
+//	Super::OnComponentDestroyed(bDestroyingHierarchy);
+//
+//	APPCharacterPlayer* PlayerCharacter = Cast<APPCharacterPlayer>(GetOwner());
+//	if (PlayerCharacter)
+//	{
+//		APlayerController* PlayerController = Cast<APlayerController>(PlayerCharacter->GetController());
+//		if (!PlayerController)
+//		{
+//			PlayerController = UGameplayStatics::GetPlayerController(GetWorld(), 0);
+//		}
+//		if (PlayerController)
+//		{
+//			if (UEnhancedInputLocalPlayerSubsystem* Subsystem
+//				= ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
+//			{
+//				if (PartsData)
+//				{
+//					Subsystem->RemoveMappingContext(PartsData->PartsMappingContext);
+//				}
+//			}
+//		}
+//	}
+//}
+
+void UPPPartsBase::OnComponentDestroyed(bool bDestroyingHierarchy)
 {
-	Super::BeginDestroy();
+	// 임시방편 해결법(with Github Copilot)
+	Super::OnComponentDestroyed(bDestroyingHierarchy);
 
 	APPCharacterPlayer* PlayerCharacter = Cast<APPCharacterPlayer>(GetOwner());
 	if (PlayerCharacter)
 	{
-		APlayerController* PlayerController = CastChecked<APlayerController>(PlayerCharacter->GetController());
+		APlayerController* PlayerController = Cast<APlayerController>(PlayerCharacter->GetController());
+		if (!PlayerController)
+		{
+			return;
+		}
 		if (UEnhancedInputLocalPlayerSubsystem* Subsystem
 			= ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
 		{
@@ -35,7 +68,6 @@ void UPPPartsBase::BeginDestroy()
 		}
 	}
 }
-
 
 // Called when the game starts
 void UPPPartsBase::BeginPlay()

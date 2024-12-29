@@ -13,13 +13,28 @@ UPPGrabParts::UPPGrabParts()
 {
 	PrimaryComponentTick.bCanEverTick = true;
 
-	Owner = GetOwner();
-
-	static ConstructorHelpers::FObjectFinder<UPPGrabPartsData> GrabPartsDataRef(TEXT("/Script/PeeeP_Prototype.PPGrabPartsData'/Game/Parts/Grab/GrabData.GrabData'"));
+	static ConstructorHelpers::FObjectFinder<UPPGrabPartsData> GrabPartsDataRef(TEXT("/Script/PeeeP_Prototype.PPGrabPartsData'/Game/Parts/Grab/GrabPartsData.GrabPartsData'"));
 	if (GrabPartsDataRef.Object)
 	{
 		PartsData = GrabPartsDataRef.Object;
 	}
+}
+
+void UPPGrabParts::BeginDestroy()
+{
+	Super::BeginDestroy();
+
+	if (GrabHandle)
+	{
+		GrabHandle->DestroyComponent();
+	}
+}
+
+void UPPGrabParts::OnComponentCreated()
+{
+	Super::OnComponentCreated();
+
+	Owner = GetOwner();
 
 	//Setup
 	APPCharacterPlayer* PlayerCharacter = Cast<APPCharacterPlayer>(Owner);
@@ -42,16 +57,6 @@ UPPGrabParts::UPPGrabParts()
 				EnhancedInputComponent->BindAction(GrabPartsData->GrabAction, ETriggerEvent::Completed, this, &UPPGrabParts::GrabRelease);
 			}
 		}
-	}
-}
-
-void UPPGrabParts::BeginDestroy()
-{
-	Super::BeginDestroy();
-
-	if (GrabHandle)
-	{
-		GrabHandle->DestroyComponent();
 	}
 }
 

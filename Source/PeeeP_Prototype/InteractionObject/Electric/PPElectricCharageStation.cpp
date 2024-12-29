@@ -37,7 +37,7 @@ void APPElectricCharageStation::Tick(float DeltaTime)
 
 	if (bIsActivate)
 	{
-		ElectricDischargeComponent->ChargeElectric(1.0f * DeltaTime);
+		ElectricDischargeComponent->ChargeElectric(5.0f * DeltaTime);
 	}
 }
 

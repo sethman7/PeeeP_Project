@@ -45,9 +45,6 @@ void UPPInventoryWidget::Init()
 			Slots[InvSlot->SlotIndex] = InvSlot;
 		}
 	}
-
-	// 퀵슬롯 위젯 초기화가 완료되었다는 델리게이트
-
 }
 
 void UPPInventoryWidget::UpdateInventorySlot()

@@ -8,6 +8,9 @@
 void UPPQuickSlotWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
+
+	TXT_Equipment = Cast<UTextBlock>(GetWidgetFromName(TEXT("TXT_Equipment")));
+	TXT_Equipment->SetVisibility(ESlateVisibility::Hidden);
 }
 
 void UPPQuickSlotWidget::Init()
@@ -15,7 +18,7 @@ void UPPQuickSlotWidget::Init()
 	// 기본 타입 설정(파츠)
 	SetType(ESlotType::ST_InventoryParts);
 
-	// 슬롯을 저장하기 위한 배열 초기화(일단 5칸)
+	// 슬롯을 저장하기 위한 배열 초기화(일단 6칸)
 	Slots.Init(nullptr, 6);
 
 	TArray<UWidget*> Widgets;
@@ -66,6 +69,11 @@ void UPPQuickSlotWidget::UpdateQuickSlot()
 void UPPQuickSlotWidget::SetQuickSlotWidget(UPPQuickSlotWidget* source)
 {
 	source = this;
+}
+
+void UPPQuickSlotWidget::SetEquipmentTextVisible(ESlateVisibility VisibleMode)
+{
+	TXT_Equipment->SetVisibility(VisibleMode);
 }
 
 TArray<TObjectPtr<class UPPSlot>> UPPQuickSlotWidget::GetSlots()

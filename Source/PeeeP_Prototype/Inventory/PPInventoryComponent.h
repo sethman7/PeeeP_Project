@@ -64,6 +64,7 @@ public:
 	// 아이템 교체
 	void SwapItem(int32 InprevIndex, int32 InCurrentIndex);
 
+
 	// 인벤토리 정렬
 	void SortItem();
 
@@ -80,6 +81,8 @@ public:
 protected:
 	// 현재 선택된 슬롯 인덱스
 	int32 CurrentSlotIndex;
+	// 현재 장착된 파츠 슬롯 인덱스
+	int32 UsingSlotIndex;
 
 public:
 	void ModifyCurrentSlotIndex(int32 Value);

@@ -318,6 +318,8 @@ void APPCharacterPlayer::QuickSlotUse(const FInputActionValue& Value)
 	// 테스트 부분: 슬롯 인덱스 0번의 파츠 슬롯 타입의 아이템을 사용해 주세요.
 	// 결과: 로그 정상 출력
 	//InventoryComponent->UseItem(0, ESlotType::ST_InventoryParts);
+
+	// 현재 선택된 슬롯을 기반으로 하여 아이템 사용
 	InventoryComponent->UseItemCurrentIndex(ESlotType::ST_InventoryParts);
 
 }

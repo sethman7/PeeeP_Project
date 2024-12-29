@@ -19,6 +19,7 @@ UPPInventoryComponent::UPPInventoryComponent()
 	OtherItems.Init(nullptr, MaxInventorySlotNum);
 
 	CurrentSlotIndex = 0;
+	UsingSlotIndex = -1;	// -1: 미장착
 }
 
 void UPPInventoryComponent::InitializeComponent()
@@ -42,6 +43,7 @@ void UPPInventoryComponent::BeginPlay()
 
 bool UPPInventoryComponent::AddItem(FName InItemName, int32 InItemQuantity, int32& OutItemQuantity)
 {
+
 	// 성공적으로 추가했는지에 대한 결과 반환용 변수
 	bool bIsResult = false;
 
@@ -108,15 +110,18 @@ bool UPPInventoryComponent::AddItem(FName InItemName, int32 InItemQuantity, int3
 		if (!bIsResult)
 		{
 			OutItemQuantity = NewItem->ItemQuantity;
+			QuickSlotWidget->UpdateQuickSlot();
 			return bIsResult;
 		}
 		else
 		{
+			QuickSlotWidget->UpdateQuickSlot();
 			return bIsResult;
 		}
 	}
 
 	OutItemQuantity = InItemQuantity;
+
 	return bIsResult;
 }
 
@@ -157,6 +162,42 @@ void UPPInventoryComponent::UseItemCurrentIndex(ESlotType InventoryType)
 		{
 			// 아이템 사용
 			UE_LOG(LogTemp, Warning, TEXT("Parts Item Use: %d Slot"), CurrentSlotIndex);
+
+			/// 고려해야 할 점들
+			/// 1. 이전에 파츠를 장착하지 않았다면, 장착되어야 하며 우측 하단 "E" 텍스트가 표기되어야 함.
+			/// 2. 내가 현재 장착하고자 하는 파츠와 이전의 파츠가 다르면, 현재 장착되어있는 파츠를 해제하고 새 파츠를 장착해야 함.
+			/// 이 때 "E" 텍스트는 현재 코드상 visible 전환 필요 없음(선택된(화면에 표시된) 파츠는 내가 방금 장착한 파츠이므로)
+			/// 3. 내가 현재 장착하고자 하는 파츠와 이전의 파츠가 같다면, 현재 장착되어있는 파츠를 해제해야 함.
+			/// 이 때 "E" 텍스트는 표기가 되지 않아야 함.
+
+			/// 위 고려 사항에서 다음과 같은 의문이 발생할 수 있음.
+			/// a. 장착하고 있는 파츠에 대한 정보는 어떻게 얻을 것인가?
+			/// b. 인덱스로만 접근한다면 컴포넌트 내의 인덱스와 내가 실제로 장착하고 있는 파츠가 같다는 것을 보장할 수 있는가?
+			/// 
+
+			/// 인덱스 구현 방식
+			if (UsingSlotIndex == -1)	// 이전에 파츠를 장착하지 않았다면
+			{
+				UsingSlotIndex = CurrentSlotIndex;
+				QuickSlotWidget->SetEquipmentTextVisible(ESlateVisibility::Visible);
+				// 파츠 장착부
+
+			}
+			else if (UsingSlotIndex == CurrentSlotIndex)	// 현재 사용하고 있는 파츠가 내가 사용하려는 파츠와 같다면(즉, 장착 해제)
+			{
+				UsingSlotIndex = -1; // 미장착으로 변경
+				QuickSlotWidget->SetEquipmentTextVisible(ESlateVisibility::Hidden);
+				// 파츠 해제부
+
+			}
+			else	// 현재 사용하고 있는 파츠가 내가 사용하려는 파츠와 다르다면
+			{
+				UsingSlotIndex = CurrentSlotIndex;
+				QuickSlotWidget->SetEquipmentTextVisible(ESlateVisibility::Visible);
+				// 파츠 교체부
+
+			}
+
 		}
 		break;
 	}
@@ -214,7 +255,7 @@ void UPPInventoryComponent::InitInventory()
 		
 		// 테스트 블록(실제로는 저장된 파일에서 데이터를 읽어와야 함)
 		{
-			InventoryPartsArray.Add(0, { TEXT("GrabPartsData"), 1 });
+			//InventoryPartsArray.Add(0, { TEXT("GrabPartsData"), 1 });
 		}
 
 		for (const auto& InvItem : InventoryPartsArray)
@@ -271,14 +312,23 @@ void UPPInventoryComponent::ModifyCurrentSlotIndex(int32 Value)
 	}
 	Slots[CurrentSlotIndex]->SetVisibility(ESlateVisibility::Visible);
 
-	UE_LOG(LogTemp, Log, TEXT("Current Slot Index: %d"), CurrentSlotIndex);
+	if (CurrentSlotIndex == UsingSlotIndex)
+	{
+		QuickSlotWidget->SetEquipmentTextVisible(ESlateVisibility::Visible);
+	}
+	else
+	{
+		QuickSlotWidget->SetEquipmentTextVisible(ESlateVisibility::Hidden);
+	}
+
+	UE_LOG(LogTemp, Log, TEXT("Current Slot Index: %d"), CurrentSlotIndex);	
 }
 
 void UPPInventoryComponent::SetQuickSlotWidget(UPPQuickSlotWidget* widget)
 {
 	if (widget == nullptr)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("SetQuickSlotWidget() Error!, The Parameter was nullptr."));
+		UE_LOG(LogTemp, Warning, TEXT("SetQuickSlotWidget() Error!, The Parameter was a nullptr."));
 		return;
 	}
 	QuickSlotWidget = widget;

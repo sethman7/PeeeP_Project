@@ -6,6 +6,7 @@
 #include "PPCustomWidget.h"
 #include "PPSlot.h"
 #include "../../Inventory/ESlotType.h"
+#include "Components/TextBlock.h"
 #include "PPQuickSlotWidget.generated.h"
 
 
@@ -26,6 +27,8 @@ public:
 	UFUNCTION()
 	void SetQuickSlotWidget	(UPPQuickSlotWidget* source);
 
+	void SetEquipmentTextVisible(ESlateVisibility VisibleMode);
+
 	TArray<TObjectPtr<class UPPSlot>> GetSlots();
 
 private:
@@ -34,6 +37,8 @@ private:
 	// 슬롯들을 저장하기 위한 배열
 	UPROPERTY(VisibleAnywhere, Category = "Inventory")
 	TArray<TObjectPtr<class UPPSlot>> Slots;
+
+	TObjectPtr<UTextBlock> TXT_Equipment;
 
 	// 현재 인벤토리의 타입(파츠)
 	ESlotType InventorySlotType;

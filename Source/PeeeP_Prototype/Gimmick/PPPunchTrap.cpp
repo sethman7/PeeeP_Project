@@ -6,6 +6,7 @@
 #include "Components/BoxComponent.h"
 #include "Character/PPCharacterPlayer.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Engine/SkeletalMeshSocket.h"
 
 // Sets default values
 APPPunchTrap::APPPunchTrap()
@@ -32,8 +33,6 @@ APPPunchTrap::APPPunchTrap()
 	{
 		SkeletalMesh->SetAnimInstanceClass(AnimInstanceClassRef.Class);
 	}
-
-	//SkeletalMesh->SetAnimInstanceClass();
 }
 
 // Called when the game starts or when spawned

@@ -7,7 +7,7 @@
 
 UPPGrabPartsData::UPPGrabPartsData()
 {
-	PartsComponentClass = UPPGrabParts::StaticClass();
+	PartsComponent = UPPGrabParts::StaticClass();
 
 	static ConstructorHelpers::FObjectFinder<UInputMappingContext> PartsMappingContextRef(TEXT("/Script/EnhancedInput.InputMappingContext'/Game/Parts/Grab/IMC_Grab.IMC_Grab'"));
 	if (PartsMappingContextRef.Object)

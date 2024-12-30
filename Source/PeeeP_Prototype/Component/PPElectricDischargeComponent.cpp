@@ -33,7 +33,7 @@ UPPElectricDischargeComponent::UPPElectricDischargeComponent()
 
 	// ������Ʈ(�÷��̾�)�� ���ⷮ �ʱ�ȭ
 	CurrentElectricCapacity = 0.0f;
-	MaxElectricCapacity = 3.0f;
+	MaxElectricCapacity = 12.0f;
 	bElectricIsEmpty = true;
 
 	DischargeEffectComponent = CreateDefaultSubobject<UNiagaraComponent>(TEXT("NiagaraComponent"));

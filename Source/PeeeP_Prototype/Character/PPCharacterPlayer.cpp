@@ -15,7 +15,6 @@
 #include "Parts/PartsComponent/PPGrabParts.h"
 #include "Parts/PartsData/PPPartsDataBase.h"
 #include "Component/PPElectricDischargeComponent.h"
-#include "GameFramework/CharacterMovementComponent.h"
 #include "GameMode/PPPlayerController.h"
 #include "NiagaraComponent.h"
 
@@ -64,6 +63,19 @@ APPCharacterPlayer::APPCharacterPlayer()
 		OpenMenuInteract = OpenMenuActionRef.Object;
 	}
 
+	// Quick Slot Section
+	static ConstructorHelpers::FObjectFinder<UInputAction> QuickSlotMoveRef(TEXT("/Script/EnhancedInput.InputAction'/Game/Input/Actions/IA_QuickSlotMove.IA_QuickSlotMove'"));
+	if (!QuickSlotMoveRef.Object)
+	{
+		QuickSlotMoveAction = QuickSlotMoveRef.Object;
+	}
+	static ConstructorHelpers::FObjectFinder<UInputAction> QuickSlotUseRef(TEXT("/Script/EnhancedInput.InputAction'/Game/Input/Actions/IA_QuickSlotUse.IA_QuickSlotUse'"));
+	if (!QuickSlotUseRef.Object)
+	{
+		QuickSlotUseAction = QuickSlotUseRef.Object;
+	}
+	bIsAllowWheelInput = true;
+
 	// Camera
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));	// CameraBoom 컴포넌트를 가져옴
 	CameraBoom->SetupAttachment(RootComponent);
@@ -93,6 +105,9 @@ APPCharacterPlayer::APPCharacterPlayer()
 
 	PlayerCharacterNiagaraComponent = CreateDefaultSubobject<UNiagaraComponent>(TEXT("EffectComponent"));
 	PlayerCharacterNiagaraComponent->SetupAttachment(RootComponent);
+	
+	// 인벤토리 컴포넌트
+	InventoryComponent = CreateDefaultSubobject<UPPInventoryComponent>(TEXT("InventoryComponent"));
 }
 
 void APPCharacterPlayer::BeginPlay()
@@ -135,6 +150,8 @@ void APPCharacterPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 		EnhancedInputComponent->BindAction(ElectricDischargeModeChangeAction, ETriggerEvent::Completed, ElectricDischargeComponent.Get(), &UPPElectricDischargeComponent::ChangeDischargeMode);
 	}
 	
+	EnhancedInputComponent->BindAction(QuickSlotMoveAction, ETriggerEvent::Triggered, this, &APPCharacterPlayer::QuickSlotMove);
+	EnhancedInputComponent->BindAction(QuickSlotUseAction, ETriggerEvent::Triggered, this, &APPCharacterPlayer::QuickSlotUse);
 }
 
 void APPCharacterPlayer::SetCharacterControl(ECharacterControlType NewCharacterControlType)
@@ -227,18 +244,22 @@ UCameraComponent* APPCharacterPlayer::GetCamera()
 	return FollowCamera;
 }
 
-
 void APPCharacterPlayer::SwitchParts(UPPPartsDataBase* InPartsData)
+{
+	RemoveParts();
+
+	UE_LOG(LogTemp, Log, TEXT("Creat New Parts"));
+	UActorComponent* PartsComponent = AddComponentByClass(InPartsData->PartsComponent, true, FTransform::Identity, false);
+	Parts = CastChecked<UPPPartsBase>(PartsComponent);
+}
+
+void APPCharacterPlayer::RemoveParts()
 {
 	if (Parts)
 	{
 		UE_LOG(LogTemp, Log, TEXT("Destroy Parts"));
 		Parts->DestroyComponent();
 	}
-
-	UE_LOG(LogTemp, Log, TEXT("Creat New Parts"));
-	UActorComponent* PartsComponent = AddComponentByClass(InPartsData->PartsComponentClass, true, FTransform::Identity, false);
-	Parts = CastChecked<UPPPartsBase>(PartsComponent);
 }
 
 void APPCharacterPlayer::ReduationMaxWalkSpeedRatio(float InReductionRatio)
@@ -251,10 +272,63 @@ void APPCharacterPlayer::RevertMaxWalkSpeed()
 	GetCharacterMovement()->MaxWalkSpeed = this->MaxWalkSpeed;
 }
 
-
 UNiagaraComponent* APPCharacterPlayer::GetPlayerCharacterNiagaraComponent() const
 {
 	return PlayerCharacterNiagaraComponent;;
+}
+
+UPPInventoryComponent* APPCharacterPlayer::GetInventoryComponent()
+{
+	return InventoryComponent;
+}
+
+void APPCharacterPlayer::QuickSlotMove(const FInputActionValue& Value)
+{
+	// 마우스 휠 업: 양수, 마우스 휠 다운: 음수
+	float MoveDir = Value.Get<float>();
+
+	// 마우스 휠 연속된 입력 방지
+	float InputInterval = 0.4f;	// 다음 인풋까지 간격
+	if (bIsAllowWheelInput)
+	{
+		UE_LOG(LogTemp, Log, TEXT("Quick Slot Move: %f"), MoveDir);
+		bIsAllowWheelInput = false;
+		GetWorld()->GetTimerManager().SetTimer(QuickSlotMoveTimer, [&]() {bIsAllowWheelInput = true; }, InputInterval, false);
+
+		// 슬롯 움직임 구현부
+		// 슬롯이 처음이나 끝에 다다랐을 경우 화살표는 사라지지 않지만 더이상 움직이지 않아야 함.
+		if (MoveDir < 0)		// Wheel Down
+		{
+			InventoryComponent->ModifyCurrentSlotIndex(1);
+		}
+		else if (MoveDir > 0)	// Wheel Up
+		{
+			InventoryComponent->ModifyCurrentSlotIndex(-1);
+		}
+	}
+}
+
+void APPCharacterPlayer::QuickSlotUse(const FInputActionValue& Value)
+{
+	UE_LOG(LogTemp, Log, TEXT("Quick Slot Used!"));
+
+	// 선택된 슬롯 사용부
+	// 미장착 상태에서는 어떠한 파츠(현재 보유하고 있는)를 선택하더라도 정상 착용이 되어야 함.
+	// 이미 장착하고 있는 파츠를 재선택 할 경우 장착하고 있는 파츠를 해제해야 함.
+	// 파츠를 장착하기 위해서는 현재 슬롯의 인덱스를 알아야 가능
+
+	// 테스트 부분: 슬롯 인덱스 0번의 파츠 슬롯 타입의 아이템을 사용해 주세요.
+	// 결과: 로그 정상 출력
+	//InventoryComponent->UseItem(0, ESlotType::ST_InventoryParts);
+
+	// 현재 선택된 슬롯을 기반으로 하여 아이템 사용
+	InventoryComponent->UseItemCurrentIndex(ESlotType::ST_InventoryParts);
+
+}
+
+void APPCharacterPlayer::SetWheelInputAllow(bool Value)
+{
+	bIsAllowWheelInput = Value;
 }
 
 void APPCharacterPlayer::OpenMenu()

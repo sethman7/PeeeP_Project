@@ -22,6 +22,8 @@ public:
 	
 	virtual void BeginDestroy() override;
 
+	virtual void OnComponentCreated() override;
+
 protected:
 
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;

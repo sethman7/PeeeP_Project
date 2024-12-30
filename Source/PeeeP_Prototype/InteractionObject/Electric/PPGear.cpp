@@ -111,9 +111,12 @@ void APPGear::ApplyKnockback(UCharacterMovementComponent* CharacterMovementCompo
 
 void APPGear::Charge()
 {
-	Mesh->SetSimulatePhysics(true);
 	bIsCharged = true;
-	
+	// 충돌 비활성화
+	Mesh->SetCollisionProfileName(TEXT("OverlapAll"));
+
+	// 물리 활성화
+	Mesh->SetSimulatePhysics(true);
 }
 
 

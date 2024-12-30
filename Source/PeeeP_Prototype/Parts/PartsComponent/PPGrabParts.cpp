@@ -13,18 +13,30 @@ UPPGrabParts::UPPGrabParts()
 {
 	PrimaryComponentTick.bCanEverTick = true;
 
-	Owner = GetOwner();
-
-	// 파츠에 대한 데이터 갖고있는 파츠 데이터 연결
-	static ConstructorHelpers::FObjectFinder<UPPGrabPartsData> GrabPartsDataRef(TEXT("/Script/PeeeP_Prototype.PPGrabPartsData'/Game/Parts/Grab/GrabData.GrabData'"));
+	static ConstructorHelpers::FObjectFinder<UPPGrabPartsData> GrabPartsDataRef(TEXT("/Script/PeeeP_Prototype.PPGrabPartsData'/Game/Parts/Grab/GrabPartsData.GrabPartsData'"));
 	if (GrabPartsDataRef.Object)
 	{
 		PartsData = GrabPartsDataRef.Object;
 	}
+}
 
+void UPPGrabParts::BeginDestroy()
+{
+	Super::BeginDestroy();
 
-	//파츠 데이터에 있는 정보들을 이용해 해당 파츠 기본 정보 세팅
-	//이 과정에서는 데이터에 있는 인풋 맵핑과 인풋액션을 연결하고 플레이어 컨트롤러에 우선순위 1로 해서 기본 조작 바로 다음 우선순위를 갖게 함
+	if (GrabHandle)
+	{
+		GrabHandle->DestroyComponent();
+	}
+}
+
+void UPPGrabParts::OnComponentCreated()
+{
+	Super::OnComponentCreated();
+
+	Owner = GetOwner();
+
+	//Setup
 	APPCharacterPlayer* PlayerCharacter = Cast<APPCharacterPlayer>(Owner);
 	if (PlayerCharacter)
 	{
@@ -48,17 +60,7 @@ UPPGrabParts::UPPGrabParts()
 	}
 }
 
-void UPPGrabParts::BeginDestroy()
-{
-	Super::BeginDestroy();
 
-	if (GrabHandle)
-	{
-		GrabHandle->DestroyComponent();
-	}
-}
-
-// 그랩 파츠로 그랩 한 오브젝트 이동 업데이트
 void UPPGrabParts::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
@@ -71,8 +73,7 @@ void UPPGrabParts::TickComponent(float DeltaTime, ELevelTick TickType, FActorCom
 		}
 	}
 }
-// 그랩 시작 시 로직 구현
-// 현재 Linetrace로 하고있는데 이는 애님 추가 시 손바닥 본을 기준으로 Overlap으로 검사해서 판정 변경 예정
+
 void UPPGrabParts::GrabInteraction()
 {
 	UE_LOG(LogTemp, Log, TEXT("Grab Start"));
@@ -100,7 +101,7 @@ void UPPGrabParts::GrabInteraction()
 		DrawDebugLine(GetWorld(), CameraPos, EndPos, DebugColor, false, 5.0f);
 	}
 }
-// 그랩 끝날 때 작동
+
 void UPPGrabParts::GrabRelease()
 {
 	UE_LOG(LogTemp, Log, TEXT("Grab End"));

@@ -6,6 +6,7 @@
 #include "Components/BoxComponent.h"
 #include "Character/PPCharacterPlayer.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Engine/SkeletalMeshSocket.h"
 
 // Sets default values
 APPPunchTrap::APPPunchTrap()
@@ -21,6 +22,10 @@ APPPunchTrap::APPPunchTrap()
 	TriggerBox->bDynamicObstacle = true;
 	TriggerBox->GetAttachParent();
 	TriggerBox->OnComponentBeginOverlap.AddDynamic(this, &APPPunchTrap::OnOverlapBegin);
+
+	//SkeletalMesh->GetSocketLocation(TEXT("Bone010Socket"));
+	//const USkeletalMeshSocket* SkeletalMeshSocket = SkeletalMesh->GetSocketByName(TEXT("Bone010Socket"));
+	//SkeletalMeshSocket->GetSocketTransform(SkeletalMesh);
 }
 
 // Called when the game starts or when spawned

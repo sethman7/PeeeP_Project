@@ -17,8 +17,11 @@ void UPPInGameUIMain::NativeConstruct()
 	// Cast 영역
 	PlayerStatusWidget = Cast<UUserWidget>(GetWidgetFromName(TEXT("WBP_PlayerStatusWidget")));		// 조작법 이미지 위젯
 	KeyManualWidget = Cast<UUserWidget>(GetWidgetFromName(TEXT("WBP_KeyManualWidget")));			// 플레이서 상태 위젯
+	QuickSlotWidget = Cast<UPPQuickSlotWidget>(GetWidgetFromName(TEXT("WBP_QuickSlot")));			// 퀵슬롯 위젯(테스트)
 
 	// 각 요소 초기화 영역
+	QuickSlotWidget->SetOwningActor(OwningActor);
+	QuickSlotWidget->Init();
 
 	// Bind 영역
 }

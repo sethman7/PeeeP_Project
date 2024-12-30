@@ -52,6 +52,7 @@ public:
 	//파츠별로 있을 애니메이션 연결 
 	FOnPlayAnimationDelegate OnPlayAnimation;
 
+
 protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)

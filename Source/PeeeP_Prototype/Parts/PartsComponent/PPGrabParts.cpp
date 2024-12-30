@@ -24,8 +24,8 @@ UPPGrabParts::UPPGrabParts()
 
 	ensure(PartsData);
 
-	AttachmentSocket = TEXT("Bip001-R-Hand");	//플레이어 오른손
-	HitSocket = TEXT("Bone010Socket");		    //그랩 매쉬 받으면 변경할 예정.
+	//AttachmentSocket = TEXT("Bip001-Pelvis");	//플레이어 몸 중앙
+	HitSocket = TEXT("Bone010");		    //그랩 매쉬 받으면 변경할 예정.
 
 
 

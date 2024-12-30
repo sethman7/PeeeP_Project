@@ -30,4 +30,6 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TSubclassOf<class UPPPartsBase> PartsComponentClass;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TSubclassOf<class UAnimInstance> AnimClass;
 };

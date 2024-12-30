@@ -285,7 +285,7 @@ void APPCharacterPlayer::SwitchParts(UPPPartsDataBase* InPartsData)
 		Parts->SetPartsActive(false);
 		Parts = FoundPart;
 		Parts->SetPartsActive(true);
-		SetAttachedMesh(Parts);
+		ChangeMesh(Parts);
 	}
 }
 
@@ -298,7 +298,7 @@ void APPCharacterPlayer::AddParts(UActorComponent* InComponent)
 
 	PartsArray.Add(Parts); //임시 인벤토리 
 
-	SetAttachedMesh(Parts); //플레이어의 현재 파츠 설정.
+	ChangeMesh(Parts); //플레이어의 현재 파츠 설정.
 	
 	//파츠별 애니메이션 연결
 	if (CastChecked<UPPGrabParts>(Parts))
@@ -316,10 +316,10 @@ void APPCharacterPlayer::GrabHitCheck()
 
 	FHitResult HitResult;
 	FCollisionQueryParams Params(SCENE_QUERY_STAT(Grab), false, this);
-	const FVector StartPos = AttachedMesh->GetSocketLocation(Parts->HitSocket) + GetActorForwardVector() * GetCapsuleComponent()->GetScaledCapsuleRadius();
+	const FVector StartPos = GetMesh()->GetSocketLocation(Parts->HitSocket) + GetActorForwardVector() * GetCapsuleComponent()->GetScaledCapsuleRadius();
 	const FVector EndPos = StartPos + GetActorForwardVector() * 5.0f;
 
-	bool HitDetected = GetWorld()->SweepSingleByChannel(HitResult, StartPos, EndPos, FQuat::Identity, ECC_GameTraceChannel2, FCollisionShape::MakeSphere(50.0f), Params);
+	bool HitDetected = GetWorld()->SweepSingleByChannel(HitResult, StartPos, EndPos, FQuat::Identity, ECC_GameTraceChannel2, FCollisionShape::MakeSphere(10.0f), Params);
 	if (HitDetected)
 	{
 		UE_LOG(LogTemp, Log, TEXT("GrabHit"));
@@ -333,15 +333,17 @@ void APPCharacterPlayer::GrabHitCheck()
 	float CapsuleHalfHeight = 5.0f * 0.5f;
 	FColor DrawColor = HitDetected ? FColor::Green : FColor::Red;
 
-	DrawDebugCapsule(GetWorld(), CapsuleOrigin, CapsuleHalfHeight, 50.0f, FRotationMatrix::MakeFromZ(GetActorForwardVector()).ToQuat(), DrawColor, false, 5.0f);
+	DrawDebugCapsule(GetWorld(), CapsuleOrigin, CapsuleHalfHeight, 10.0f, FRotationMatrix::MakeFromZ(GetActorForwardVector()).ToQuat(), DrawColor, false, 5.0f);
 #endif
 }
 
 //현재 착용 중인 파츠 변경.
-void APPCharacterPlayer::SetAttachedMesh(UPPPartsBase* InParts)
+void APPCharacterPlayer::ChangeMesh(UPPPartsBase* InParts)
 {
-	AttachedMesh->SetSkeletalMesh(InParts->GetPartsData()->PartsMesh);
-	AttachedMesh->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, InParts->AttachmentSocket);
+	//AttachedMesh->SetSkeletalMesh(InParts->GetPartsData()->PartsMesh);
+	//AttachedMesh->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, InParts->AttachmentSocket);
+	GetMesh()->SetSkeletalMesh(InParts->GetPartsData()->PartsMesh);
+	GetMesh()->SetAnimClass(InParts->GetPartsData()->AnimClass);
 }
 
 void APPCharacterPlayer::ReduationMaxWalkSpeedRatio(float InReductionRatio)

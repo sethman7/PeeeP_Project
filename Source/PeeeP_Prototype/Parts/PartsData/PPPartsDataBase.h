@@ -9,7 +9,7 @@
 UENUM(BlueprintType)
 enum class EItemType : uint8
 {
-	IT_Parts,	// ÆÄÃ÷
+	IT_Parts,	// ï¿½ï¿½ï¿½ï¿½
 };
 
 /**
@@ -34,22 +34,22 @@ public:
 	TObjectPtr<class UInputMappingContext> PartsMappingContext;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	TSubclassOf<class UPPPartsBase> PartsComponentClass;
+	TSubclassOf<class UPPPartsBase> PartsComponent;
 
 public:
 	virtual FPrimaryAssetId GetPrimaryAssetId() const override;
 
 public:
-	// ¾ÆÀÌÅÛ Å¸ÀÔ(ÆÄÃ÷ °íÁ¤), ÃßÈÄ È®ÀåÇØ¾ßµÇ´Âµ¥ ±×·¯¸é ÄÚµå ÇÑ ¹ø °¥¾Æ¾þ¾î¾ßµÊ.
-	// ¾Æ¸¶ ±âº» ¾ÆÀÌÅÛ Å¬·¡½º°¡ ÀÖ°í ±×°ÍÀ» ÆÄÃ÷°¡ »ó¼Ó¹Þ´Â Çü½ÄÀ¸·Î
+	// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Å¸ï¿½ï¿½(ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½), ï¿½ï¿½ï¿½ï¿½ È®ï¿½ï¿½ï¿½Ø¾ßµÇ´Âµï¿½ ï¿½×·ï¿½ï¿½ï¿½ ï¿½Úµï¿½ ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½Æ¾ï¿½ï¿½ï¿½ßµï¿½.
+	// ï¿½Æ¸ï¿½ ï¿½âº» ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Å¬ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ö°ï¿½ ï¿½×°ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Ó¹Þ´ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 	UPROPERTY(EditAnywhere, Category = Base)
 	EItemType ItemType;
 
-	// ¾ÆÀÌÅÛ ÀÌ¹ÌÁö
+	// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ì¹ï¿½ï¿½ï¿½
 	UPROPERTY(EditAnywhere, Category = Base)
 	TObjectPtr<UTexture2D> ItemTexture;
 
-	// ¾ÆÀÌÅÛ ÀÌ¸§
+	// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ì¸ï¿½
 	UPROPERTY(EditAnywhere, Category= Base)
 	FString ItemName;
 };

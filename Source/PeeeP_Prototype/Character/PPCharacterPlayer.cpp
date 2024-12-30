@@ -15,7 +15,6 @@
 #include "Parts/PartsComponent/PPGrabParts.h"
 #include "Parts/PartsData/PPPartsDataBase.h"
 #include "Component/PPElectricDischargeComponent.h"
-#include "GameFramework/CharacterMovementComponent.h"
 #include "GameMode/PPPlayerController.h"
 #include "NiagaraComponent.h"
 
@@ -109,8 +108,6 @@ APPCharacterPlayer::APPCharacterPlayer()
 	
 	// 인벤토리 컴포넌트
 	InventoryComponent = CreateDefaultSubobject<UPPInventoryComponent>(TEXT("InventoryComponent"));
-
-	//UsePartsDelegate.AddUObject(this, &APPCharacterPlayer::SetPartsEquipment);
 }
 
 void APPCharacterPlayer::BeginPlay()
@@ -291,7 +288,7 @@ void APPCharacterPlayer::QuickSlotMove(const FInputActionValue& Value)
 	float MoveDir = Value.Get<float>();
 
 	// 마우스 휠 연속된 입력 방지
-	float InputInterval = 0.5f;	// 다음 인풋까지 간격
+	float InputInterval = 0.4f;	// 다음 인풋까지 간격
 	if (bIsAllowWheelInput)
 	{
 		UE_LOG(LogTemp, Log, TEXT("Quick Slot Move: %f"), MoveDir);

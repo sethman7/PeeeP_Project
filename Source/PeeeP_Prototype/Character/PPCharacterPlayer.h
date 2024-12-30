@@ -11,8 +11,6 @@
 #include "Interface/UI/PPInventoryInterface.h"
 #include "PPCharacterPlayer.generated.h"
 
-DECLARE_MULTICAST_DELEGATE_OneParam(FUsePartsDelegate, UActorComponent*);
-
 /**
  * 
  */
@@ -139,7 +137,4 @@ protected:	// Quick Slot Section
 	void QuickSlotUse(const FInputActionValue& Value);
 
 	void SetWheelInputAllow(bool Value);
-
-public:
-	FUsePartsDelegate UsePartsDelegate;
 };

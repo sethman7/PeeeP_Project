@@ -2,6 +2,7 @@
 
 
 #include "PPCharacterPlayer.h"
+#include "Components/CapsuleComponent.h"
 #include "Camera/CameraComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "GameFramework/DefaultPawn.h"
@@ -16,8 +17,11 @@
 #include "Parts/PartsData/PPPartsDataBase.h"
 #include "Component/PPElectricDischargeComponent.h"
 #include "GameMode/PPPlayerController.h"
+//#include "Animation/AnimMontage.h"
 #include "NiagaraComponent.h"
-
+#include "Prop/PPCleaningRobot.h"
+#include "Kismet/KismetMathLibrary.h"
+#include "Kismet/KismetSystemLibrary.h"
 
 APPCharacterPlayer::APPCharacterPlayer()
 {
@@ -105,9 +109,16 @@ APPCharacterPlayer::APPCharacterPlayer()
 
 	PlayerCharacterNiagaraComponent = CreateDefaultSubobject<UNiagaraComponent>(TEXT("EffectComponent"));
 	PlayerCharacterNiagaraComponent->SetupAttachment(RootComponent);
+
 	
 	// 인벤토리 컴포넌트
 	InventoryComponent = CreateDefaultSubobject<UPPInventoryComponent>(TEXT("InventoryComponent"));
+
+
+
+	AttachedMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("AttachedMesh"));
+	GetCapsuleComponent()->OnComponentBeginOverlap.AddDynamic(this, &APPCharacterPlayer::OnBeginOverlap);
+
 }
 
 void APPCharacterPlayer::BeginPlay()
@@ -128,7 +139,10 @@ void APPCharacterPlayer::BeginPlay()
 
 void APPCharacterPlayer::Tick(float DeltaTime)
 {
-
+	//Idle상태에서의 플레이어가 움직이는 actor와의 충돌을 무시하게 되버려 다음 코드를 추가함.
+	FHitResult OutHit;
+	GetCharacterMovement()->SafeMoveUpdatedComponent(FVector(0.f, 0.f, 0.03f), GetActorRotation(), true, OutHit);
+	GetCharacterMovement()->SafeMoveUpdatedComponent(FVector(0.f, 0.f, -0.03f), GetActorRotation(), true, OutHit);
 }
 
 void APPCharacterPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -152,6 +166,19 @@ void APPCharacterPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 	
 	EnhancedInputComponent->BindAction(QuickSlotMoveAction, ETriggerEvent::Triggered, this, &APPCharacterPlayer::QuickSlotMove);
 	EnhancedInputComponent->BindAction(QuickSlotUseAction, ETriggerEvent::Triggered, this, &APPCharacterPlayer::QuickSlotUse);
+}
+
+void APPCharacterPlayer::OnBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	if (APPCleaningRobot* CleaingRobotRef = Cast<APPCleaningRobot>(OtherActor))
+	{
+		FRotator Rotation = CleaingRobotRef->GetActorRotation();
+		FVector KnockbackVelocity = UKismetMathLibrary::GetForwardVector(Rotation) * CleaingRobotRef->KnockbackStrength;
+
+		// 플레이어에게 넉백 적용
+		LaunchCharacter(KnockbackVelocity, true, true);
+		ElectricDischargeComponent->ChargeElectric(CleaingRobotRef->ElectricLossRate);
+	}
 }
 
 void APPCharacterPlayer::SetCharacterControl(ECharacterControlType NewCharacterControlType)
@@ -226,11 +253,20 @@ void APPCharacterPlayer::ButtonInteraction(const FInputActionValue& Value)
 	{
 		AActor* HitActor = HitResult.GetActor();
 		IPPInteractableObjectInterface* ButtonActor = Cast<IPPInteractableObjectInterface>(HitActor);
-		ensure(ButtonActor);
+		//ensure(ButtonActor);
 		if (ButtonActor != nullptr)
 		{
 			UE_LOG(LogTemp, Log, TEXT("FindButton"));
 			ButtonActor->Interact();
+		}
+
+		//파츠 상호작용 테스트용
+		UPPPartsBase* PartsBase = HitActor->FindComponentByClass<UPPPartsBase>();
+		if (PartsBase)
+		{
+			UActorComponent* Component = CastChecked<UActorComponent>(PartsBase);
+			AddParts(Component);
+			HitActor->Destroy();
 		}
 	}
 
@@ -244,6 +280,7 @@ UCameraComponent* APPCharacterPlayer::GetCamera()
 	return FollowCamera;
 }
 
+
 void APPCharacterPlayer::SwitchParts(UPPPartsDataBase* InPartsData)
 {
 	RemoveParts();
@@ -255,11 +292,79 @@ void APPCharacterPlayer::SwitchParts(UPPPartsDataBase* InPartsData)
 
 void APPCharacterPlayer::RemoveParts()
 {
-	if (Parts)
+    if (Parts)
+    {
+        UE_LOG(LogTemp, Log, TEXT("Destroy Parts"));
+        Parts->DestroyComponent();
+    }
+}
+
+void APPCharacterPlayer::PlayAnimation(UAnimMontage* InAnimMontage)
+{
+	UAnimMontage* CurrentMontage = GetMesh()->GetAnimInstance()->GetCurrentActiveMontage();
+	if (CurrentMontage == nullptr)
 	{
-		UE_LOG(LogTemp, Log, TEXT("Destroy Parts"));
-		Parts->DestroyComponent();
+		PlayAnimMontage(InAnimMontage);
 	}
+}
+
+
+
+//파츠를 처음 먹을 경우, 파츠 클래스를 새로 생성 후 초기화 작업.
+void APPCharacterPlayer::AddParts(UActorComponent* InComponent)
+{
+	UActorComponent* PartsComponent = AddComponentByClass(InComponent->GetClass(), true, FTransform::Identity, false);
+	Parts = CastChecked<UPPPartsBase>(PartsComponent);
+	Parts->SetPartsActive(true);
+
+	PartsArray.Add(Parts); //임시 인벤토리 
+
+	ChangeMesh(Parts); //플레이어의 현재 파츠 설정.
+	
+	//파츠별 애니메이션 연결
+	if (CastChecked<UPPGrabParts>(Parts))
+	{
+		Parts->OnPlayAnimation.AddLambda([this]()->void { PlayAnimation(GrabAnimMontage); });
+	}
+}
+
+
+//그랩 애니메이션 작동 후, Notify를 통해 호출됨. 그랩에 닿은 오브젝트가 있는지 체크. 
+void APPCharacterPlayer::GrabHitCheck()
+{
+	UPPGrabParts* GrabParts = Cast<UPPGrabParts>(Parts);
+	if (GrabParts == nullptr) return;
+
+	FHitResult HitResult;
+	FCollisionQueryParams Params(SCENE_QUERY_STAT(Grab), false, this);
+	const FVector StartPos = GetMesh()->GetSocketLocation(Parts->HitSocket) + GetActorForwardVector() * GetCapsuleComponent()->GetScaledCapsuleRadius();
+	const FVector EndPos = StartPos + GetActorForwardVector() * 5.0f;
+
+	bool HitDetected = GetWorld()->SweepSingleByChannel(HitResult, StartPos, EndPos, FQuat::Identity, ECC_GameTraceChannel2, FCollisionShape::MakeSphere(10.0f), Params);
+	if (HitDetected)
+	{
+		UE_LOG(LogTemp, Log, TEXT("GrabHit"));
+		GrabParts->SetIsGrabbed(true);
+		GrabParts->Grab(HitResult);
+	}
+
+
+#if ENABLE_DRAW_DEBUG
+	FVector CapsuleOrigin = StartPos + (EndPos - StartPos) * 0.5f;
+	float CapsuleHalfHeight = 5.0f * 0.5f;
+	FColor DrawColor = HitDetected ? FColor::Green : FColor::Red;
+
+	DrawDebugCapsule(GetWorld(), CapsuleOrigin, CapsuleHalfHeight, 10.0f, FRotationMatrix::MakeFromZ(GetActorForwardVector()).ToQuat(), DrawColor, false, 5.0f);
+#endif
+}
+
+//현재 착용 중인 파츠 변경.
+void APPCharacterPlayer::ChangeMesh(UPPPartsBase* InParts)
+{
+	//AttachedMesh->SetSkeletalMesh(InParts->GetPartsData()->PartsMesh);
+	//AttachedMesh->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, InParts->AttachmentSocket);
+	GetMesh()->SetSkeletalMesh(InParts->GetPartsData()->PartsMesh);
+	GetMesh()->SetAnimClass(InParts->GetPartsData()->AnimClass);
 }
 
 void APPCharacterPlayer::ReduationMaxWalkSpeedRatio(float InReductionRatio)

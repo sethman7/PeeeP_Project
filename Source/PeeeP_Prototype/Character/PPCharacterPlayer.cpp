@@ -80,6 +80,20 @@ APPCharacterPlayer::APPCharacterPlayer()
 	}
 	bIsAllowWheelInput = true;
 
+	// Default Mesh & Animation Setting
+	static ConstructorHelpers::FObjectFinder<USkeletalMesh> MeshRef(TEXT("/Script/Engine.SkeletalMesh'/Game/Characters/PeePCharacter/rig_new.rig_new'"));
+	if (MeshRef.Object)
+	{
+		DefaultSkeletonMesh = MeshRef.Object;
+		GetMesh()->SetSkeletalMesh(MeshRef.Object);
+	}
+	static ConstructorHelpers::FClassFinder<UAnimInstance> AnimBlueprintRef(TEXT("/Game/Characters/PeePCharacter/Animation/ABP_PeeeP.ABP_PeeeP_C"));
+	if (AnimBlueprintRef.Class)
+	{
+		DefaultAnimClass = AnimBlueprintRef.Class;
+		GetMesh()->SetAnimInstanceClass(AnimBlueprintRef.Class);
+	}
+
 	// Camera
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));	// CameraBoom 컴포넌트를 가져옴
 	CameraBoom->SetupAttachment(RootComponent);
@@ -132,7 +146,7 @@ void APPCharacterPlayer::BeginPlay()
 	}
 
 
-	Test_EquipGrabParts();
+	//Test_EquipGrabParts();
 
 	//// Parts 임시로 생성자에서 부여함
 	//// 해당 부분은 나중에 인벤토리에서 데이터 이용해서 파츠 변경하는 함수 따로 만들어서 적용하면 될 듯
@@ -270,6 +284,12 @@ void APPCharacterPlayer::ButtonInteraction(const FInputActionValue& Value)
 	DrawDebugLine(GetWorld(), CameraPos, EndPos, DebugColor, false, 5.0f);
 }
 
+void APPCharacterPlayer::SetDefaultMeshAndAnim()
+{
+	GetMesh()->SetSkeletalMesh(DefaultSkeletonMesh);
+	GetMesh()->SetAnimInstanceClass(DefaultAnimClass);
+}
+
 UCameraComponent* APPCharacterPlayer::GetCamera()
 {
 	return FollowCamera;
@@ -283,6 +303,11 @@ void APPCharacterPlayer::SwitchParts(UPPPartsDataBase* InPartsData)
 	UE_LOG(LogTemp, Log, TEXT("Creat New Parts"));
 	UActorComponent* PartsComponent = AddComponentByClass(InPartsData->PartsComponent, true, FTransform::Identity, false);
 	Parts = CastChecked<UPPPartsBase>(PartsComponent);
+	if (Parts)
+	{
+		GetMesh()->SetSkeletalMesh(Parts->GetPartsData()->PartsMesh);
+		GetMesh()->SetAnimClass(Parts->GetPartsData()->AnimClass);
+	}
 }
 
 void APPCharacterPlayer::RemoveParts()

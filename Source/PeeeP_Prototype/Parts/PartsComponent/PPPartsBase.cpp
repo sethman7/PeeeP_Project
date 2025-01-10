@@ -16,9 +16,9 @@ UPPPartsBase::UPPPartsBase()
 	PrimaryComponentTick.bCanEverTick = true; 
 
 	//Tick을 인위적으로 조작 가능함.
-	PrimaryComponentTick.bStartWithTickEnabled = false;
+	//PrimaryComponentTick.bStartWithTickEnabled = false;
 
-	Owner = Cast<APawn>(GetOwner()); 
+	Owner = Cast<APPCharacterPlayer>(GetOwner()); 
 }
 
 

@@ -130,10 +130,12 @@ void UPPGrabParts::GrabRelease()
 
 void UPPGrabParts::UpdateGrabbedObjectPosition()
 {
-	UCameraComponent* FollowCamera = Owner->FindComponentByClass<UCameraComponent>();
+	/*UCameraComponent* FollowCamera = Owner->FindComponentByClass<UCameraComponent>();
 	FVector Start = Owner->GetActorLocation();
 	FVector ForwardVector = FollowCamera->GetForwardVector();
-	FVector GrabbedObjectPosition = (Start + (ForwardVector * 300.0f));
+	FVector GrabbedObjectPosition = (Start + (ForwardVector * 100.0f));*/
+
+	FVector GrabbedObjectPosition = Owner->GetMesh()->GetSocketLocation(HitSocket);
 
 	GrabHandle->SetTargetLocation(GrabbedObjectPosition);
 }

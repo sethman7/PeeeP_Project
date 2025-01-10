@@ -208,6 +208,7 @@ void UPPInventoryComponent::UseItemCurrentIndex(ESlotType InventoryType)
 				if (Player)
 				{
 					Player->RemoveParts();
+					Player->SetDefaultMeshAndAnim();
 				}
 
 				UE_LOG(LogTemp, Log, TEXT("Parts Item Detached: %d Slot"), CurrentSlotIndex);

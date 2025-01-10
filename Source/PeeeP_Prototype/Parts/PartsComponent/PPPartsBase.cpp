@@ -1,8 +1,9 @@
-ï»¿// Fill out your copyright notice in the Description page of Project Settings.
+// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "Parts/PartsComponent/PPPartsBase.h"
 #include "Parts/PartsData/PPGrabPartsData.h"
+
 #include "Character/PPCharacterPlayer.h"
 #include "Kismet/GameplayStatics.h"
 #include "EnhancedInputComponent.h"
@@ -11,16 +12,19 @@
 // Sets default values for this component's properties
 UPPPartsBase::UPPPartsBase()
 {
-	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
-	// off to improve performance if you don't need them.
-	PrimaryComponentTick.bCanEverTick = true;
+	//Ç×»ó true·Î ¼³Á¤ÇØ¾ß ÇÔ. false ¼³Á¤½Ã, TickFunctionÀÇ µî·Ï ÀÚÃ¼¸¦ ¸·¾Æ¹ö¸®±â ¶§¹®¿¡,Àý´ë·Î TickÀ» »ç¿ëÇÏÁö ¾ÊÀ» °æ¿ì¿¡¸¸ false·Î ¼³Á¤ÇÔ.
+	PrimaryComponentTick.bCanEverTick = true; 
 
-	// ...
+	//TickÀ» ÀÎÀ§ÀûÀ¸·Î Á¶ÀÛ °¡´ÉÇÔ.
+	PrimaryComponentTick.bStartWithTickEnabled = false;
+
+	Owner = Cast<APawn>(GetOwner()); 
 }
+
 
 //void UPPPartsBase::OnComponentDestroyed(bool bDestroyingHierarchy)
 //{
-//	// ï¿½Ó½Ã¹ï¿½ï¿½ï¿½ ï¿½Ø°ï¿½ï¿½(with Github Copilot)
+//	// ?????? ?????(with Github Copilot)
 //	Super::OnComponentDestroyed(bDestroyingHierarchy);
 //
 //	APPCharacterPlayer* PlayerCharacter = Cast<APPCharacterPlayer>(GetOwner());
@@ -47,7 +51,7 @@ UPPPartsBase::UPPPartsBase()
 
 void UPPPartsBase::OnComponentDestroyed(bool bDestroyingHierarchy)
 {
-	// ï¿½Ó½Ã¹ï¿½ï¿½ï¿½ ï¿½Ø°ï¿½ï¿½(with Github Copilot)
+	// ?????? ????(with Github Copilot)
 	Super::OnComponentDestroyed(bDestroyingHierarchy);
 
 	APPCharacterPlayer* PlayerCharacter = Cast<APPCharacterPlayer>(GetOwner());
@@ -86,3 +90,5 @@ void UPPPartsBase::TickComponent(float DeltaTime, ELevelTick TickType, FActorCom
 
 	// ...
 }
+
+

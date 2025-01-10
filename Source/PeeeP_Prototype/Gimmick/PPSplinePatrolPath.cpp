@@ -145,7 +145,7 @@ void APPSplinePatrolPath::SetActorRotationAndLocation(float Distance)
 	FRotator Rotator = FRotationMatrix::MakeFromX(Direction).Rotator();
 
 	//얻어온 값들에 플레이어를 위치시킨다.
-	ActorToMove->SetActorRotation(Rotator);
-	ActorToMove->SetActorLocation(Position);
+	UStaticMeshComponent* ActorMesh = ActorToMove->FindComponentByClass<UStaticMeshComponent>();
+	ActorMesh->SetWorldLocationAndRotation(Position, Rotator, true);
 }
 

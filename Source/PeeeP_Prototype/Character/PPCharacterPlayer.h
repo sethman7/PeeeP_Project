@@ -7,15 +7,18 @@
 #include "InputActionValue.h"
 #include "PhysicsEngine/PhysicsHandleComponent.h"
 #include "Interface/UI/PPElectricHUDInterface.h"
+
 #include "../Inventory/PPInventoryComponent.h"
 #include "Interface/UI/PPInventoryInterface.h"
+#include "Interface/PPAnimationGrabInterface.h"
 #include "PPCharacterPlayer.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class PEEEP_PROTOTYPE_API APPCharacterPlayer : public APPCharacterBase, public IPPElectricHUDInterface, public IPPInventoryInterface
+class PEEEP_PROTOTYPE_API APPCharacterPlayer : public APPCharacterBase, public IPPElectricHUDInterface, public IPPInventoryInterface, public IPPAnimationGrabInterface
+
 {
 	GENERATED_BODY()	
 	
@@ -27,13 +30,17 @@ protected:
 	virtual void Tick(float DeltaTime) override;
 protected:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
-
+	
 // Character Control Section
 protected:
 	// Character Movement Component
 	// �ܺο� ���ؼ� �÷��̾ ������ ���� ���� �� �������κ��� �����Ͽ� ���
 	UPROPERTY(EditAnywhere)
 	TObjectPtr<class UCharacterMovementComponent> CharacterMovementComponent;
+
+
+	UFUNCTION()
+	void OnBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
 	void SetCharacterControl(ECharacterControlType NewCharacterControlType);
 	virtual void SetCharacterControlData(const class UPPCharacterControlData* CharacterControlData) override;
@@ -72,15 +79,33 @@ protected:
 public:
 	UCameraComponent* GetCamera();
 
+	//Animation
 
+	void PlayAnimation(UAnimMontage* InAnimMontage);
 protected:
+
+
 //Parts
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Parts, Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class UPPPartsBase> Parts;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Parts, Meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class USkeletalMeshComponent> AttachedMesh;
+
+	//임시
+	TArray<TObjectPtr<class UPPPartsBase>> PartsArray;
+
 public:
 	void SwitchParts(class UPPPartsDataBase* InPartsData);
+
 	void RemoveParts();
+
+	void Test_EquipGrabParts();
+
+	virtual void GrabHitCheck() override;
+	void ChangeMesh(class UPPPartsBase* InParts);
+
+
 	
 protected:
 //ElectricComponent

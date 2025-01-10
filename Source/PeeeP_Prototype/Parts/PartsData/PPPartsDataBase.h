@@ -36,6 +36,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TSubclassOf<class UPPPartsBase> PartsComponent;
 
+
 public:
 	virtual FPrimaryAssetId GetPrimaryAssetId() const override;
 
@@ -52,4 +53,8 @@ public:
 	// ������ �̸�
 	UPROPERTY(EditAnywhere, Category= Base)
 	FString ItemName;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TSubclassOf<class UAnimInstance> AnimClass;
+
 };

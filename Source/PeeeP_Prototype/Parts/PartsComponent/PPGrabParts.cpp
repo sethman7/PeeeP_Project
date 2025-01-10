@@ -8,12 +8,11 @@
 #include "EnhancedInputSubsystems.h"
 #include "CollisionQueryParams.h"
 #include "Camera/CameraComponent.h"
+#include "Character/PPCharacterPlayer.h"
 
 UPPGrabParts::UPPGrabParts()
 {
 	PrimaryComponentTick.bCanEverTick = true;
-	PrimaryComponentTick.bStartWithTickEnabled = false;
-	SetPartsActive(false);
 
 	// 파츠에 대한 데이터 갖고있는 파츠 데이터 연결
 	static ConstructorHelpers::FObjectFinder<UPPGrabPartsData> GrabPartsDataRef(TEXT("/Game/Parts/Grab/GrabPartsData.GrabPartsData"));
@@ -21,6 +20,13 @@ UPPGrabParts::UPPGrabParts()
 	{
 		PartsData = GrabPartsDataRef.Object;
 	}
+
+	static ConstructorHelpers::FObjectFinder<UAnimMontage> GrabAnimMontageRef(TEXT("/Game/Characters/PeePCharacter/Animation/AM_Grab.AM_Grab"));
+	if (GrabAnimMontageRef.Object)
+	{
+		GrabAnimMontage = GrabAnimMontageRef.Object;
+	}
+
 
 	HitSocket = TEXT("Bone010");
 
@@ -46,7 +52,7 @@ void UPPGrabParts::OnComponentCreated()
 {
     Super::OnComponentCreated();
 
-    Owner = GetOwner();
+    Owner = Cast<APPCharacterPlayer>(GetOwner());
 
     //Setup
     APPCharacterPlayer* PlayerCharacter = Cast<APPCharacterPlayer>(Owner);
@@ -72,8 +78,6 @@ void UPPGrabParts::OnComponentCreated()
     }
 }
 
-
-	
 
 
 
@@ -102,10 +106,7 @@ void UPPGrabParts::TickComponent(float DeltaTime, ELevelTick TickType, FActorCom
 
 void UPPGrabParts::HandleGrabAnimation()
 {
-	if (OnPlayAnimation.IsBound())
-	{
-		OnPlayAnimation.Broadcast();  // 델리게이트 호출
-	}
+	Owner->PlayAnimation(GrabAnimMontage);
 }
 
 void UPPGrabParts::Grab(FHitResult& InHitResult)
@@ -139,14 +140,3 @@ void UPPGrabParts::UpdateGrabbedObjectPosition()
 
 
 
-void UPPGrabParts::SetUp()
-{
-	
-}
-
-void UPPGrabParts::SetPartsActive(bool flag)
-{
-	Super::SetPartsActive(flag);
-	SetActive(flag);
-	PrimaryComponentTick.bStartWithTickEnabled = flag;
-}

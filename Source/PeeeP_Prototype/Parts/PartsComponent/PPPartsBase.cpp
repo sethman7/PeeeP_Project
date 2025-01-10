@@ -16,9 +16,9 @@ UPPPartsBase::UPPPartsBase()
 	PrimaryComponentTick.bCanEverTick = true; 
 
 	//Tick을 인위적으로 조작 가능함.
-	PrimaryComponentTick.bStartWithTickEnabled = false;
+	//PrimaryComponentTick.bStartWithTickEnabled = false;
 
-	Owner = Cast<APawn>(GetOwner()); 
+	Owner = Cast<APPCharacterPlayer>(GetOwner());
 }
 
 
@@ -54,10 +54,10 @@ void UPPPartsBase::OnComponentDestroyed(bool bDestroyingHierarchy)
 	// �ӽù��� �ذ���(with Github Copilot)
 	Super::OnComponentDestroyed(bDestroyingHierarchy);
 
-	APPCharacterPlayer* PlayerCharacter = Cast<APPCharacterPlayer>(GetOwner());
-	if (PlayerCharacter)
+	//APPCharacterPlayer* PlayerCharacter = Cast<APPCharacterPlayer>(GetOwner());
+	if (Owner)
 	{
-		APlayerController* PlayerController = Cast<APlayerController>(PlayerCharacter->GetController());
+		APlayerController* PlayerController = Cast<APlayerController>(Owner->GetController());
 		if (!PlayerController)
 		{
 			return;
@@ -81,6 +81,8 @@ void UPPPartsBase::BeginPlay()
 	// ...
 	
 }
+
+
 
 
 // Called every frame

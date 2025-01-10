@@ -131,6 +131,9 @@ void APPCharacterPlayer::BeginPlay()
 		Subsystem->AddMappingContext(DefaultMappingContext, 0);
 	}
 
+
+	Test_EquipGrabParts();
+
 	//// Parts 임시로 생성자에서 부여함
 	//// 해당 부분은 나중에 인벤토리에서 데이터 이용해서 파츠 변경하는 함수 따로 만들어서 적용하면 될 듯
 	//UActorComponent* PartsComponent = AddComponentByClass(UPPGrabParts::StaticClass(), true, FTransform::Identity, false);
@@ -260,14 +263,6 @@ void APPCharacterPlayer::ButtonInteraction(const FInputActionValue& Value)
 			ButtonActor->Interact();
 		}
 
-		//파츠 상호작용 테스트용
-		UPPPartsBase* PartsBase = HitActor->FindComponentByClass<UPPPartsBase>();
-		if (PartsBase)
-		{
-			UActorComponent* Component = CastChecked<UActorComponent>(PartsBase);
-			AddParts(Component);
-			HitActor->Destroy();
-		}
 	}
 
 	FColor DebugColor(255, 0, 0);
@@ -299,6 +294,19 @@ void APPCharacterPlayer::RemoveParts()
     }
 }
 
+void APPCharacterPlayer::Test_EquipGrabParts()
+{
+
+	UActorComponent* PartsComponent = AddComponentByClass(UPPGrabParts::StaticClass(), true, FTransform::Identity, false);
+	Parts = CastChecked<UPPPartsBase>(PartsComponent);
+
+	if (Parts)
+	{
+		GetMesh()->SetSkeletalMesh(Parts->GetPartsData()->PartsMesh);
+		GetMesh()->SetAnimClass(Parts->GetPartsData()->AnimClass);
+	}
+}
+
 void APPCharacterPlayer::PlayAnimation(UAnimMontage* InAnimMontage)
 {
 	UAnimMontage* CurrentMontage = GetMesh()->GetAnimInstance()->GetCurrentActiveMontage();
@@ -310,23 +318,6 @@ void APPCharacterPlayer::PlayAnimation(UAnimMontage* InAnimMontage)
 
 
 
-//파츠를 처음 먹을 경우, 파츠 클래스를 새로 생성 후 초기화 작업.
-void APPCharacterPlayer::AddParts(UActorComponent* InComponent)
-{
-	UActorComponent* PartsComponent = AddComponentByClass(InComponent->GetClass(), true, FTransform::Identity, false);
-	Parts = CastChecked<UPPPartsBase>(PartsComponent);
-	Parts->SetPartsActive(true);
-
-	PartsArray.Add(Parts); //임시 인벤토리 
-
-	ChangeMesh(Parts); //플레이어의 현재 파츠 설정.
-	
-	//파츠별 애니메이션 연결
-	if (CastChecked<UPPGrabParts>(Parts))
-	{
-		Parts->OnPlayAnimation.AddLambda([this]()->void { PlayAnimation(GrabAnimMontage); });
-	}
-}
 
 
 //그랩 애니메이션 작동 후, Notify를 통해 호출됨. 그랩에 닿은 오브젝트가 있는지 체크. 
@@ -358,14 +349,7 @@ void APPCharacterPlayer::GrabHitCheck()
 #endif
 }
 
-//현재 착용 중인 파츠 변경.
-void APPCharacterPlayer::ChangeMesh(UPPPartsBase* InParts)
-{
-	//AttachedMesh->SetSkeletalMesh(InParts->GetPartsData()->PartsMesh);
-	//AttachedMesh->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, InParts->AttachmentSocket);
-	GetMesh()->SetSkeletalMesh(InParts->GetPartsData()->PartsMesh);
-	GetMesh()->SetAnimClass(InParts->GetPartsData()->AnimClass);
-}
+
 
 void APPCharacterPlayer::ReduationMaxWalkSpeedRatio(float InReductionRatio)
 {

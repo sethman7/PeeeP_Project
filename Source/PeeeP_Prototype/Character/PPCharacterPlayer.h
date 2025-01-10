@@ -79,13 +79,10 @@ protected:
 public:
 	UCameraComponent* GetCamera();
 
-
-protected:
-//Animation
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Animation)
-	TObjectPtr<class UAnimMontage> GrabAnimMontage;
+	//Animation
 
 	void PlayAnimation(UAnimMontage* InAnimMontage);
+protected:
 
 
 //Parts
@@ -103,7 +100,7 @@ public:
 
 	void RemoveParts();
 
-	void AddParts(class UActorComponent* InComponent);
+	void Test_EquipGrabParts();
 
 	virtual void GrabHitCheck() override;
 	void ChangeMesh(class UPPPartsBase* InParts);

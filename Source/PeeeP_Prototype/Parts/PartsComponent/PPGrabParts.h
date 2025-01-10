@@ -20,19 +20,22 @@ class PEEEP_PROTOTYPE_API UPPGrabParts : public UPPPartsBase
 public:
 	UPPGrabParts();
 	
-	virtual void SetUp() override;
-	virtual void SetPartsActive(bool flag) override;
 	void Grab(FHitResult& InHitResult);
 	void SetIsGrabbed(bool b) { IsGrabbed = b; }
 
 	virtual void OnComponentCreated() override;
 
+
 protected:
 	virtual void BeginPlay() override;
+	virtual void BeginDestroy() override;
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	TObjectPtr<class UPhysicsHandleComponent> GrabHandle;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Animation)
+	TObjectPtr<class UAnimMontage> GrabAnimMontage;
 
 	void HandleGrabAnimation();
 	void GrabRelease();

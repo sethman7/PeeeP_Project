@@ -35,26 +35,16 @@ protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
 
+
 public:	
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 	inline TObjectPtr<class UPPPartsDataBase> GetPartsData() { return PartsData; }
 
-	//파츠 On/Off기능. 플레이어는 여러 파츠를 보유하고 있고, 다른 파츠로 변경 시 기존 파츠에 기능은 동작을 멈춰야 한다. 이 함수는 파츠별로 tick과 충돌,물리 설정을 끄거나 켜준다.
-	virtual void SetPartsActive(bool flag); 
-
-	//파츠 장착 시, 맵핑 연결과 기능 초기화 작업. 
-	virtual void SetUp() {};	
-
-	//플레이어에 부착될 소켓이름.
-	FName AttachmentSocket;
-
 	//기능 동작시킬 소켓이름.  ex) GrabParts , 그랩소켓 
 	FName HitSocket;		
 
-	//파츠별로 있을 애니메이션 연결 
-	FOnPlayAnimationDelegate OnPlayAnimation;
 
 
 protected:
@@ -64,6 +54,6 @@ protected:
 	
 	//Controller를 얻어오기 위해 Owner를 APawn으로 변경.
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-	TObjectPtr<class APawn> Owner;
+	TObjectPtr<class APPCharacterPlayer> Owner;
 
 };

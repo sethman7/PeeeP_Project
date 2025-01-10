@@ -20,7 +20,7 @@ UPPPartsBase::UPPPartsBase()
 
 //void UPPPartsBase::OnComponentDestroyed(bool bDestroyingHierarchy)
 //{
-//	// ÀÓ½Ã¹æÆí ÇØ°á¹ý(with Github Copilot)
+//	// ï¿½Ó½Ã¹ï¿½ï¿½ï¿½ ï¿½Ø°ï¿½ï¿½(with Github Copilot)
 //	Super::OnComponentDestroyed(bDestroyingHierarchy);
 //
 //	APPCharacterPlayer* PlayerCharacter = Cast<APPCharacterPlayer>(GetOwner());
@@ -47,7 +47,7 @@ UPPPartsBase::UPPPartsBase()
 
 void UPPPartsBase::OnComponentDestroyed(bool bDestroyingHierarchy)
 {
-	// ÀÓ½Ã¹æÆí ÇØ°á¹ý(with Github Copilot)
+	// ï¿½Ó½Ã¹ï¿½ï¿½ï¿½ ï¿½Ø°ï¿½ï¿½(with Github Copilot)
 	Super::OnComponentDestroyed(bDestroyingHierarchy);
 
 	APPCharacterPlayer* PlayerCharacter = Cast<APPCharacterPlayer>(GetOwner());

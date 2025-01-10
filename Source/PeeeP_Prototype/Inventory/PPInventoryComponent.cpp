@@ -283,7 +283,7 @@ void UPPInventoryComponent::InitInventory()
 		
 		// 테스트 블록(실제로는 저장된 파일에서 데이터를 읽어와야 함)
 		{
-			InventoryPartsArray.Add(0, { TEXT("GrabPartsData"), 1 });
+			//InventoryPartsArray.Add(0, { TEXT("GrabPartsData"), 1 });
 		}
 
 		for (const auto& InvItem : InventoryPartsArray)

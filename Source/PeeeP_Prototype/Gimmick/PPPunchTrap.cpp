@@ -28,7 +28,7 @@ APPPunchTrap::APPPunchTrap()
 	DetectStartPosition->SetupAttachment(SkeletalMesh);
 	DetectStartPosition->SetRelativeRotation(FRotator(0.0f, -90.0f, 0.0f)); // 400
 
-	static ConstructorHelpers::FClassFinder<UAnimInstance> AnimInstanceClassRef(TEXT("/Game/Gimmik/PunchTrap/ABP_PunchTrap.ABP_PunchTrap"));
+	static ConstructorHelpers::FClassFinder<UAnimInstance> AnimInstanceClassRef(TEXT("/Game/Gimmik/PunchTrap/ABP_PunchTrap.ABP_PunchTrap_C"));
 	if (AnimInstanceClassRef.Class)
 	{
 		SkeletalMesh->SetAnimInstanceClass(AnimInstanceClassRef.Class);

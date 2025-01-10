@@ -69,6 +69,7 @@ void APPPlayerController::BeginPlay()
 		{
 			UE_LOG(LogTemp, Log, TEXT("InGameUIClass"));
 			InGameUIMain = CreateWidget<UPPInGameUIMain>(this, InGameUIMainClass);
+			InGameUIMain->SetOwningActor(GetPawn());
 			if (InGameUIMain)
 			{
 				InGameUIMain->AddToViewport();	// ȭ�鿡 ǥ��

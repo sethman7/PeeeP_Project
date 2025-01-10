@@ -7,6 +7,9 @@
 #include "InputActionValue.h"
 #include "PhysicsEngine/PhysicsHandleComponent.h"
 #include "Interface/UI/PPElectricHUDInterface.h"
+
+#include "../Inventory/PPInventoryComponent.h"
+#include "Interface/UI/PPInventoryInterface.h"
 #include "Interface/PPAnimationGrabInterface.h"
 #include "PPCharacterPlayer.generated.h"
 
@@ -14,7 +17,8 @@
  * 
  */
 UCLASS()
-class PEEEP_PROTOTYPE_API APPCharacterPlayer : public APPCharacterBase, public IPPElectricHUDInterface , public IPPAnimationGrabInterface
+class PEEEP_PROTOTYPE_API APPCharacterPlayer : public APPCharacterBase, public IPPElectricHUDInterface, public IPPInventoryInterface, public IPPAnimationGrabInterface
+
 {
 	GENERATED_BODY()	
 	
@@ -96,10 +100,14 @@ protected:
 
 public:
 	void SwitchParts(class UPPPartsDataBase* InPartsData);
+
+	void RemoveParts();
+
 	void AddParts(class UActorComponent* InComponent);
 
 	virtual void GrabHitCheck() override;
 	void ChangeMesh(class UPPPartsBase* InParts);
+
 
 	
 protected:
@@ -118,10 +126,13 @@ protected:
 	float ChargeTime;
 	float MaxWalkSpeed;
 
+//InventoryComponent
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Electric)
+	TObjectPtr<class UPPInventoryComponent> InventoryComponent;
+
 public:
 	void ReduationMaxWalkSpeedRatio(float InReductionRatio);
 	void RevertMaxWalkSpeed();
-
 
 	class UNiagaraComponent* GetPlayerCharacterNiagaraComponent() const;
 
@@ -133,7 +144,25 @@ protected:
 	void OpenMenu();
 
 public:
+	// Getter
 	// ElectricDischargeComponent
 	UPPElectricDischargeComponent* GetElectricDischargeComponent();
+	// InventoryComponent(IPPInventoryInterface에 의해)
+	virtual class UPPInventoryComponent* GetInventoryComponent() override;
 
+
+protected:	// Quick Slot Section
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, Meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class UInputAction> QuickSlotMoveAction;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, Meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class UInputAction> QuickSlotUseAction;
+
+	FTimerHandle QuickSlotMoveTimer;
+	bool bIsAllowWheelInput;
+
+	void QuickSlotMove(const FInputActionValue& Value);
+	void QuickSlotUse(const FInputActionValue& Value);
+
+	void SetWheelInputAllow(bool Value);
 };

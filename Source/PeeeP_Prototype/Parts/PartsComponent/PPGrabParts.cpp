@@ -22,20 +22,61 @@ UPPGrabParts::UPPGrabParts()
 		PartsData = GrabPartsDataRef.Object;
 	}
 
-	ensure(PartsData);
-
-	//AttachmentSocket = TEXT("Bip001-Pelvis");	//플레이어 몸 중앙
-	HitSocket = TEXT("Bone010");		    //그랩 매쉬 받으면 변경할 예정.
-
-
+	HitSocket = TEXT("Bone010");
 
 	// Grab() -> GrabRelease() 호출 순서가 무조건 보장되어야만 함. 하지만 그랩 애니메이션 발동 후 overlap된 오브젝트가 있을때 만 Grab()이 호출되므로, 호출 직전에 키를 때버려서
 	// GrabRelase()가 호출되버리면 순서가 다음과 같이 GrabRelease() -> Grab() 바뀌는 경우가 생길 수 있음.  
 	// 그렇게 될 경우, 키를 누르고 있지 않은 상황에서도 오브젝트를 계속 들고있게 되버림. 따라서 그랩 애니메이션 동작 중에 GrabRelease() 호출 되는 경우 Grab()함수내에서
 	// 그랩을 하지못하도록 bool변수 IsGrabbed으로 체크함. 
-	IsGrabbed = false;
-
+	IsGrabbed = false;	
 }
+
+
+void UPPGrabParts::BeginDestroy()
+{
+	Super::BeginDestroy();
+
+	if (GrabHandle)
+	{
+		GrabHandle->DestroyComponent();
+	}
+}
+
+void UPPGrabParts::OnComponentCreated()
+{
+    Super::OnComponentCreated();
+
+    Owner = GetOwner();
+
+    //Setup
+    APPCharacterPlayer* PlayerCharacter = Cast<APPCharacterPlayer>(Owner);
+    if (PlayerCharacter)
+    {
+        UActorComponent* GrabComponent = PlayerCharacter->AddComponentByClass(UPhysicsHandleComponent::StaticClass(), true, FTransform::Identity, false);
+        GrabHandle = CastChecked<UPhysicsHandleComponent>(GrabComponent);
+
+        APlayerController* PlayerController = CastChecked<APlayerController>(PlayerCharacter->GetController());
+        if (UEnhancedInputLocalPlayerSubsystem* Subsystem
+            = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
+        {
+            UPPGrabPartsData* GrabPartsData = Cast<UPPGrabPartsData>(PartsData);
+            if (GrabPartsData)
+            {
+                Subsystem->AddMappingContext(GrabPartsData->PartsMappingContext, 1);
+                UEnhancedInputComponent* EnhancedInputComponent = CastChecked<UEnhancedInputComponent>(PlayerController->InputComponent);
+
+                EnhancedInputComponent->BindAction(GrabPartsData->GrabAction, ETriggerEvent::Triggered, this, &UPPGrabParts::HandleGrabAnimation);
+                EnhancedInputComponent->BindAction(GrabPartsData->GrabAction, ETriggerEvent::Completed, this, &UPPGrabParts::GrabRelease);
+            }
+        }
+    }
+}
+
+
+	
+
+
+
 
 
 void UPPGrabParts::BeginPlay()
@@ -44,6 +85,7 @@ void UPPGrabParts::BeginPlay()
 }
 
 // 그랩 파츠로 그랩 한 오브젝트 이동 업데이트
+
 void UPPGrabParts::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
@@ -55,6 +97,7 @@ void UPPGrabParts::TickComponent(float DeltaTime, ELevelTick TickType, FActorCom
 		UpdateGrabbedObjectPosition();
 	}
 }
+
 
 
 void UPPGrabParts::HandleGrabAnimation()
@@ -71,8 +114,6 @@ void UPPGrabParts::Grab(FHitResult& InHitResult)
 	if (!IsGrabbed) return;
 	GrabHandle->GrabComponentAtLocationWithRotation(InHitResult.GetComponent(), TEXT("None"), InHitResult.GetComponent()->GetComponentLocation(), FRotator::ZeroRotator);
 }
-
-
 
 
 // 그랩 끝날 때 작동
@@ -100,29 +141,6 @@ void UPPGrabParts::UpdateGrabbedObjectPosition()
 
 void UPPGrabParts::SetUp()
 {
-
-	//파츠 데이터에 있는 정보들을 이용해 해당 파츠 기본 정보 세팅
-	//이 과정에서는 데이터에 있는 인풋 맵핑과 인풋액션을 연결하고 플레이어 컨트롤러에 우선순위 1로 해서 기본 조작 바로 다음 우선순위를 갖게 함
-
-	if (GrabHandle == nullptr)
-	{
-		UActorComponent* GrabComponent = Owner->AddComponentByClass(UPhysicsHandleComponent::StaticClass(), true, FTransform::Identity, false);
-		GrabHandle = CastChecked<UPhysicsHandleComponent>(GrabComponent);
-	}
-
-	APlayerController* PlayerController = CastChecked<APlayerController>(Owner->GetController());
-	if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
-	{
-		UPPGrabPartsData* GrabPartsData = Cast<UPPGrabPartsData>(PartsData);
-		if (GrabPartsData)
-		{
-			Subsystem->AddMappingContext(GrabPartsData->PartsMappingContext, 1);
-			UEnhancedInputComponent* EnhancedInputComponent = CastChecked<UEnhancedInputComponent>(PlayerController->InputComponent);
-
-			EnhancedInputComponent->BindAction(GrabPartsData->GrabAction, ETriggerEvent::Started, this, &UPPGrabParts::HandleGrabAnimation);
-			EnhancedInputComponent->BindAction(GrabPartsData->GrabAction, ETriggerEvent::Completed, this, &UPPGrabParts::GrabRelease);
-		}
-	}
 	
 }
 

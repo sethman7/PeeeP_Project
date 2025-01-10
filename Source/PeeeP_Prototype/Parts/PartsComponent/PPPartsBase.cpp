@@ -3,6 +3,9 @@
 
 #include "Parts/PartsComponent/PPPartsBase.h"
 #include "Parts/PartsData/PPGrabPartsData.h"
+
+#include "Character/PPCharacterPlayer.h"
+#include "Kismet/GameplayStatics.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 
@@ -19,6 +22,56 @@ UPPPartsBase::UPPPartsBase()
 }
 
 
+//void UPPPartsBase::OnComponentDestroyed(bool bDestroyingHierarchy)
+//{
+//	// �ӽù��� �ذ���(with Github Copilot)
+//	Super::OnComponentDestroyed(bDestroyingHierarchy);
+//
+//	APPCharacterPlayer* PlayerCharacter = Cast<APPCharacterPlayer>(GetOwner());
+//	if (PlayerCharacter)
+//	{
+//		APlayerController* PlayerController = Cast<APlayerController>(PlayerCharacter->GetController());
+//		if (!PlayerController)
+//		{
+//			PlayerController = UGameplayStatics::GetPlayerController(GetWorld(), 0);
+//		}
+//		if (PlayerController)
+//		{
+//			if (UEnhancedInputLocalPlayerSubsystem* Subsystem
+//				= ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
+//			{
+//				if (PartsData)
+//				{
+//					Subsystem->RemoveMappingContext(PartsData->PartsMappingContext);
+//				}
+//			}
+//		}
+//	}
+//}
+
+void UPPPartsBase::OnComponentDestroyed(bool bDestroyingHierarchy)
+{
+	// �ӽù��� �ذ���(with Github Copilot)
+	Super::OnComponentDestroyed(bDestroyingHierarchy);
+
+	APPCharacterPlayer* PlayerCharacter = Cast<APPCharacterPlayer>(GetOwner());
+	if (PlayerCharacter)
+	{
+		APlayerController* PlayerController = Cast<APlayerController>(PlayerCharacter->GetController());
+		if (!PlayerController)
+		{
+			return;
+		}
+		if (UEnhancedInputLocalPlayerSubsystem* Subsystem
+			= ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
+		{
+			if (PartsData)
+			{
+				Subsystem->RemoveMappingContext(PartsData->PartsMappingContext);
+			}
+		}
+	}
+}
 
 // Called when the game starts
 void UPPPartsBase::BeginPlay()
@@ -39,31 +92,3 @@ void UPPPartsBase::TickComponent(float DeltaTime, ELevelTick TickType, FActorCom
 }
 
 
-void UPPPartsBase::SetPartsActive(bool flag)
-{
-	SetActive(flag); //물리,충돌 설정. 
-	PrimaryComponentTick.bStartWithTickEnabled = flag; //TickComponent 설정.
-
-
-	if (Owner == nullptr) return; //Owner가 유효하지 않다면.
-
-
-	if (flag == false) 
-	{
-		//파츠가 변경될 때, 기존의 파츠에 맵핑 연결 끊기.  
-		APlayerController* PlayerController = CastChecked<APlayerController>(Owner->GetController());
-		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
-		{
-			if (PartsData)
-			{
-				Subsystem->RemoveMappingContext(PartsData->PartsMappingContext);
-			}
-		}
-	}
-	else
-	{
-		//새 파츠가 장착될 때, 초기화 작업.
-		SetUp();
-	}
-
-}

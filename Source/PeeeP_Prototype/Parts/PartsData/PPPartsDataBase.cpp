@@ -2,3 +2,8 @@
 
 
 #include "Parts/PartsData/PPPartsDataBase.h"
+
+FPrimaryAssetId UPPPartsDataBase::GetPrimaryAssetId() const
+{
+	return FPrimaryAssetId("PPPartsData", GetFName());
+}

@@ -14,6 +14,7 @@ APPGrabableObject::APPGrabableObject()
 	SetRootComponent(Mesh);
 	Mesh->SetSimulatePhysics(true);
 	Mesh->SetCollisionProfileName(TEXT("GrabObjectProfile"));
+
 }
 
 // Called when the game starts or when spawned

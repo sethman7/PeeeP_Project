@@ -1,4 +1,4 @@
-ï»¿// Fill out your copyright notice in the Description page of Project Settings.
+// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "Parts/PartsComponent/PPPartsBase.h"
@@ -12,19 +12,19 @@
 // Sets default values for this component's properties
 UPPPartsBase::UPPPartsBase()
 {
-	//í•­ìƒ trueë¡œ ì„¤ì •í•´ì•¼ í•¨. false ì„¤ì •ì‹œ, TickFunctionì˜ ë“±ë¡ ìì²´ë¥¼ ë§‰ì•„ë²„ë¦¬ê¸° ë•Œë¬¸ì—,ì ˆëŒ€ë¡œ Tickì„ ì‚¬ìš©í•˜ì§€ ì•Šì„ ê²½ìš°ì—ë§Œ falseë¡œ ì„¤ì •í•¨.
+	//Ç×»ó true·Î ¼³Á¤ÇØ¾ß ÇÔ. false ¼³Á¤½Ã, TickFunctionÀÇ µî·Ï ÀÚÃ¼¸¦ ¸·¾Æ¹ö¸®±â ¶§¹®¿¡,Àı´ë·Î TickÀ» »ç¿ëÇÏÁö ¾ÊÀ» °æ¿ì¿¡¸¸ false·Î ¼³Á¤ÇÔ.
 	PrimaryComponentTick.bCanEverTick = true; 
 
-	//Tickì„ ì¸ìœ„ì ìœ¼ë¡œ ì¡°ì‘ ê°€ëŠ¥í•¨.
-	//PrimaryComponentTick.bStartWithTickEnabled = false;
+	//TickÀ» ÀÎÀ§ÀûÀ¸·Î Á¶ÀÛ °¡´ÉÇÔ.
+	PrimaryComponentTick.bStartWithTickEnabled = false;
 
-	Owner = Cast<APPCharacterPlayer>(GetOwner());
+	Owner = Cast<APawn>(GetOwner()); 
 }
 
 
 //void UPPPartsBase::OnComponentDestroyed(bool bDestroyingHierarchy)
 //{
-//	// ï¿½Ó½Ã¹ï¿½ï¿½ï¿½ ï¿½Ø°ï¿½ï¿½ï¿½(with Github Copilot)
+//	// ?????? ?????(with Github Copilot)
 //	Super::OnComponentDestroyed(bDestroyingHierarchy);
 //
 //	APPCharacterPlayer* PlayerCharacter = Cast<APPCharacterPlayer>(GetOwner());
@@ -51,13 +51,13 @@ UPPPartsBase::UPPPartsBase()
 
 void UPPPartsBase::OnComponentDestroyed(bool bDestroyingHierarchy)
 {
-	// ï¿½Ó½Ã¹ï¿½ï¿½ï¿½ ï¿½Ø°ï¿½ï¿½ï¿½(with Github Copilot)
+	// ?????? ????(with Github Copilot)
 	Super::OnComponentDestroyed(bDestroyingHierarchy);
 
-	//APPCharacterPlayer* PlayerCharacter = Cast<APPCharacterPlayer>(GetOwner());
-	if (Owner)
+	APPCharacterPlayer* PlayerCharacter = Cast<APPCharacterPlayer>(GetOwner());
+	if (PlayerCharacter)
 	{
-		APlayerController* PlayerController = Cast<APlayerController>(Owner->GetController());
+		APlayerController* PlayerController = Cast<APlayerController>(PlayerCharacter->GetController());
 		if (!PlayerController)
 		{
 			return;
@@ -81,8 +81,6 @@ void UPPPartsBase::BeginPlay()
 	// ...
 	
 }
-
-
 
 
 // Called every frame

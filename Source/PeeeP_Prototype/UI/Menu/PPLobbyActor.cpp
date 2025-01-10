@@ -29,7 +29,7 @@ APPLobbyActor::APPLobbyActor()
 	SceneCapture->PrimitiveRenderMode = ESceneCapturePrimitiveRenderMode::PRM_UseShowOnlyList;
 	
 
-	static ConstructorHelpers::FObjectFinder<UTextureRenderTarget2D> RenderTargetRef(TEXT("/Script/Engine.TextureRenderTarget2D'/Game/UI/MenuHUD/RT_LobbyActorCapture.RT_LobbyActorCapture'"));
+	static ConstructorHelpers::FObjectFinder<UTextureRenderTarget2D> RenderTargetRef(TEXT("/Script/Engine.TextureRenderTarget2D'/Game/UI/MenuHUD/NewTextureRenderTarget2D.NewTextureRenderTarget2D'"));
 	if (RenderTargetRef.Object)
 	{
 		RenderTarget = RenderTargetRef.Object;

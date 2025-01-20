@@ -60,11 +60,22 @@ protected:
 	TObjectPtr<class UInputAction> LookAction;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, Meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class UInputAction> RunAction;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class UInputAction> ButtonInteract;
+
+	// Move MaxWalkSpeed Variable here from ElectricDischarge Setting Section
+	// You can Setting Player's Max Walk Speed
+	float MaxWalkSpeed;
+
+	bool bIsRunning;
 
 	void Move(const FInputActionValue& Value);
 	void Look(const FInputActionValue& Value);
 	void ButtonInteraction(const FInputActionValue& Value);
+	void OnRunningStart(const FInputActionValue& Value);
+	void OnRunningEnd(const FInputActionValue& Value);
 
 	ECharacterControlType CurrentCharacterControlType;
 
@@ -129,7 +140,6 @@ protected:
 	TObjectPtr<class UNiagaraComponent> PlayerCharacterNiagaraComponent;
 
 	float ChargeTime;
-	float MaxWalkSpeed;
 
 //InventoryComponent
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Electric)

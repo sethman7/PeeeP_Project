@@ -46,6 +46,11 @@ APPCharacterPlayer::APPCharacterPlayer()
 	{
 		LookAction = InputActionLookRef.Object;
 	}
+	static ConstructorHelpers::FObjectFinder<UInputAction> InputActionRunRef(TEXT("/Script/EnhancedInput.InputAction'/Game/Input/Actions/IA_Run.IA_Run'"));
+	if (!InputActionRunRef.Object)
+	{
+		RunAction = InputActionRunRef.Object;
+	}
 	static ConstructorHelpers::FObjectFinder<UInputAction> ButtonInteractRef(TEXT("/Script/EnhancedInput.InputAction'/Game/Input/Actions/IA_Button.IA_Button'"));
 	if (!ButtonInteractRef.Object)
 	{
@@ -66,6 +71,7 @@ APPCharacterPlayer::APPCharacterPlayer()
 	{
 		OpenMenuInteract = OpenMenuActionRef.Object;
 	}
+
 
 	// Quick Slot Section
 	static ConstructorHelpers::FObjectFinder<UInputAction> QuickSlotMoveRef(TEXT("/Script/EnhancedInput.InputAction'/Game/Input/Actions/IA_QuickSlotMove.IA_QuickSlotMove'"));
@@ -103,23 +109,25 @@ APPCharacterPlayer::APPCharacterPlayer()
 	CameraBoom->bEnableCameraLag = true;
 	CameraBoom->bEnableCameraRotationLag = true;
 	CameraBoom->CameraLagSpeed = 5.0f;
-	CameraBoom->CameraRotationLagSpeed = 20.f;
+	CameraBoom->CameraRotationLagSpeed = 20.0f;
 	CameraBoom->CameraLagMaxDistance = 500.f;
 	CameraBoom->ProbeSize = 8.0f;
 
 	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));	// FollowCamera 컴포넌트를 가져옴
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
 	FollowCamera->bUsePawnControlRotation = false;
-	FollowCamera->FieldOfView = 80.0f;
+	FollowCamera->FieldOfView = 90.0f;
 
 	ElectricDischargeComponent = CreateDefaultSubobject<UPPElectricDischargeComponent>(TEXT("ElectricDischargeComponent"));
 
+	// Player Movement Setting
 	GetCharacterMovement()->BrakingDecelerationWalking = 2000.f;
 	GetCharacterMovement()->GravityScale = 1.6f;
-	this->MaxWalkSpeed = 150.0f;
-	GetCharacterMovement()->MaxWalkSpeed = this->MaxWalkSpeed;
+	this->MaxWalkSpeed = 75.f;										// Setting Default Max Walk Speed
+	GetCharacterMovement()->MaxWalkSpeed = this->MaxWalkSpeed;		// Apply Default Max Walk Speed
 	GetCharacterMovement()->MaxStepHeight = 5.0f;
 	GetCharacterMovement()->SetWalkableFloorAngle(50.f);
+	this->bIsRunning = false;
 
 	PlayerCharacterNiagaraComponent = CreateDefaultSubobject<UNiagaraComponent>(TEXT("EffectComponent"));
 	PlayerCharacterNiagaraComponent->SetupAttachment(RootComponent);
@@ -168,19 +176,32 @@ void APPCharacterPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 
 	UEnhancedInputComponent* EnhancedInputComponent = CastChecked<UEnhancedInputComponent>(PlayerInputComponent);
 
+	/// Binding Section
+	/// If you added new action, you should add new binding action here.
+	/// Create some function for actions about added input and bind it.
+	
+	// Jump
 	EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Triggered, this, &ACharacter::Jump);
 	EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
+	// Move
 	EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &APPCharacterPlayer::Move);
+	// Look
 	EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &APPCharacterPlayer::Look);
+	// Running
+	EnhancedInputComponent->BindAction(RunAction, ETriggerEvent::Triggered, this, &APPCharacterPlayer::OnRunningStart);
+	EnhancedInputComponent->BindAction(RunAction, ETriggerEvent::Completed, this, &APPCharacterPlayer::OnRunningEnd);
+	// Button Interaction(Unused)
 	EnhancedInputComponent->BindAction(ButtonInteract, ETriggerEvent::Triggered, this, &APPCharacterPlayer::ButtonInteraction);
+	// Open Menu
 	EnhancedInputComponent->BindAction(OpenMenuInteract, ETriggerEvent::Triggered, this, &APPCharacterPlayer::OpenMenu);
+	// Electric Discharge Component
 	if (ElectricDischargeComponent)
 	{
 		EnhancedInputComponent->BindAction(ElectricDischargeAction, ETriggerEvent::Ongoing, ElectricDischargeComponent.Get(), &UPPElectricDischargeComponent::Charging);
 		EnhancedInputComponent->BindAction(ElectricDischargeAction, ETriggerEvent::Completed, ElectricDischargeComponent.Get(), &UPPElectricDischargeComponent::Discharge);
 		EnhancedInputComponent->BindAction(ElectricDischargeModeChangeAction, ETriggerEvent::Completed, ElectricDischargeComponent.Get(), &UPPElectricDischargeComponent::ChangeDischargeMode);
 	}
-	
+	// Quick Slot
 	EnhancedInputComponent->BindAction(QuickSlotMoveAction, ETriggerEvent::Triggered, this, &APPCharacterPlayer::QuickSlotMove);
 	EnhancedInputComponent->BindAction(QuickSlotUseAction, ETriggerEvent::Triggered, this, &APPCharacterPlayer::QuickSlotUse);
 }
@@ -263,7 +284,6 @@ void APPCharacterPlayer::ButtonInteraction(const FInputActionValue& Value)
 	FHitResult HitResult;
 	FCollisionQueryParams CollisionParam(SCENE_QUERY_STAT(Button), false, this);
 
-
 	bool IsHit = GetWorld()->LineTraceSingleByChannel(HitResult, CameraPos, EndPos, ECC_GameTraceChannel1, CollisionParam, FCollisionResponseParams(ECR_Block));
 
 	if (IsHit)
@@ -282,6 +302,25 @@ void APPCharacterPlayer::ButtonInteraction(const FInputActionValue& Value)
 	FColor DebugColor(255, 0, 0);
 
 	DrawDebugLine(GetWorld(), CameraPos, EndPos, DebugColor, false, 5.0f);
+}
+
+void APPCharacterPlayer::OnRunningStart(const FInputActionValue& Value)
+{
+	// Set Player Max Walk Speed for Running.
+	if (!this->bIsRunning)
+	{
+		GetCharacterMovement()->MaxWalkSpeed = 150.f;	// Here is Running Max Walk Speed. You can Setting Running Max Walk Speed.
+		this->bIsRunning = true;
+		UE_LOG(LogTemp, Log, TEXT("Running Start"));
+	}
+}
+
+void APPCharacterPlayer::OnRunningEnd(const FInputActionValue& Value)
+{
+	// Set Player Max Walk Speed to Default Max Walk Speed.
+	GetCharacterMovement()->MaxWalkSpeed = this->MaxWalkSpeed;
+	this->bIsRunning = false;
+	UE_LOG(LogTemp, Log, TEXT("Running End"));
 }
 
 void APPCharacterPlayer::SetDefaultMeshAndAnim()
@@ -340,10 +379,6 @@ void APPCharacterPlayer::PlayAnimation(UAnimMontage* InAnimMontage)
 		PlayAnimMontage(InAnimMontage);
 	}
 }
-
-
-
-
 
 //그랩 애니메이션 작동 후, Notify를 통해 호출됨. 그랩에 닿은 오브젝트가 있는지 체크. 
 void APPCharacterPlayer::GrabHitCheck()

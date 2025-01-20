@@ -44,6 +44,9 @@ public:
 	uint8 bIsIdle : 1;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Character)
+	uint8 bIsRunning : 1;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Character)
 	float MovingThreshould;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Character)

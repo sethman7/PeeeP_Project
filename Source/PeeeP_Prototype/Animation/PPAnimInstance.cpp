@@ -33,7 +33,7 @@ void UPPAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 		bIsIdle = GroundSpeed < MovingThreshould;
 		bIsFalling = Movement->IsFalling();
 		bIsJumping = (Velocity.Z > JunpingThreshould) & bIsFalling;
-
+		bIsRunning = GroundSpeed > 100.0f;
 	}
 
 }

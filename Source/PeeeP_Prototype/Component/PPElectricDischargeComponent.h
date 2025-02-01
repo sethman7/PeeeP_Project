@@ -82,6 +82,8 @@ public:
 	// ������Ʈ(�÷��̾�) ���� ���� �Լ�
 	void ChargeElectric(float amount);
 
+	void Reset();
+
 private:
 	void BroadCastToUI();
 };

@@ -32,9 +32,9 @@ UPPElectricDischargeComponent::UPPElectricDischargeComponent()
 	bChargeStart = false;
 
 	// ������Ʈ(�÷��̾�)�� ���ⷮ �ʱ�ȭ
-	CurrentElectricCapacity = 0.0f;
+	CurrentElectricCapacity = 12.0f;
 	MaxElectricCapacity = 12.0f;
-	bElectricIsEmpty = true;
+	bElectricIsEmpty = false;
 
 	DischargeEffectComponent = CreateDefaultSubobject<UNiagaraComponent>(TEXT("NiagaraComponent"));
 }
@@ -50,6 +50,8 @@ void UPPElectricDischargeComponent::BeginPlay()
 	{
 		DischargeEffectComponent = OwnerCharacter->GetPlayerCharacterNiagaraComponent();
 	}
+
+	BroadCastToUI();
 }
 
 
@@ -58,6 +60,15 @@ void UPPElectricDischargeComponent::TickComponent(float DeltaTime, ELevelTick Ti
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
+	if (bElectricIsEmpty)
+	{
+		APPCharacterPlayer* OwnerCharacter = Cast<APPCharacterPlayer>(GetOwner());
+		if (IsValid(OwnerCharacter))
+		{
+			OwnerCharacter->OnDeath();
+			Reset();
+		}
+	}
 }
 
 void UPPElectricDischargeComponent::Charging()
@@ -78,6 +89,7 @@ void UPPElectricDischargeComponent::Charging()
 		{
 			GetWorld()->GetTimerManager().SetTimer(AutoDischargeTimeHandler, this, &UPPElectricDischargeComponent::Discharge, 1.0f, false);
 			UE_LOG(LogTemp, Warning, TEXT("Timer"));
+			bElectricIsEmpty = true;
 		}
 		return;
 	}
@@ -328,5 +340,20 @@ void UPPElectricDischargeComponent::BroadCastToUI()
 			ElectircHUDInterface->ElectircCapacityDelegate.Broadcast(CurrentElectircCapacityRate);
 		}
 	}
+}
+
+void UPPElectricDischargeComponent::Reset()
+{
+	CurrentChargingTime = 0.0f;
+	CurrentChargeLevel = 0;
+
+	bRechargingEnable = true;
+	bChargeStart = false;
+	CurrentElectricCapacity = 12.0f;
+	MaxElectricCapacity = 12.0f;
+	bElectricIsEmpty = false;
+
+	GetWorld()->GetTimerManager().ClearTimer(AutoDischargeTimeHandler);
+	GetWorld()->GetTimerManager().ClearTimer(RechargingDelayTimeHandler);
 }
 

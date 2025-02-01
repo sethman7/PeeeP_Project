@@ -22,6 +22,8 @@
 #include "Prop/PPCleaningRobot.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Kismet/KismetSystemLibrary.h"
+#include "GameMode/PPGameModeBase.h"
+#include "GameMode/PPPlayerState.h"
 
 APPCharacterPlayer::APPCharacterPlayer()
 {
@@ -121,6 +123,24 @@ APPCharacterPlayer::APPCharacterPlayer()
 
 }
 
+void APPCharacterPlayer::OnDeath()
+{
+	APlayerController* PlayerController = Cast<APlayerController>(GetController());
+	if (IsValid(PlayerController))
+	{
+		PlayerController->DisableInput(PlayerController);
+
+		ElectricDischargeComponent->Reset();
+		APPGameModeBase* GameMode = Cast<APPGameModeBase>(GetWorld()->GetAuthGameMode());
+		if (IsValid(GameMode))
+		{
+			GameMode->MoveCharacterToSpawnLocation(this);
+		}
+
+		PlayerController->EnableInput(PlayerController);
+	}
+}
+
 void APPCharacterPlayer::BeginPlay()
 {
 	Super::BeginPlay();
@@ -131,8 +151,13 @@ void APPCharacterPlayer::BeginPlay()
 		Subsystem->AddMappingContext(DefaultMappingContext, 0);
 	}
 
+	APPGameModeBase* GameMode = Cast<APPGameModeBase>(GetWorld()->GetAuthGameMode());
+	if (IsValid(GameMode))
+	{
+		GameMode->SetInitialSpawnLocation(PlayerController);
+	}
 
-	Test_EquipGrabParts();
+	//Test_EquipGrabParts();
 
 	//// Parts 임시로 생성자에서 부여함
 	//// 해당 부분은 나중에 인벤토리에서 데이터 이용해서 파츠 변경하는 함수 따로 만들어서 적용하면 될 듯

@@ -4,6 +4,7 @@
 #include "Components/BoxComponent.h"
 #include "Character/PPCharacterPlayer.h"
 #include "Component/PPElectricDischargeComponent.h"
+#include "GameMode/PPPlayerState.h"
 
 
 // Sets default values
@@ -49,6 +50,14 @@ void APPElectricCharageStation::OnOverlapBegin(UPrimitiveComponent* OverlappedCo
 		{
 			UE_LOG(LogTemp, Log, TEXT("Player Overlap Begin"));
 			ElectricDischargeComponent = player->GetElectricDischargeComponent();
+
+			APPPlayerState* PlayerState = player->GetPlayerState<APPPlayerState>();
+			if (IsValid(PlayerState))
+			{
+				//현재 액터의 위치에 스폰되면 땅에 박혀서 임의로 조정, 임의값 사용이 문제되면 추후 SceneComponent를 사용하여 위치 조정
+				FVector SpawnLocation = GetActorLocation() + FVector(0.0f, 0.0f, 25.0f);
+				PlayerState->SetSpawnLocation(SpawnLocation);
+			}
 			bIsActivate = true;
 		}
 		

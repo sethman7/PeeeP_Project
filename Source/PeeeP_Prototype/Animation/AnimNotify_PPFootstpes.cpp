@@ -45,7 +45,7 @@ void UAnimNotify_PPFootstpes::Notify(USkeletalMeshComponent* MeshComp, UAnimSequ
 	}
 
 	FVector StartPos = Owner->GetActorLocation();
-	FVector EndPos = Owner->GetActorUpVector() * -150.0f;
+	FVector EndPos = StartPos + Owner->GetActorUpVector() * -15.0f;
 
 	FHitResult HitResult;
 	FCollisionQueryParams CollisionParam(SCENE_QUERY_STAT(Visibility), false, Owner);
@@ -61,10 +61,17 @@ void UAnimNotify_PPFootstpes::Notify(USkeletalMeshComponent* MeshComp, UAnimSequ
 			auto Surface = HitResult.PhysMaterial.Get()->SurfaceType;
 			// 여기서 추가로 작업 필요
 			// 표면의 타입에 따라 다른 사운드를 재생하도록 구현해야 함.
-
+			if (nullptr != FootstepSound)
+			{
+				UGameplayStatics::PlaySoundAtLocation(MeshComp, FootstepSound, MeshComp->GetComponentLocation(), VolumeMultiplier, PitchMultiplier);
+			}
 		}
 		
 	}
+
+	FColor DebugColor(255, 0, 0);
+
+	DrawDebugLine(GetWorld(), StartPos, EndPos, DebugColor, false, 5.0f);
 	/*
 	FVector CameraPos = FollowCamera->GetComponentLocation();
 	FVector CameraForwardVector = FollowCamera->GetForwardVector();

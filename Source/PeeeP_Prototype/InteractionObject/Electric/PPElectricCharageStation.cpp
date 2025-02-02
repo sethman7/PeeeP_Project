@@ -51,6 +51,7 @@ void APPElectricCharageStation::OnOverlapBegin(UPrimitiveComponent* OverlappedCo
 			UE_LOG(LogTemp, Log, TEXT("Player Overlap Begin"));
 			ElectricDischargeComponent = player->GetElectricDischargeComponent();
 
+
 			APPPlayerState* PlayerState = player->GetPlayerState<APPPlayerState>();
 			if (IsValid(PlayerState))
 			{

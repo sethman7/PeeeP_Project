@@ -71,6 +71,14 @@ protected:
 	ECharacterControlType CurrentCharacterControlType;
 
 protected:
+
+	TObjectPtr<class USkeletalMesh> DefaultSkeletonMesh;
+
+	TSubclassOf<class UAnimInstance> DefaultAnimClass;
+public:
+	void SetDefaultMeshAndAnim();
+
+protected:
 	// Camera Section
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class USpringArmComponent> CameraBoom;

@@ -12,13 +12,14 @@
 // Sets default values for this component's properties
 UPPPartsBase::UPPPartsBase()
 {
-	//Ç×»ó true·Î ¼³Á¤ÇØ¾ß ÇÔ. false ¼³Á¤½Ã, TickFunctionÀÇ µî·Ï ÀÚÃ¼¸¦ ¸·¾Æ¹ö¸®±â ¶§¹®¿¡,Àı´ë·Î TickÀ» »ç¿ëÇÏÁö ¾ÊÀ» °æ¿ì¿¡¸¸ false·Î ¼³Á¤ÇÔ.
+	//í•­ìƒ trueë¡œ ì„¤ì •í•´ì•¼ í•¨. false ì„¤ì •ì‹œ, TickFunctionì˜ ë“±ë¡ ìì²´ë¥¼ ë§‰ì•„ë²„ë¦¬ê¸° ë•Œë¬¸ì—,ì ˆëŒ€ë¡œ Tickì„ ì‚¬ìš©í•˜ì§€ ì•Šì„ ê²½ìš°ì—ë§Œ falseë¡œ ì„¤ì •í•¨.
 	PrimaryComponentTick.bCanEverTick = true; 
 
-	//TickÀ» ÀÎÀ§ÀûÀ¸·Î Á¶ÀÛ °¡´ÉÇÔ.
+	//Tickì„ ì¸ìœ„ì ìœ¼ë¡œ ì¡°ì‘ ê°€ëŠ¥í•¨.
 	//PrimaryComponentTick.bStartWithTickEnabled = false;
 
-	Owner = Cast<APPCharacterPlayer>(GetOwner()); 
+	Owner = Cast<APPCharacterPlayer>(GetOwner());
+
 }
 
 

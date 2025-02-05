@@ -33,4 +33,5 @@ protected:
 	// ���� ������ ������ ����Ű�� ������
 	UPROPERTY()
 	TObjectPtr<class UPPInGameUIMain> InGameUIMain;
+
 };

@@ -8,14 +8,14 @@
 
 UAnimNotify_PPFootstpes::UAnimNotify_PPFootstpes()
 {
-	static ConstructorHelpers::FObjectFinder<USoundBase> FootstepSoundRef(TEXT("/Script/Engine.SoundCue'/Game/SFX/Character/Footstep/Default/cues/SC_DefualtFootstep.SC_DefualtFootstep'"));
+	static ConstructorHelpers::FObjectFinder<USoundBase> FootstepSoundRef(TEXT("/Script/Engine.SoundCue'/Game/SFX/Character/Footstep/New_Default/cues/SC_NewDefaultFootsteps.SC_NewDefaultFootsteps'"));
 	if (nullptr != FootstepSoundRef.Object)
 	{
 		FootstepSound = FootstepSoundRef.Object;
 	}
 
 	VolumeMultiplier = 0.25f;
-	PitchMultiplier = 1.0f;
+	PitchMultiplier = 1.00f;
 }
 
 void UAnimNotify_PPFootstpes::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation)
@@ -50,53 +50,38 @@ void UAnimNotify_PPFootstpes::Notify(USkeletalMeshComponent* MeshComp, UAnimSequ
 	FHitResult HitResult;
 	FCollisionQueryParams CollisionParam(SCENE_QUERY_STAT(Visibility), false, Owner);
 
-	bool IsHit = Owner->GetWorld()->LineTraceSingleByChannel(HitResult, StartPos, EndPos, ECC_Visibility, CollisionParam, FCollisionResponseParams(ECR_Block));
+	bool IsHit = Owner->GetWorld()->LineTraceSingleByChannel(HitResult, StartPos, EndPos, ECC_GameTraceChannel7, CollisionParam);
 	if (IsHit)
 	{
-		// I want to get the hitresult's actor.
 		AActor* HitActor = HitResult.GetActor();
-		if (nullptr != HitActor)
-		{
-			UE_LOG(LogTemp, Log, TEXT("Hit Actor"));
-			auto Surface = HitResult.PhysMaterial.Get()->SurfaceType;
-			// 여기서 추가로 작업 필요
-			// 표면의 타입에 따라 다른 사운드를 재생하도록 구현해야 함.
-			if (nullptr != FootstepSound)
-			{
-				UGameplayStatics::PlaySoundAtLocation(MeshComp, FootstepSound, MeshComp->GetComponentLocation(), VolumeMultiplier, PitchMultiplier);
-			}
-		}
+		UE_LOG(LogTemp, Log, TEXT("Hit Actor: %s"), *HitActor->GetName());
 		
-	}
 
-	FColor DebugColor(255, 0, 0);
-
-	DrawDebugLine(GetWorld(), StartPos, EndPos, DebugColor, false, 5.0f);
-	/*
-	FVector CameraPos = FollowCamera->GetComponentLocation();
-	FVector CameraForwardVector = FollowCamera->GetForwardVector();
-	FVector EndPos = CameraPos + CameraForwardVector * 600.f;
-
-	FHitResult HitResult;
-	FCollisionQueryParams CollisionParam(SCENE_QUERY_STAT(Button), false, this);
-
-	bool IsHit = GetWorld()->LineTraceSingleByChannel(HitResult, CameraPos, EndPos, ECC_GameTraceChannel1, CollisionParam, FCollisionResponseParams(ECR_Block));
-
-	if (IsHit)
-	{
-		AActor* HitActor = HitResult.GetActor();
-		IPPInteractableObjectInterface* ButtonActor = Cast<IPPInteractableObjectInterface>(HitActor);
-		//ensure(ButtonActor);
-		if (ButtonActor != nullptr)
+		EPhysicalSurface SurfaceType = UGameplayStatics::GetSurfaceType(HitResult);
+		// 여기서 추가로 작업 필요
+		// 표면의 타입에 따라 다른 사운드를 재생하도록 구현해야 함.
+		// 현재 SurfaceType을 SurfaceType_Default만 받아오는 문제가 발생함. -> 따라서 일단 표면에 상관없이 기본 발소리만 나도록 임시로 구현.
+		/*
+		switch (SurfaceType)
 		{
-			UE_LOG(LogTemp, Log, TEXT("FindButton"));
-			ButtonActor->Interact();
+		case SurfaceType_Default:
+			UE_LOG(LogTemp, Log, TEXT("SurfaceType_Default"));
+			break;
+		case SurfaceType1:
+			UE_LOG(LogTemp, Log, TEXT("SurfaceType1"));
+			break;
+		default:
+			UE_LOG(LogTemp, Log, TEXT("SurfaceType2~"));
+			break;
 		}
+		*/
 
+		if (nullptr != FootstepSound)
+		{
+			UGameplayStatics::PlaySoundAtLocation(MeshComp, FootstepSound, MeshComp->GetComponentLocation(), VolumeMultiplier, PitchMultiplier);
+		}
 	}
 
 	FColor DebugColor(255, 0, 0);
-
-	DrawDebugLine(GetWorld(), CameraPos, EndPos, DebugColor, false, 5.0f);
-	*/
+	DrawDebugLine(GetWorld(), StartPos, EndPos, DebugColor, false, 5.0f);
 }

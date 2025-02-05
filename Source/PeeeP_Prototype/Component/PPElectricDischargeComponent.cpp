@@ -11,6 +11,8 @@
 #include "Components/WidgetComponent.h"
 #include "NiagaraComponent.h"
 #include "NiagaraSystem.h"
+#include "Sound/SoundBase.h"
+#include "Kismet/GameplayStatics.h"
 
 
 // Sets default values for this component's properties
@@ -166,6 +168,7 @@ void UPPElectricDischargeComponent::Discharge()
 
 	if (bElectricIsEmpty)
 	{
+
 		UE_LOG(LogTemp, Log, TEXT("Not Enough Electric"));
 		bChargeStart = false;
 		return;

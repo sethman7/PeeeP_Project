@@ -84,4 +84,5 @@ public:
 
 private:
 	void BroadCastToUI();
+
 };

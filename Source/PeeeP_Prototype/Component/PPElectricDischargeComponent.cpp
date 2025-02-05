@@ -11,8 +11,6 @@
 #include "Components/WidgetComponent.h"
 #include "NiagaraComponent.h"
 #include "NiagaraSystem.h"
-#include "Sound/SoundBase.h"
-#include "Kismet/GameplayStatics.h"
 
 
 // Sets default values for this component's properties
@@ -29,14 +27,17 @@ UPPElectricDischargeComponent::UPPElectricDischargeComponent()
 	MoveSpeedReductionRate = 0.5f;
 	CurrentChargeLevel = 0;
 	MaxChargeLevel = 3;
-	bRechargingEnable = true;
+	ThresholdChargeLevel = 1;
+	RequireCapacityForNextLevel = 1.0f;
+
+	bChargingEnable = false;
 
 	bChargeStart = false;
 
 	// ������Ʈ(�÷��̾�)�� ���ⷮ �ʱ�ȭ
-	CurrentElectricCapacity = 0.0f;
+	CurrentElectricCapacity = 0.1f;
 	MaxElectricCapacity = 12.0f;
-	bElectricIsEmpty = true;
+	bElectricIsEmpty = false;
 
 	DischargeEffectComponent = CreateDefaultSubobject<UNiagaraComponent>(TEXT("NiagaraComponent"));
 }
@@ -52,6 +53,8 @@ void UPPElectricDischargeComponent::BeginPlay()
 	{
 		DischargeEffectComponent = OwnerCharacter->GetPlayerCharacterNiagaraComponent();
 	}
+
+	BroadCastToUI();
 }
 
 
@@ -60,26 +63,35 @@ void UPPElectricDischargeComponent::TickComponent(float DeltaTime, ELevelTick Ti
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
+	if (CurrentElectricCapacity <= 0.0f)
+	{
+		bElectricIsEmpty = true;
+	}
+
+	if (bElectricIsEmpty)
+	{
+		APPCharacterPlayer* OwnerCharacter = Cast<APPCharacterPlayer>(GetOwner());
+		if (IsValid(OwnerCharacter))
+		{
+			OwnerCharacter->OnDeath();
+			Reset();
+		}
+	}
 }
 
 void UPPElectricDischargeComponent::Charging()
 {
-	if (!bRechargingEnable)
-	{
-		return;
-	}
-
 	// ���� ������ ���ⷮ�� 0.0 ������ ���
 	// ��¡ �� �ӵ� ���� ���� üũ�Ͽ� ���� ���ⷮ�� 0�� ��� �ӵ� ���Ұ� �ȵǵ��� ���� �˻�
-	if (CurrentElectricCapacity <= 0.0f)
+	if (!bChargingEnable)
 	{
 		UE_LOG(LogTemp, Log, TEXT("Not Enough Electric."));
 
 		// 1.0�� �� �ڵ����� Discharge
-		if (!AutoDischargeTimeHandler.IsValid())
+		if ((!AutoDischargeTimeHandler.IsValid()) && bChargeStart)
 		{
 			GetWorld()->GetTimerManager().SetTimer(AutoDischargeTimeHandler, this, &UPPElectricDischargeComponent::Discharge, 1.0f, false);
-			UE_LOG(LogTemp, Warning, TEXT("Timer"));
+			UE_LOG(LogTemp, Warning, TEXT("!bChargingEnable Timer"));
 		}
 		return;
 	}
@@ -95,21 +107,22 @@ void UPPElectricDischargeComponent::Charging()
 		bChargeStart = true;
 	}
 
-	
 	if (CurrentChargeLevel >= MaxChargeLevel)
 	{
 		// 1.0�� �� �ڵ����� DisCharge
 		if (!AutoDischargeTimeHandler.IsValid())
 		{
 			GetWorld()->GetTimerManager().SetTimer(AutoDischargeTimeHandler, this, &UPPElectricDischargeComponent::Discharge, 1.0f, false);
-			UE_LOG(LogTemp, Warning, TEXT("Timer"));
+			UE_LOG(LogTemp, Warning, TEXT("MaxTimer"));
 		}
 		return;
 	}
 
-	CurrentChargingTime += GetWorld()->GetDeltaSeconds();
+	float DeltaTime = GetWorld()->GetDeltaSeconds();
+
+	CurrentChargingTime += DeltaTime;
 	// ��¡ ���� ��� ����ؼ� ���� ���� �������� ����
-	CurrentElectricCapacity -= GetWorld()->GetDeltaSeconds();
+	CurrentElectricCapacity -= DeltaTime;
 
 	CurrentChargingTime = FMath::Clamp(CurrentChargingTime, 0, MaxChargingTime);
 	CurrentElectricCapacity = FMath::Clamp(CurrentElectricCapacity, 0, MaxElectricCapacity);
@@ -118,6 +131,14 @@ void UPPElectricDischargeComponent::Charging()
 	BroadCastToUI();
 
 	int32 IntCurrentChargingTime = FMath::TruncToInt(CurrentChargingTime);
+
+
+	if (CurrentChargeLevel < IntCurrentChargingTime)
+	{
+		CurrentChargeLevel = IntCurrentChargingTime;
+	}
+
+	SetChargingEnable();
 
 	if (ChargingEffect != nullptr)
 	{
@@ -144,11 +165,6 @@ void UPPElectricDischargeComponent::Charging()
 		}
 	}
 
-	if (CurrentChargeLevel < IntCurrentChargingTime)
-	{
-		CurrentChargeLevel = IntCurrentChargingTime;
-	}
-
 	UE_LOG(LogTemp, Log, TEXT("Charging Time: %f"), CurrentChargingTime);
 	UE_LOG(LogTemp, Log, TEXT("Electric Capacity: %f / %f"), CurrentElectricCapacity, MaxElectricCapacity);
 }
@@ -157,24 +173,22 @@ void UPPElectricDischargeComponent::Discharge()
 {
 	APPCharacterPlayer* OwnerCharacter = Cast<APPCharacterPlayer>(GetOwner());
 
-	if (!bRechargingEnable || CurrentChargeLevel == 0)
+	bChargeStart = false;
+
+	if (CurrentChargeLevel == 0)
 	{
+		UE_LOG(LogTemp, Warning, TEXT("CurrentChargeLevel 0"));
 		CurrentChargingTime = 0.0f;
 		DischargeEffectComponent->Deactivate();
 		OwnerCharacter->RevertMaxWalkSpeed();
-		bChargeStart = false;
 		return;
 	}
 
 	if (bElectricIsEmpty)
 	{
-
-		UE_LOG(LogTemp, Log, TEXT("Not Enough Electric"));
-		bChargeStart = false;
+		UE_LOG(LogTemp, Warning, TEXT("bElectricIsEmpty true"));
 		return;
 	}
-
-	bChargeStart = false;
 
 	AActor* Owner = GetOwner();
 
@@ -241,21 +255,16 @@ void UPPElectricDischargeComponent::Discharge()
 	{
 		OwnerCharacter->RevertMaxWalkSpeed();
 	}
-	
-	// ������ ���ⷮ�� 0 ������ ���
-	if (CurrentElectricCapacity <= 0.0f)
-	{
-		bElectricIsEmpty = true;
-	}
-	
 
 	CurrentChargingTime = 0.0f;
 	CurrentChargeLevel = 0;
-	bRechargingEnable = false;
 
+	bChargingEnable = false;
+
+	UE_LOG(LogTemp, Warning, TEXT("ClearTimer"));
 	GetWorld()->GetTimerManager().ClearTimer(AutoDischargeTimeHandler);
 
-	GetWorld()->GetTimerManager().SetTimer(RechargingDelayTimeHandler, this, &UPPElectricDischargeComponent::SetbRecharging, RechargingDelay, false);
+	GetWorld()->GetTimerManager().SetTimer(RechargingDelayTimeHandler, this, &UPPElectricDischargeComponent::SetChargingEnable, RechargingDelay, false);
 
 }
 
@@ -275,11 +284,26 @@ void UPPElectricDischargeComponent::ChangeDischargeMode()
 	}
 }
 
-void UPPElectricDischargeComponent::SetbRecharging()
+void UPPElectricDischargeComponent::SetChargingEnable()
 {
-	bRechargingEnable = true;
-}
+	if (CurrentChargeLevel != 0)
+	{
+		if (CurrentElectricCapacity + FMath::Fmod(CurrentChargingTime, CurrentChargeLevel) < ThresholdChargeLevel * RequireCapacityForNextLevel)
+		{
+			bChargingEnable = false;
+			UE_LOG(LogTemp, Warning, TEXT("SetChargingEnable False"));
+			return;
+		}
+	}
+	else if(CurrentElectricCapacity + CurrentChargingTime < ThresholdChargeLevel * RequireCapacityForNextLevel)
+	{
+		bChargingEnable = false;
+		UE_LOG(LogTemp, Warning, TEXT("SetChargingEnable False"));
+		return;
+	}
 
+	bChargingEnable = true;
+}
 
 void UPPElectricDischargeComponent::PlayDischargeEffect(FName EffectType, int8 ChargingLevel, FVector Location, FRotator Rotation)
 {
@@ -312,6 +336,7 @@ void UPPElectricDischargeComponent::ChargeElectric(float amount)
 		UE_LOG(LogTemp, Log, TEXT("Charing +%f"), amount);
 		CurrentElectricCapacity += amount;
 		CurrentElectricCapacity = FMath::Clamp(CurrentElectricCapacity, 0, MaxElectricCapacity);
+		SetChargingEnable();
 		// UI�� ��ε�ĳ��Ʈ
 		BroadCastToUI();
 	}
@@ -331,5 +356,20 @@ void UPPElectricDischargeComponent::BroadCastToUI()
 			ElectircHUDInterface->ElectircCapacityDelegate.Broadcast(CurrentElectircCapacityRate);
 		}
 	}
+}
+
+void UPPElectricDischargeComponent::Reset()
+{
+	CurrentChargingTime = 0.0f;
+	CurrentChargeLevel = 0;
+
+	bChargingEnable = true;
+	bChargeStart = false;
+	CurrentElectricCapacity = 12.0f;
+	MaxElectricCapacity = 12.0f;
+	bElectricIsEmpty = false;
+
+	GetWorld()->GetTimerManager().ClearTimer(AutoDischargeTimeHandler);
+	GetWorld()->GetTimerManager().ClearTimer(RechargingDelayTimeHandler);
 }
 

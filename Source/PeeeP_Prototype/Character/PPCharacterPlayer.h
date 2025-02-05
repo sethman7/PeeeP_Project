@@ -25,6 +25,8 @@ class PEEEP_PROTOTYPE_API APPCharacterPlayer : public APPCharacterBase, public I
 public:
 	APPCharacterPlayer();
 	
+	void OnDeath();
+
 protected:
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaTime) override;

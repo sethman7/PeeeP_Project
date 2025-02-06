@@ -41,7 +41,7 @@ protected:
 	float RechargingDelay;
 	float MoveSpeedReductionRate;
 
-	bool bRechargingEnable;
+	bool bChargingEnable;
 	bool bChargeStart;
 
 	// ������Ʈ(�÷��̾�) ���͸� ��
@@ -53,6 +53,8 @@ protected:
 
 	int8 CurrentChargeLevel;
 	int8 MaxChargeLevel;
+	int8 ThresholdChargeLevel;
+	float RequireCapacityForNextLevel;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Electric)
 	TObjectPtr<class UNiagaraSystem> ChargingEffect;
@@ -75,12 +77,14 @@ public:
 
 	UFUNCTION()
 	void ChangeDischargeMode();
-	void SetbRecharging();
+	void SetChargingEnable();
 
 	void PlayDischargeEffect(FName EffectType, int8 ChargingLevel, FVector Location, FRotator Rotation);
 
 	// ������Ʈ(�÷��̾�) ���� ���� �Լ�
 	void ChargeElectric(float amount);
+
+	void Reset();
 
 private:
 	void BroadCastToUI();

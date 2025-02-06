@@ -1,59 +1,65 @@
 #include "Prop/PPPressurePlate.h"
-#include "Gimmick/PPMovingPlate.h" // 발판 클래스 헤더 추가
-#include "Prop/PPDoor.h" // 도어 클래스 헤더 추가
+#include "Gimmick/PPMovingPlate.h"
+#include "Prop/PPDoor.h"
+#include "Gimmick/PPCrane.h"
 #include "Components/StaticMeshComponent.h"
 #include "Components/BoxComponent.h"
+#include "Engine/World.h"
 
-// Sets default values
 APPPressurePlate::APPPressurePlate()
 {
     PrimaryActorTick.bCanEverTick = true;
     Body = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Body"));
     RootComponent = Body;
-
     CollisionBox = CreateDefaultSubobject<UBoxComponent>(TEXT("CollisionBox"));
     CollisionBox->SetupAttachment(Body);
     CollisionBox->OnComponentBeginOverlap.AddDynamic(this, &APPPressurePlate::OnOverlapBegin);
     CollisionBox->OnComponentEndOverlap.AddDynamic(this, &APPPressurePlate::OnOverlapEnd);
-
-    MovingPlate = nullptr; // 발판 초기화
-    Door = nullptr; // 도어 초기화
+    MovingPlate = nullptr;
+    Door = nullptr;
+    Crane = nullptr;
 }
 
-// Called when the game starts or when spawned
 void APPPressurePlate::BeginPlay()
 {
     Super::BeginPlay();
 }
 
+void APPPressurePlate::Tick(float DeltaTime)
+{
+    Super::Tick(DeltaTime);
+}
+
 void APPPressurePlate::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-    if (MovingPlate) // 발판이 설정된 경우에만
+    if (!OtherActor || OtherActor == this) return;
+    if (MovingPlate) MovingPlate->SetSwitchState(true);
+    if (Door) Door->OnInteract();
+    if (Crane)
     {
-        UE_LOG(LogTemp, Log, TEXT("Switch Overlap"));
-        MovingPlate->SetSwitchState(true);
-    }
-    if (Door) // 도어가 설정된 경우에만
-    {
-        Door->OnInteract();
+        Crane->OnSwitchPressed();
+        OverlappedActorRef = OtherActor;
+        GetWorld()->GetTimerManager().ClearTimer(PickupTimerHandle);
+        GetWorld()->GetTimerManager().SetTimer(PickupTimerHandle, this, &APPPressurePlate::DelayedPickup, 2.0f, false);
     }
 }
 
 void APPPressurePlate::OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
-    if (MovingPlate) // 발판이 설정된 경우에만
-    {
-        UE_LOG(LogTemp, Log, TEXT("Switch No"));
-        MovingPlate->SetSwitchState(false);
-    }
-    if (Door) // 도어가 설정된 경우에만
-    {
-        Door->OnInteract();
-    }
+    if (!OtherActor || OtherActor == this) return;
+    if (MovingPlate) MovingPlate->SetSwitchState(false);
+    if (Door) Door->OnInteract();
 }
 
-// Called every frame
-void APPPressurePlate::Tick(float DeltaTime)
+void APPPressurePlate::DelayedPickup()
 {
-    Super::Tick(DeltaTime);
+    if (!Crane) return;
+    if (!IsValid(OverlappedActorRef))
+    {
+        Crane->OnSwitchReleased();
+        return;
+    }
+    Crane->AttachActor(OverlappedActorRef);
+    Crane->OnSwitchReleased();
+    OverlappedActorRef = nullptr;
 }

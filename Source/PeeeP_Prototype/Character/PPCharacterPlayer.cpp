@@ -24,6 +24,7 @@
 #include "Kismet/KismetSystemLibrary.h"
 #include "GameMode/PPGameModeBase.h"
 #include "GameMode/PPPlayerState.h"
+#include "Animation/PPGrabAnimInstance.h"
 
 APPCharacterPlayer::APPCharacterPlayer()
 {
@@ -171,7 +172,7 @@ void APPCharacterPlayer::BeginPlay()
 		GameMode->SetInitialSpawnLocation(PlayerController);
 	}
 
-	//Test_EquipGrabParts();
+	Test_EquipGrabParts();
 
 	//// Parts 임시로 생성자에서 부여함
 	//// 해당 부분은 나중에 인벤토리에서 데이터 이용해서 파츠 변경하는 함수 따로 만들어서 적용하면 될 듯
@@ -349,11 +350,12 @@ void APPCharacterPlayer::Test_EquipGrabParts()
 
 	UActorComponent* PartsComponent = AddComponentByClass(UPPGrabParts::StaticClass(), true, FTransform::Identity, false);
 	Parts = CastChecked<UPPPartsBase>(PartsComponent);
-
+	UPPGrabParts* GrabParts = CastChecked<UPPGrabParts>(PartsComponent);
 	if (Parts)
 	{
 		GetMesh()->SetSkeletalMesh(Parts->GetPartsData()->PartsMesh);
 		GetMesh()->SetAnimClass(Parts->GetPartsData()->AnimClass);
+		GrabParts->GrabAnimInstance = Cast<UPPGrabAnimInstance>(GetMesh()->GetAnimInstance());
 	}
 }
 
@@ -375,17 +377,18 @@ void APPCharacterPlayer::GrabHitCheck()
 {
 	UPPGrabParts* GrabParts = Cast<UPPGrabParts>(Parts);
 	if (GrabParts == nullptr) return;
+	if (GrabParts->IsPressReleaseButton) { GrabParts->IsPressReleaseButton = false; return; }
 
 	FHitResult HitResult;
-	FCollisionQueryParams Params(SCENE_QUERY_STAT(Grab), false, this);
-	const FVector StartPos = GetMesh()->GetSocketLocation(Parts->HitSocket) + GetActorForwardVector() * GetCapsuleComponent()->GetScaledCapsuleRadius();
-	const FVector EndPos = StartPos + GetActorForwardVector() * 5.0f;
+	FCollisionQueryParams Params(SCENE_QUERY_STAT(Grab), false, this); 
+
+	const FVector StartPos = GetActorLocation() + GetActorForwardVector() * GetCapsuleComponent()->GetScaledCapsuleRadius();
+	const FVector EndPos = StartPos + GetActorForwardVector() * 20.0f;
 
 	bool HitDetected = GetWorld()->SweepSingleByChannel(HitResult, StartPos, EndPos, FQuat::Identity, ECC_GameTraceChannel2, FCollisionShape::MakeSphere(10.0f), Params);
 	if (HitDetected)
 	{
 		UE_LOG(LogTemp, Log, TEXT("GrabHit"));
-		GrabParts->SetIsGrabbed(true);
 		GrabParts->Grab(HitResult);
 	}
 

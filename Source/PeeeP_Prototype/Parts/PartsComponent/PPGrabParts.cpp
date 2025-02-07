@@ -9,6 +9,7 @@
 #include "CollisionQueryParams.h"
 #include "Camera/CameraComponent.h"
 #include "Character/PPCharacterPlayer.h"
+#include "Animation/PPGrabAnimInstance.h"
 
 UPPGrabParts::UPPGrabParts()
 {
@@ -28,13 +29,14 @@ UPPGrabParts::UPPGrabParts()
 	}
 
 
-	HitSocket = TEXT("Bone010");
+	HitSocket = TEXT("SpineSocket");
 
 	// Grab() -> GrabRelease() 호출 순서가 무조건 보장되어야만 함. 하지만 그랩 애니메이션 발동 후 overlap된 오브젝트가 있을때 만 Grab()이 호출되므로, 호출 직전에 키를 때버려서
 	// GrabRelase()가 호출되버리면 순서가 다음과 같이 GrabRelease() -> Grab() 바뀌는 경우가 생길 수 있음.  
 	// 그렇게 될 경우, 키를 누르고 있지 않은 상황에서도 오브젝트를 계속 들고있게 되버림. 따라서 그랩 애니메이션 동작 중에 GrabRelease() 호출 되는 경우 Grab()함수내에서
 	// 그랩을 하지못하도록 bool변수 IsGrabbed으로 체크함. 
-	IsGrabbed = false;	
+	IsPressReleaseButton = false;
+
 }
 
 
@@ -71,10 +73,14 @@ void UPPGrabParts::OnComponentCreated()
                 Subsystem->AddMappingContext(GrabPartsData->PartsMappingContext, 1);
                 UEnhancedInputComponent* EnhancedInputComponent = CastChecked<UEnhancedInputComponent>(PlayerController->InputComponent);
 
-                EnhancedInputComponent->BindAction(GrabPartsData->GrabAction, ETriggerEvent::Triggered, this, &UPPGrabParts::HandleGrabAnimation);
+                EnhancedInputComponent->BindAction(GrabPartsData->GrabAction, ETriggerEvent::Started, this, &UPPGrabParts::PlayGrabAnimation);
                 EnhancedInputComponent->BindAction(GrabPartsData->GrabAction, ETriggerEvent::Completed, this, &UPPGrabParts::GrabRelease);
             }
         }
+		
+		//PlayerCharacter->GetMesh()->SetAnimClass(GetPartsData()->AnimClass);
+		//GrabAnimInstance = Cast<UPPGrabAnimInstance>(PlayerCharacter->GetMesh()->GetAnimInstance());
+		//ensure(GrabAnimInstance);
     }
 }
 
@@ -104,16 +110,19 @@ void UPPGrabParts::TickComponent(float DeltaTime, ELevelTick TickType, FActorCom
 
 
 
-void UPPGrabParts::HandleGrabAnimation()
+void UPPGrabParts::PlayGrabAnimation()
 {
+	IsPressReleaseButton = false;
 	Owner->PlayAnimation(GrabAnimMontage);
 }
 
 void UPPGrabParts::Grab(FHitResult& InHitResult)
 {
 	UE_LOG(LogTemp, Log, TEXT("Grab Start"));
-	if (!IsGrabbed) return;
+	IsPressReleaseButton = false;
+	GrabAnimInstance->IsGrab = true;
 	GrabHandle->GrabComponentAtLocationWithRotation(InHitResult.GetComponent(), TEXT("None"), InHitResult.GetComponent()->GetComponentLocation(), FRotator::ZeroRotator);
+
 }
 
 
@@ -121,11 +130,9 @@ void UPPGrabParts::Grab(FHitResult& InHitResult)
 void UPPGrabParts::GrabRelease()
 {	
 	UE_LOG(LogTemp, Log, TEXT("Grab End"));
-	IsGrabbed = false;
-	if (GrabHandle->GetGrabbedComponent())
-	{
-		GrabHandle->ReleaseComponent();
-	}
+	IsPressReleaseButton = true;
+	GrabAnimInstance->IsGrab = false;
+	GrabHandle->ReleaseComponent();
 }
 
 void UPPGrabParts::UpdateGrabbedObjectPosition()
@@ -135,9 +142,15 @@ void UPPGrabParts::UpdateGrabbedObjectPosition()
 	FVector ForwardVector = FollowCamera->GetForwardVector();
 	FVector GrabbedObjectPosition = (Start + (ForwardVector * 100.0f));*/
 
-	FVector GrabbedObjectPosition = Owner->GetMesh()->GetSocketLocation(HitSocket);
+	//FVector GrabbedObjectPosition = Owner->GetMesh()->GetSocketLocation(HitSocket) + (Owner->GetActorForwardVector() * 40.0f);
+	//GrabHandle->SetTargetLocation(GrabbedObjectPosition);
 
+	UCameraComponent* FollowCamera = Owner->FindComponentByClass<UCameraComponent>();
+	FVector Start = Owner->GetMesh()->GetSocketLocation(HitSocket) + (Owner->GetActorForwardVector() * 40.0f);
+	FVector ForwardVector = FollowCamera->GetForwardVector();
+	FVector GrabbedObjectPosition = (Start + (ForwardVector * 30.0f)); 
 	GrabHandle->SetTargetLocation(GrabbedObjectPosition);
+
 }
 
 

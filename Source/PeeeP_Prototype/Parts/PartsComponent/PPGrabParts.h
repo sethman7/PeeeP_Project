@@ -21,8 +21,8 @@ public:
 	UPPGrabParts();
 	
 	void Grab(FHitResult& InHitResult);
-	void SetIsGrabbed(bool b) { IsGrabbed = b; }
-
+	bool IsPressReleaseButton;
+	class UPPGrabAnimInstance* GrabAnimInstance;
 	virtual void OnComponentCreated() override;
 
 
@@ -37,10 +37,12 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Animation)
 	TObjectPtr<class UAnimMontage> GrabAnimMontage;
 
-	void HandleGrabAnimation();
+	
+
+	void PlayGrabAnimation();
 	void GrabRelease();
 	void UpdateGrabbedObjectPosition();
 
-	bool IsGrabbed;
+
 
 };

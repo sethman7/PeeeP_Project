@@ -29,8 +29,15 @@ protected:
 public:
     virtual void Tick(float DeltaTime) override;
 
+    /**
+     *  변경된 부분:
+     *  - UStaticMeshComponent 대신 USkeletalMeshComponent 2개를 사용
+     */
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Crane")
-    class UStaticMeshComponent* CraneBody;
+    class USkeletalMeshComponent* Claw;
+
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Crane")
+    class USkeletalMeshComponent* Claw2;
 
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Crane")
     class UBoxComponent* GrabCollision;
@@ -56,6 +63,9 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Crane")
     float AcceptableRadius;
 
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation")
+    UAnimMontage* AM_CraneMontage;
+
 protected:
     FVector OriginalLocation;
     bool bIsHoldingObject;
@@ -64,7 +74,7 @@ protected:
     FTimerHandle DropTimerHandle;
     FVector TargetLocation;
 
-    // ▼ 추가된 멤버 변수
+    // 추가된 멤버 변수
     FVector PreviousLocation;
     bool bStopDownMovement;
 

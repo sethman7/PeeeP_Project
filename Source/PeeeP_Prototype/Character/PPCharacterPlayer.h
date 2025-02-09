@@ -62,11 +62,22 @@ protected:
 	TObjectPtr<class UInputAction> LookAction;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, Meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class UInputAction> RunAction;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class UInputAction> ButtonInteract;
+
+	// Move MaxWalkSpeed Variable here from ElectricDischarge Setting Section
+	// You can Setting Player's Max Walk Speed
+	float MaxWalkSpeed;
+
+	bool bIsRunning;
 
 	void Move(const FInputActionValue& Value);
 	void Look(const FInputActionValue& Value);
 	void ButtonInteraction(const FInputActionValue& Value);
+	void OnRunningStart(const FInputActionValue& Value);
+	void OnRunningEnd(const FInputActionValue& Value);
 
 	ECharacterControlType CurrentCharacterControlType;
 
@@ -113,12 +124,9 @@ public:
 	void Test_EquipGrabParts();
 
 	virtual void GrabHitCheck() override;
-	void ChangeMesh(class UPPPartsBase* InParts);
 
-
-	
 protected:
-//ElectricComponent
+	//ElectricComponent
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Electric, Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class UInputAction> ElectricDischargeAction;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Electric, Meta = (AllowPrivateAccess = "true"))
@@ -128,12 +136,19 @@ protected:
 	TObjectPtr<class UPPElectricDischargeComponent> ElectricDischargeComponent;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Electric)
-	TObjectPtr<class UNiagaraComponent> PlayerCharacterNiagaraComponent;
+	TObjectPtr<class UNiagaraComponent> ElectricNiagaraComponent;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Effect)
+	TObjectPtr<class UNiagaraComponent> PlayerEffectNiagaraComponent;
 
 	float ChargeTime;
-	float MaxWalkSpeed;
 
-//InventoryComponent
+public:
+	// Getter
+	UPPElectricDischargeComponent* GetElectricDischargeComponent();
+
+protected:
+	//InventoryComponent
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Electric)
 	TObjectPtr<class UPPInventoryComponent> InventoryComponent;
 
@@ -141,7 +156,16 @@ public:
 	void ReduationMaxWalkSpeedRatio(float InReductionRatio);
 	void RevertMaxWalkSpeed();
 
-	class UNiagaraComponent* GetPlayerCharacterNiagaraComponent() const;
+	class UNiagaraComponent* GetElectricNiagaraComponent() const;
+	class UNiagaraComponent* GetPlayerEffectNiagaraComponent() const;
+
+	// Getter
+	// InventoryComponent(IPPInventoryInterface에 의해)
+	virtual class UPPInventoryComponent* GetInventoryComponent() override;
+
+//protected:
+//	UPROPERTY()
+//	TObjectPtr<class UAudioComponent>
 
 protected:
 
@@ -149,13 +173,6 @@ protected:
 	TObjectPtr<class UInputAction> OpenMenuInteract;
 
 	void OpenMenu();
-
-public:
-	// Getter
-	// ElectricDischargeComponent
-	UPPElectricDischargeComponent* GetElectricDischargeComponent();
-	// InventoryComponent(IPPInventoryInterface에 의해)
-	virtual class UPPInventoryComponent* GetInventoryComponent() override;
 
 
 protected:	// Quick Slot Section

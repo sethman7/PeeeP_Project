@@ -24,6 +24,7 @@
 #include "Kismet/KismetSystemLibrary.h"
 #include "GameMode/PPGameModeBase.h"
 #include "GameMode/PPPlayerState.h"
+#include "Components/AudioComponent.h"
 
 APPCharacterPlayer::APPCharacterPlayer()
 {
@@ -48,6 +49,11 @@ APPCharacterPlayer::APPCharacterPlayer()
 	{
 		LookAction = InputActionLookRef.Object;
 	}
+	static ConstructorHelpers::FObjectFinder<UInputAction> InputActionRunRef(TEXT("/Script/EnhancedInput.InputAction'/Game/Input/Actions/IA_Run.IA_Run'"));
+	if (!InputActionRunRef.Object)
+	{
+		RunAction = InputActionRunRef.Object;
+	}
 	static ConstructorHelpers::FObjectFinder<UInputAction> ButtonInteractRef(TEXT("/Script/EnhancedInput.InputAction'/Game/Input/Actions/IA_Button.IA_Button'"));
 	if (!ButtonInteractRef.Object)
 	{
@@ -68,6 +74,7 @@ APPCharacterPlayer::APPCharacterPlayer()
 	{
 		OpenMenuInteract = OpenMenuActionRef.Object;
 	}
+
 
 	// Quick Slot Section
 	static ConstructorHelpers::FObjectFinder<UInputAction> QuickSlotMoveRef(TEXT("/Script/EnhancedInput.InputAction'/Game/Input/Actions/IA_QuickSlotMove.IA_QuickSlotMove'"));
@@ -97,7 +104,7 @@ APPCharacterPlayer::APPCharacterPlayer()
 	}
 
 	// Camera
-	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));	// CameraBoom ì»´í¬ë„ŒíŠ¸ë¥¼ ê°€ì ¸ì˜´
+	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));	// CameraBoom ì»´í¬?„Œ?Š¸ë¥? ê°?? ¸?˜´
 	CameraBoom->SetupAttachment(RootComponent);
 	CameraBoom->TargetArmLength = 100.0f;
 	CameraBoom->bUsePawnControlRotation = true;
@@ -105,29 +112,33 @@ APPCharacterPlayer::APPCharacterPlayer()
 	CameraBoom->bEnableCameraLag = true;
 	CameraBoom->bEnableCameraRotationLag = true;
 	CameraBoom->CameraLagSpeed = 5.0f;
-	CameraBoom->CameraRotationLagSpeed = 20.f;
+	CameraBoom->CameraRotationLagSpeed = 20.0f;
 	CameraBoom->CameraLagMaxDistance = 500.f;
 	CameraBoom->ProbeSize = 8.0f;
 
-	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));	// FollowCamera ì»´í¬ë„ŒíŠ¸ë¥¼ ê°€ì ¸ì˜´
+	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));	// FollowCamera ì»´í¬?„Œ?Š¸ë¥? ê°?? ¸?˜´
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
 	FollowCamera->bUsePawnControlRotation = false;
-	FollowCamera->FieldOfView = 80.0f;
+	FollowCamera->FieldOfView = 90.0f;
 
 	ElectricDischargeComponent = CreateDefaultSubobject<UPPElectricDischargeComponent>(TEXT("ElectricDischargeComponent"));
 
+	// Player Movement Setting
 	GetCharacterMovement()->BrakingDecelerationWalking = 2000.f;
 	GetCharacterMovement()->GravityScale = 1.6f;
-	this->MaxWalkSpeed = 150.0f;
-	GetCharacterMovement()->MaxWalkSpeed = this->MaxWalkSpeed;
+	this->MaxWalkSpeed = 60.0f;										// Setting Default Max Walk Speed
+	GetCharacterMovement()->MaxWalkSpeed = this->MaxWalkSpeed;		// Apply Default Max Walk Speed
 	GetCharacterMovement()->MaxStepHeight = 5.0f;
 	GetCharacterMovement()->SetWalkableFloorAngle(50.f);
+	this->bIsRunning = false;
 
-	PlayerCharacterNiagaraComponent = CreateDefaultSubobject<UNiagaraComponent>(TEXT("EffectComponent"));
-	PlayerCharacterNiagaraComponent->SetupAttachment(RootComponent);
+	ElectricNiagaraComponent = CreateDefaultSubobject<UNiagaraComponent>(TEXT("ElectricEffectComponent"));
+	ElectricNiagaraComponent->SetupAttachment(RootComponent);
 
-	
-	// ì¸ë²¤í† ë¦¬ ì»´í¬ë„ŒíŠ¸
+	PlayerEffectNiagaraComponent = CreateDefaultSubobject<UNiagaraComponent>(TEXT("PlayerEffectComponent"));
+	PlayerEffectNiagaraComponent->SetupAttachment(RootComponent);
+
+	// ?¸ë²¤í† ë¦? ì»´í¬?„Œ?Š¸
 	InventoryComponent = CreateDefaultSubobject<UPPInventoryComponent>(TEXT("InventoryComponent"));
 
 	AttachedMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("AttachedMesh"));
@@ -174,15 +185,15 @@ void APPCharacterPlayer::BeginPlay()
 
 	//Test_EquipGrabParts();
 
-	//// Parts ì„ì‹œë¡œ ìƒì„±ìì—ì„œ ë¶€ì—¬í•¨
-	//// í•´ë‹¹ ë¶€ë¶„ì€ ë‚˜ì¤‘ì— ì¸ë²¤í† ë¦¬ì—ì„œ ë°ì´í„° ì´ìš©í•´ì„œ íŒŒì¸  ë³€ê²½í•˜ëŠ” í•¨ìˆ˜ ë”°ë¡œ ë§Œë“¤ì–´ì„œ ì ìš©í•˜ë©´ ë  ë“¯
+	//// Parts ?„?‹œë¡? ?ƒ?„±??—?„œ ë¶??—¬?•¨
+	//// ?•´?‹¹ ë¶?ë¶„ì?? ?‚˜ì¤‘ì— ?¸ë²¤í† ë¦¬ì—?„œ ?°?´?„° ?´?š©?•´?„œ ?ŒŒì¸? ë³?ê²½í•˜?Š” ?•¨?ˆ˜ ?”°ë¡? ë§Œë“¤?–´?„œ ? ?š©?•˜ë©? ?  ?“¯
 	//UActorComponent* PartsComponent = AddComponentByClass(UPPGrabParts::StaticClass(), true, FTransform::Identity, false);
 	//Parts = CastChecked<UPPPartsBase>(PartsComponent);
 }
 
 void APPCharacterPlayer::Tick(float DeltaTime)
 {
-	//Idleìƒíƒœì—ì„œì˜ í”Œë ˆì´ì–´ê°€ ì›€ì§ì´ëŠ” actorì™€ì˜ ì¶©ëŒì„ ë¬´ì‹œí•˜ê²Œ ë˜ë²„ë ¤ ë‹¤ìŒ ì½”ë“œë¥¼ ì¶”ê°€í•¨.
+	//Idle?ƒ?ƒœ?—?„œ?˜ ?”Œ? ˆ?´?–´ê°? ???ì§ì´?Š” actor????˜ ì¶©ëŒ?„ ë¬´ì‹œ?•˜ê²? ?˜ë²„ë ¤ ?‹¤?Œ ì½”ë“œë¥? ì¶”ê???•¨.
 	FHitResult OutHit;
 	GetCharacterMovement()->SafeMoveUpdatedComponent(FVector(0.f, 0.f, 0.03f), GetActorRotation(), true, OutHit);
 	GetCharacterMovement()->SafeMoveUpdatedComponent(FVector(0.f, 0.f, -0.03f), GetActorRotation(), true, OutHit);
@@ -194,20 +205,33 @@ void APPCharacterPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 
 	UEnhancedInputComponent* EnhancedInputComponent = CastChecked<UEnhancedInputComponent>(PlayerInputComponent);
 
+	/// Binding Section
+	/// If you added new action, you should add new binding action here.
+	/// Create some function for actions about added input and bind it.
+	
+	// Jump
 	EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Triggered, this, &ACharacter::Jump);
 	EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
+	// Move
 	EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &APPCharacterPlayer::Move);
+	// Look
 	EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &APPCharacterPlayer::Look);
+	// Running
+	EnhancedInputComponent->BindAction(RunAction, ETriggerEvent::Triggered, this, &APPCharacterPlayer::OnRunningStart);
+	EnhancedInputComponent->BindAction(RunAction, ETriggerEvent::Completed, this, &APPCharacterPlayer::OnRunningEnd);
+	// Button Interaction(Unused)
 	EnhancedInputComponent->BindAction(ButtonInteract, ETriggerEvent::Triggered, this, &APPCharacterPlayer::ButtonInteraction);
+	// Open Menu
 	EnhancedInputComponent->BindAction(OpenMenuInteract, ETriggerEvent::Triggered, this, &APPCharacterPlayer::OpenMenu);
-	//EnhancedInputComponent->BindAction(RespawnTestInputAction, ETriggerEvent::Triggered, this, &APPCharacterPlayer::OnDeath); // í…ŒìŠ¤íŠ¸ìš©
+
+	// Electric Discharge Component
 	if (ElectricDischargeComponent)
 	{
 		EnhancedInputComponent->BindAction(ElectricDischargeAction, ETriggerEvent::Ongoing, ElectricDischargeComponent.Get(), &UPPElectricDischargeComponent::Charging);
 		EnhancedInputComponent->BindAction(ElectricDischargeAction, ETriggerEvent::Completed, ElectricDischargeComponent.Get(), &UPPElectricDischargeComponent::Discharge);
 		EnhancedInputComponent->BindAction(ElectricDischargeModeChangeAction, ETriggerEvent::Completed, ElectricDischargeComponent.Get(), &UPPElectricDischargeComponent::ChangeDischargeMode);
 	}
-	
+	// Quick Slot
 	EnhancedInputComponent->BindAction(QuickSlotMoveAction, ETriggerEvent::Triggered, this, &APPCharacterPlayer::QuickSlotMove);
 	EnhancedInputComponent->BindAction(QuickSlotUseAction, ETriggerEvent::Triggered, this, &APPCharacterPlayer::QuickSlotUse);
 }
@@ -219,7 +243,7 @@ void APPCharacterPlayer::OnBeginOverlap(UPrimitiveComponent* OverlappedComponent
 		FRotator Rotation = CleaingRobotRef->GetActorRotation();
 		FVector KnockbackVelocity = UKismetMathLibrary::GetForwardVector(Rotation) * CleaingRobotRef->KnockbackStrength;
 
-		// í”Œë ˆì´ì–´ì—ê²Œ ë„‰ë°± ì ìš©
+		// ?”Œ? ˆ?´?–´?—ê²? ?„‰ë°? ? ?š©
 		LaunchCharacter(KnockbackVelocity, true, true);
 		ElectricDischargeComponent->ChargeElectric(CleaingRobotRef->ElectricLossRate);
 	}
@@ -290,7 +314,6 @@ void APPCharacterPlayer::ButtonInteraction(const FInputActionValue& Value)
 	FHitResult HitResult;
 	FCollisionQueryParams CollisionParam(SCENE_QUERY_STAT(Button), false, this);
 
-
 	bool IsHit = GetWorld()->LineTraceSingleByChannel(HitResult, CameraPos, EndPos, ECC_GameTraceChannel1, CollisionParam, FCollisionResponseParams(ECR_Block));
 
 	if (IsHit)
@@ -309,6 +332,25 @@ void APPCharacterPlayer::ButtonInteraction(const FInputActionValue& Value)
 	FColor DebugColor(255, 0, 0);
 
 	DrawDebugLine(GetWorld(), CameraPos, EndPos, DebugColor, false, 5.0f);
+}
+
+void APPCharacterPlayer::OnRunningStart(const FInputActionValue& Value)
+{
+	// Set Player Max Walk Speed for Running.
+	if (!this->bIsRunning)
+	{
+		GetCharacterMovement()->MaxWalkSpeed = 150.f;	// Here is Running Max Walk Speed. You can Setting Running Max Walk Speed.
+		this->bIsRunning = true;
+		UE_LOG(LogTemp, Log, TEXT("Running Start"));
+	}
+}
+
+void APPCharacterPlayer::OnRunningEnd(const FInputActionValue& Value)
+{
+	// Set Player Max Walk Speed to Default Max Walk Speed.
+	GetCharacterMovement()->MaxWalkSpeed = this->MaxWalkSpeed;
+	this->bIsRunning = false;
+	UE_LOG(LogTemp, Log, TEXT("Running End"));
 }
 
 void APPCharacterPlayer::SetDefaultMeshAndAnim()
@@ -368,11 +410,7 @@ void APPCharacterPlayer::PlayAnimation(UAnimMontage* InAnimMontage)
 	}
 }
 
-
-
-
-
-//ê·¸ë© ì• ë‹ˆë©”ì´ì…˜ ì‘ë™ í›„, Notifyë¥¼ í†µí•´ í˜¸ì¶œë¨. ê·¸ë©ì— ë‹¿ì€ ì˜¤ë¸Œì íŠ¸ê°€ ìˆëŠ”ì§€ ì²´í¬. 
+//ê·¸ë© ?• ?‹ˆë©”ì´?…˜ ?‘?™ ?›„, Notifyë¥? ?†µ?•´ ?˜¸ì¶œë¨. ê·¸ë©?— ?‹¿??? ?˜¤ë¸Œì ?Š¸ê°? ?ˆ?Š”ì§? ì²´í¬. 
 void APPCharacterPlayer::GrabHitCheck()
 {
 	UPPGrabParts* GrabParts = Cast<UPPGrabParts>(Parts);
@@ -413,9 +451,14 @@ void APPCharacterPlayer::RevertMaxWalkSpeed()
 	GetCharacterMovement()->MaxWalkSpeed = this->MaxWalkSpeed;
 }
 
-UNiagaraComponent* APPCharacterPlayer::GetPlayerCharacterNiagaraComponent() const
+UNiagaraComponent* APPCharacterPlayer::GetElectricNiagaraComponent() const
 {
-	return PlayerCharacterNiagaraComponent;;
+	return ElectricNiagaraComponent;
+}
+
+UNiagaraComponent* APPCharacterPlayer::GetPlayerEffectNiagaraComponent() const
+{
+	return PlayerEffectNiagaraComponent;
 }
 
 UPPInventoryComponent* APPCharacterPlayer::GetInventoryComponent()
@@ -425,19 +468,19 @@ UPPInventoryComponent* APPCharacterPlayer::GetInventoryComponent()
 
 void APPCharacterPlayer::QuickSlotMove(const FInputActionValue& Value)
 {
-	// ë§ˆìš°ìŠ¤ íœ  ì—…: ì–‘ìˆ˜, ë§ˆìš°ìŠ¤ íœ  ë‹¤ìš´: ìŒìˆ˜
+	// ë§ˆìš°?Š¤ ?œ  ?—…: ?–‘?ˆ˜, ë§ˆìš°?Š¤ ?œ  ?‹¤?š´: ?Œ?ˆ˜
 	float MoveDir = Value.Get<float>();
 
-	// ë§ˆìš°ìŠ¤ íœ  ì—°ì†ëœ ì…ë ¥ ë°©ì§€
-	float InputInterval = 0.4f;	// ë‹¤ìŒ ì¸í’‹ê¹Œì§€ ê°„ê²©
+	// ë§ˆìš°?Š¤ ?œ  ?—°?†?œ ?…? ¥ ë°©ì??
+	float InputInterval = 0.4f;	// ?‹¤?Œ ?¸?’‹ê¹Œì?? ê°„ê²©
 	if (bIsAllowWheelInput)
 	{
 		UE_LOG(LogTemp, Log, TEXT("Quick Slot Move: %f"), MoveDir);
 		bIsAllowWheelInput = false;
 		GetWorld()->GetTimerManager().SetTimer(QuickSlotMoveTimer, [&]() {bIsAllowWheelInput = true; }, InputInterval, false);
 
-		// ìŠ¬ë¡¯ ì›€ì§ì„ êµ¬í˜„ë¶€
-		// ìŠ¬ë¡¯ì´ ì²˜ìŒì´ë‚˜ ëì— ë‹¤ë‹¤ëì„ ê²½ìš° í™”ì‚´í‘œëŠ” ì‚¬ë¼ì§€ì§€ ì•Šì§€ë§Œ ë”ì´ìƒ ì›€ì§ì´ì§€ ì•Šì•„ì•¼ í•¨.
+		// ?Š¬ë¡? ???ì§ì„ êµ¬í˜„ë¶?
+		// ?Š¬ë¡??´ ì²˜ìŒ?´?‚˜ ??— ?‹¤?‹¤??„ ê²½ìš° ?™”?‚´?‘œ?Š” ?‚¬?¼ì§?ì§? ?•Šì§?ë§? ?”?´?ƒ ???ì§ì´ì§? ?•Š?•„?•¼ ?•¨.
 		if (MoveDir < 0)		// Wheel Down
 		{
 			InventoryComponent->ModifyCurrentSlotIndex(1);
@@ -453,16 +496,16 @@ void APPCharacterPlayer::QuickSlotUse(const FInputActionValue& Value)
 {
 	UE_LOG(LogTemp, Log, TEXT("Quick Slot Used!"));
 
-	// ì„ íƒëœ ìŠ¬ë¡¯ ì‚¬ìš©ë¶€
-	// ë¯¸ì¥ì°© ìƒíƒœì—ì„œëŠ” ì–´ë– í•œ íŒŒì¸ (í˜„ì¬ ë³´ìœ í•˜ê³  ìˆëŠ”)ë¥¼ ì„ íƒí•˜ë”ë¼ë„ ì •ìƒ ì°©ìš©ì´ ë˜ì–´ì•¼ í•¨.
-	// ì´ë¯¸ ì¥ì°©í•˜ê³  ìˆëŠ” íŒŒì¸ ë¥¼ ì¬ì„ íƒ í•  ê²½ìš° ì¥ì°©í•˜ê³  ìˆëŠ” íŒŒì¸ ë¥¼ í•´ì œí•´ì•¼ í•¨.
-	// íŒŒì¸ ë¥¼ ì¥ì°©í•˜ê¸° ìœ„í•´ì„œëŠ” í˜„ì¬ ìŠ¬ë¡¯ì˜ ì¸ë±ìŠ¤ë¥¼ ì•Œì•„ì•¼ ê°€ëŠ¥
+	// ?„ ?ƒ?œ ?Š¬ë¡? ?‚¬?š©ë¶?
+	// ë¯¸ì¥ì°? ?ƒ?ƒœ?—?„œ?Š” ?–´?– ?•œ ?ŒŒì¸?(?˜„?¬ ë³´ìœ ?•˜ê³? ?ˆ?Š”)ë¥? ?„ ?ƒ?•˜?”?¼?„ ? •?ƒ ì°©ìš©?´ ?˜?–´?•¼ ?•¨.
+	// ?´ë¯? ?¥ì°©í•˜ê³? ?ˆ?Š” ?ŒŒì¸ ë?? ?¬?„ ?ƒ ?•  ê²½ìš° ?¥ì°©í•˜ê³? ?ˆ?Š” ?ŒŒì¸ ë?? ?•´? œ?•´?•¼ ?•¨.
+	// ?ŒŒì¸ ë?? ?¥ì°©í•˜ê¸? ?œ„?•´?„œ?Š” ?˜„?¬ ?Š¬ë¡??˜ ?¸?±?Š¤ë¥? ?•Œ?•„?•¼ ê°??Š¥
 
-	// í…ŒìŠ¤íŠ¸ ë¶€ë¶„: ìŠ¬ë¡¯ ì¸ë±ìŠ¤ 0ë²ˆì˜ íŒŒì¸  ìŠ¬ë¡¯ íƒ€ì…ì˜ ì•„ì´í…œì„ ì‚¬ìš©í•´ ì£¼ì„¸ìš”.
-	// ê²°ê³¼: ë¡œê·¸ ì •ìƒ ì¶œë ¥
+	// ?…Œ?Š¤?Š¸ ë¶?ë¶?: ?Š¬ë¡? ?¸?±?Š¤ 0ë²ˆì˜ ?ŒŒì¸? ?Š¬ë¡? ????…?˜ ?•„?´?…œ?„ ?‚¬?š©?•´ ì£¼ì„¸?š”.
+	// ê²°ê³¼: ë¡œê·¸ ? •?ƒ ì¶œë ¥
 	//InventoryComponent->UseItem(0, ESlotType::ST_InventoryParts);
 
-	// í˜„ì¬ ì„ íƒëœ ìŠ¬ë¡¯ì„ ê¸°ë°˜ìœ¼ë¡œ í•˜ì—¬ ì•„ì´í…œ ì‚¬ìš©
+	// ?˜„?¬ ?„ ?ƒ?œ ?Š¬ë¡??„ ê¸°ë°˜?œ¼ë¡? ?•˜?—¬ ?•„?´?…œ ?‚¬?š©
 	InventoryComponent->UseItemCurrentIndex(ESlotType::ST_InventoryParts);
 
 }

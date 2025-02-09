@@ -20,7 +20,8 @@ public class PeeeP_Prototype : ModuleRules
 			"UMG", 
 			"MediaAssets",
             "MovieScene",
-            "LevelSequence"
+            "LevelSequence",
+			"PhysicsCore"
 		});
 
 		//PrivateDependencyModuleNames.AddRange(new string[] {  });

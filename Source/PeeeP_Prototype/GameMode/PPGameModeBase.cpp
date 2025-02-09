@@ -54,6 +54,8 @@ void APPGameModeBase::MoveCharacterToSpawnLocation(APPCharacterPlayer* Character
 		if (IsValid(PlayerState))
 		{
 			Character->SetActorLocation(PlayerState->GetSpawnLocation());
+
+			PlayerState->PlayRespawnSequence();
 		}
 	}
 }
@@ -78,6 +80,4 @@ void APPGameModeBase::BeginPlay()
 {
 	Super::BeginPlay();
 	//ChangeMenuWidget(StartingWidgetClass);
-
-
 }

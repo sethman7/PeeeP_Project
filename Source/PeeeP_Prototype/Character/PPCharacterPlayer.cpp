@@ -130,11 +130,8 @@ APPCharacterPlayer::APPCharacterPlayer()
 	// 인벤토리 컴포넌트
 	InventoryComponent = CreateDefaultSubobject<UPPInventoryComponent>(TEXT("InventoryComponent"));
 
-
-
 	AttachedMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("AttachedMesh"));
 	GetCapsuleComponent()->OnComponentBeginOverlap.AddDynamic(this, &APPCharacterPlayer::OnBeginOverlap);
-
 }
 
 void APPCharacterPlayer::OnDeath()
@@ -143,14 +140,18 @@ void APPCharacterPlayer::OnDeath()
 	if (IsValid(PlayerController))
 	{
 		PlayerController->DisableInput(PlayerController);
+		GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_None);
 
 		ElectricDischargeComponent->Reset();
+
 		APPGameModeBase* GameMode = Cast<APPGameModeBase>(GetWorld()->GetAuthGameMode());
 		if (IsValid(GameMode))
 		{
 			GameMode->MoveCharacterToSpawnLocation(this);
 		}
 
+		PlayerController->SetControlRotation(FRotator(0.0f, 90.0f, 0.0f));
+		GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);
 		PlayerController->EnableInput(PlayerController);
 	}
 }
@@ -199,6 +200,7 @@ void APPCharacterPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 	EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &APPCharacterPlayer::Look);
 	EnhancedInputComponent->BindAction(ButtonInteract, ETriggerEvent::Triggered, this, &APPCharacterPlayer::ButtonInteraction);
 	EnhancedInputComponent->BindAction(OpenMenuInteract, ETriggerEvent::Triggered, this, &APPCharacterPlayer::OpenMenu);
+	//EnhancedInputComponent->BindAction(RespawnTestInputAction, ETriggerEvent::Triggered, this, &APPCharacterPlayer::OnDeath); // 테스트용
 	if (ElectricDischargeComponent)
 	{
 		EnhancedInputComponent->BindAction(ElectricDischargeAction, ETriggerEvent::Ongoing, ElectricDischargeComponent.Get(), &UPPElectricDischargeComponent::Charging);

@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerState.h"
+#include "LevelSequenceActor.h"
 #include "PPPlayerState.generated.h"
 
 /**
@@ -18,11 +19,27 @@ public:
 
 	APPPlayerState();
 
-	void SetSpawnLocation(FVector Location) { SapwnLocation = Location; }
-	FVector GetSpawnLocation() { return SapwnLocation; }
+	void SetSpawnLocation(FVector Location);
+	void SetSpawnActorLocation(class AActor* InActor);
+	FVector GetSpawnLocation() { return SpawnLocation; }
+
+	void PlayRespawnSequence();
 
 private:
 
-	FVector SapwnLocation;
+	void BeginPlay() override;
+
+	FVector SpawnLocation;
+	TObjectPtr<class AActor> SpawnPointActor;
+
+
+	UPROPERTY()
+	TObjectPtr<class ULevelSequence> RestartSequence;
+
+	UPROPERTY()
+	ALevelSequenceActor* RestartSequenceActor;
+
+	UPROPERTY()
+	TObjectPtr<class ULevelSequencePlayer> RestartSequencePlayer;
 
 };

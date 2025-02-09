@@ -41,7 +41,7 @@ protected:
 	float RechargingDelay;
 	float MoveSpeedReductionRate;
 
-	bool bRechargingEnable;
+	bool bChargingEnable;
 	bool bChargeStart;
 
 	// ������Ʈ(�÷��̾�) ���͸� ��
@@ -53,6 +53,8 @@ protected:
 
 	int8 CurrentChargeLevel;
 	int8 MaxChargeLevel;
+	int8 ThresholdChargeLevel;
+	float RequireCapacityForNextLevel;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Electric)
 	TObjectPtr<class UNiagaraSystem> ChargingEffect;
@@ -62,6 +64,21 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Electric)
 	TMap<FName, TObjectPtr<class UNiagaraSystem>> DischargeEffects;
+
+	UPROPERTY(EditAnywhere, Category = Electric)
+	TObjectPtr<class UAudioComponent> ElectricSoundComponent;
+
+	UPROPERTY(EditAnywhere, Category = Electric)
+	TObjectPtr<class USoundBase> ChargeSound;
+
+	UPROPERTY(EditAnywhere, Category = Electric)
+	TObjectPtr<class USoundBase> DischargeSound;
+
+	UPROPERTY(EditAnywhere, Category = Electric)
+	TObjectPtr<class USoundBase> ChargeLevelSound;
+
+	int TempChargeLevel;
+	void PlayChargeLevelSound();
 
 public:	
 	// Called every frame
@@ -75,13 +92,16 @@ public:
 
 	UFUNCTION()
 	void ChangeDischargeMode();
-	void SetbRecharging();
+	void SetChargingEnable();
 
 	void PlayDischargeEffect(FName EffectType, int8 ChargingLevel, FVector Location, FRotator Rotation);
 
 	// ������Ʈ(�÷��̾�) ���� ���� �Լ�
 	void ChargeElectric(float amount);
 
+	void Reset();
+
 private:
 	void BroadCastToUI();
+
 };

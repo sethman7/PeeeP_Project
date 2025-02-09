@@ -25,6 +25,8 @@ class PEEEP_PROTOTYPE_API APPCharacterPlayer : public APPCharacterBase, public I
 public:
 	APPCharacterPlayer();
 	
+	void OnDeath();
+
 protected:
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaTime) override;
@@ -122,12 +124,9 @@ public:
 	void Test_EquipGrabParts();
 
 	virtual void GrabHitCheck() override;
-	void ChangeMesh(class UPPPartsBase* InParts);
 
-
-	
 protected:
-//ElectricComponent
+	//ElectricComponent
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Electric, Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class UInputAction> ElectricDischargeAction;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Electric, Meta = (AllowPrivateAccess = "true"))
@@ -137,11 +136,19 @@ protected:
 	TObjectPtr<class UPPElectricDischargeComponent> ElectricDischargeComponent;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Electric)
-	TObjectPtr<class UNiagaraComponent> PlayerCharacterNiagaraComponent;
+	TObjectPtr<class UNiagaraComponent> ElectricNiagaraComponent;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Effect)
+	TObjectPtr<class UNiagaraComponent> PlayerEffectNiagaraComponent;
 
 	float ChargeTime;
 
-//InventoryComponent
+public:
+	// Getter
+	UPPElectricDischargeComponent* GetElectricDischargeComponent();
+
+protected:
+	//InventoryComponent
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Electric)
 	TObjectPtr<class UPPInventoryComponent> InventoryComponent;
 
@@ -149,7 +156,16 @@ public:
 	void ReduationMaxWalkSpeedRatio(float InReductionRatio);
 	void RevertMaxWalkSpeed();
 
-	class UNiagaraComponent* GetPlayerCharacterNiagaraComponent() const;
+	class UNiagaraComponent* GetElectricNiagaraComponent() const;
+	class UNiagaraComponent* GetPlayerEffectNiagaraComponent() const;
+
+	// Getter
+	// InventoryComponent(IPPInventoryInterface에 의해)
+	virtual class UPPInventoryComponent* GetInventoryComponent() override;
+
+//protected:
+//	UPROPERTY()
+//	TObjectPtr<class UAudioComponent>
 
 protected:
 
@@ -157,13 +173,6 @@ protected:
 	TObjectPtr<class UInputAction> OpenMenuInteract;
 
 	void OpenMenu();
-
-public:
-	// Getter
-	// ElectricDischargeComponent
-	UPPElectricDischargeComponent* GetElectricDischargeComponent();
-	// InventoryComponent(IPPInventoryInterface에 의해)
-	virtual class UPPInventoryComponent* GetInventoryComponent() override;
 
 
 protected:	// Quick Slot Section

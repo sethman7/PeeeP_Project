@@ -24,7 +24,6 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Character)
 	TObjectPtr<class ACharacter> Owner;
-
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Character)
 	TObjectPtr<class UCharacterMovementComponent> Movement;
 

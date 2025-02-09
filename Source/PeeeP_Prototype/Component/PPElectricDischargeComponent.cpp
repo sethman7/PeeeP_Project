@@ -11,7 +11,9 @@
 #include "Components/WidgetComponent.h"
 #include "NiagaraComponent.h"
 #include "NiagaraSystem.h"
-
+#include "Sound/SoundBase.h"
+#include "Kismet/GameplayStatics.h"
+#include "Components/AudioComponent.h"
 
 // Sets default values for this component's properties
 UPPElectricDischargeComponent::UPPElectricDischargeComponent()
@@ -40,6 +42,9 @@ UPPElectricDischargeComponent::UPPElectricDischargeComponent()
 	bElectricIsEmpty = false;
 
 	DischargeEffectComponent = CreateDefaultSubobject<UNiagaraComponent>(TEXT("NiagaraComponent"));
+	ElectricSoundComponent = CreateDefaultSubobject<UAudioComponent>(TEXT("AudioComponent"));
+
+	TempChargeLevel = 0;
 }
 
 
@@ -51,12 +56,29 @@ void UPPElectricDischargeComponent::BeginPlay()
 	APPCharacterPlayer* OwnerCharacter = Cast<APPCharacterPlayer>(GetOwner());
 	if (OwnerCharacter)
 	{
-		DischargeEffectComponent = OwnerCharacter->GetPlayerCharacterNiagaraComponent();
+		DischargeEffectComponent = OwnerCharacter->GetElectricNiagaraComponent();
 	}
 
 	BroadCastToUI();
 }
 
+
+void UPPElectricDischargeComponent::PlayChargeLevelSound()
+{
+	if (CurrentChargeLevel == 0)
+	{
+		return;
+	}
+
+	if (TempChargeLevel != CurrentChargeLevel)
+	{
+		if (nullptr != ChargeLevelSound)
+		{
+			UGameplayStatics::PlaySound2D(GetWorld(), ChargeLevelSound, 1.0f, 0.33f * (float)TempChargeLevel);
+		}
+		TempChargeLevel = CurrentChargeLevel;
+	}
+}
 
 // Called every frame
 void UPPElectricDischargeComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
@@ -105,7 +127,18 @@ void UPPElectricDischargeComponent::Charging()
 		}
 
 		bChargeStart = true;
+
+		// Play Charge Sound Here
+		if (ChargeSound != nullptr)
+		{
+			ElectricSoundComponent->Sound = ChargeSound;
+			ElectricSoundComponent->VolumeMultiplier = 0.5f;
+			ElectricSoundComponent->PitchMultiplier = 1.0f;
+			ElectricSoundComponent->Play();
+		}
 	}
+
+	PlayChargeLevelSound();
 
 	if (CurrentChargeLevel >= MaxChargeLevel)
 	{
@@ -135,6 +168,7 @@ void UPPElectricDischargeComponent::Charging()
 
 	if (CurrentChargeLevel < IntCurrentChargingTime)
 	{
+		// Set Current Charge Level from CurrentChargingTime
 		CurrentChargeLevel = IntCurrentChargingTime;
 	}
 
@@ -174,6 +208,13 @@ void UPPElectricDischargeComponent::Discharge()
 	APPCharacterPlayer* OwnerCharacter = Cast<APPCharacterPlayer>(GetOwner());
 
 	bChargeStart = false;
+	TempChargeLevel = 0;
+
+	// Play Discharge Sound Here
+	if (ElectricSoundComponent->IsPlaying())
+	{
+		ElectricSoundComponent->Stop();
+	}
 
 	if (CurrentChargeLevel == 0)
 	{
@@ -188,6 +229,12 @@ void UPPElectricDischargeComponent::Discharge()
 	{
 		UE_LOG(LogTemp, Warning, TEXT("bElectricIsEmpty true"));
 		return;
+	}
+
+	if (nullptr != DischargeSound)
+	{
+		ElectricSoundComponent->Sound = DischargeSound;
+		ElectricSoundComponent->Play();
 	}
 
 	AActor* Owner = GetOwner();
@@ -301,7 +348,6 @@ void UPPElectricDischargeComponent::SetChargingEnable()
 		UE_LOG(LogTemp, Warning, TEXT("SetChargingEnable False"));
 		return;
 	}
-
 	bChargingEnable = true;
 }
 
@@ -319,6 +365,8 @@ void UPPElectricDischargeComponent::PlayDischargeEffect(FName EffectType, int8 C
 		DischargeEffectComponent->SetAsset(bHasEffect);
 		DischargeEffectComponent->Activate(true);
 	}
+
+	
 }
 /// <summary>
 /// ElectricDischargeComponent�� CurrentElectricCapacity�� ���������ִ� �Լ�

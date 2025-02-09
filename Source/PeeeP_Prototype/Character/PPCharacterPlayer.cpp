@@ -24,6 +24,7 @@
 #include "Kismet/KismetSystemLibrary.h"
 #include "GameMode/PPGameModeBase.h"
 #include "GameMode/PPPlayerState.h"
+#include "Components/AudioComponent.h"
 
 APPCharacterPlayer::APPCharacterPlayer()
 {
@@ -125,20 +126,20 @@ APPCharacterPlayer::APPCharacterPlayer()
 	// Player Movement Setting
 	GetCharacterMovement()->BrakingDecelerationWalking = 2000.f;
 	GetCharacterMovement()->GravityScale = 1.6f;
-	this->MaxWalkSpeed = 75.f;										// Setting Default Max Walk Speed
+	this->MaxWalkSpeed = 60.0f;										// Setting Default Max Walk Speed
 	GetCharacterMovement()->MaxWalkSpeed = this->MaxWalkSpeed;		// Apply Default Max Walk Speed
 	GetCharacterMovement()->MaxStepHeight = 5.0f;
 	GetCharacterMovement()->SetWalkableFloorAngle(50.f);
 	this->bIsRunning = false;
 
-	PlayerCharacterNiagaraComponent = CreateDefaultSubobject<UNiagaraComponent>(TEXT("EffectComponent"));
-	PlayerCharacterNiagaraComponent->SetupAttachment(RootComponent);
+	ElectricNiagaraComponent = CreateDefaultSubobject<UNiagaraComponent>(TEXT("ElectricEffectComponent"));
+	ElectricNiagaraComponent->SetupAttachment(RootComponent);
 
-	
+	PlayerEffectNiagaraComponent = CreateDefaultSubobject<UNiagaraComponent>(TEXT("PlayerEffectComponent"));
+	PlayerEffectNiagaraComponent->SetupAttachment(RootComponent);
+
 	// 인벤토리 컴포넌트
 	InventoryComponent = CreateDefaultSubobject<UPPInventoryComponent>(TEXT("InventoryComponent"));
-
-
 
 	AttachedMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("AttachedMesh"));
 	GetCapsuleComponent()->OnComponentBeginOverlap.AddDynamic(this, &APPCharacterPlayer::OnBeginOverlap);
@@ -446,9 +447,14 @@ void APPCharacterPlayer::RevertMaxWalkSpeed()
 	GetCharacterMovement()->MaxWalkSpeed = this->MaxWalkSpeed;
 }
 
-UNiagaraComponent* APPCharacterPlayer::GetPlayerCharacterNiagaraComponent() const
+UNiagaraComponent* APPCharacterPlayer::GetElectricNiagaraComponent() const
 {
-	return PlayerCharacterNiagaraComponent;;
+	return ElectricNiagaraComponent;
+}
+
+UNiagaraComponent* APPCharacterPlayer::GetPlayerEffectNiagaraComponent() const
+{
+	return PlayerEffectNiagaraComponent;
 }
 
 UPPInventoryComponent* APPCharacterPlayer::GetInventoryComponent()

@@ -8,18 +8,13 @@
 
 UAnimNotify_PPFootstpes::UAnimNotify_PPFootstpes()
 {
-	static ConstructorHelpers::FObjectFinder<USoundBase> FootstepSoundRef(TEXT("/Script/Engine.SoundCue'/Game/SFX/Character/Footstep/New_Default/cues/SC_NewDefaultFootsteps.SC_NewDefaultFootsteps'"));
-	if (nullptr != FootstepSoundRef.Object)
-	{
-		FootstepSound = FootstepSoundRef.Object;
-	}
-
 	VolumeMultiplier = 0.25f;
 	PitchMultiplier = 1.00f;
 }
 
-void UAnimNotify_PPFootstpes::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation)
+void UAnimNotify_PPFootstpes::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, const FAnimNotifyEventReference& EventReference)
 {
+	Super::Notify(MeshComp, Animation, EventReference);
 	//UE_LOG(LogTemp, Log, TEXT("Footstep Begin"));
 
 	// Play Footstep Sound
@@ -54,8 +49,7 @@ void UAnimNotify_PPFootstpes::Notify(USkeletalMeshComponent* MeshComp, UAnimSequ
 	if (IsHit)
 	{
 		AActor* HitActor = HitResult.GetActor();
-		UE_LOG(LogTemp, Log, TEXT("Hit Actor: %s"), *HitActor->GetName());
-		
+		//UE_LOG(LogTemp, Log, TEXT("Hit Actor: %s"), *HitActor->GetName());
 
 		EPhysicalSurface SurfaceType = UGameplayStatics::GetSurfaceType(HitResult);
 		// 여기서 추가로 작업 필요
@@ -81,7 +75,7 @@ void UAnimNotify_PPFootstpes::Notify(USkeletalMeshComponent* MeshComp, UAnimSequ
 			UGameplayStatics::PlaySoundAtLocation(MeshComp, FootstepSound, MeshComp->GetComponentLocation(), VolumeMultiplier, PitchMultiplier);
 		}
 	}
-
+	
 	FColor DebugColor(255, 0, 0);
 	DrawDebugLine(GetWorld(), StartPos, EndPos, DebugColor, false, 5.0f);
 }

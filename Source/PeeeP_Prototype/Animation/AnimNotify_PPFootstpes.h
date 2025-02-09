@@ -17,7 +17,7 @@ class PEEEP_PROTOTYPE_API UAnimNotify_PPFootstpes : public UAnimNotify
 public:
 	UAnimNotify_PPFootstpes();
 
-	virtual void Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation) override;
+	virtual void Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, const FAnimNotifyEventReference& EventReference) override;
 
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Footstep")

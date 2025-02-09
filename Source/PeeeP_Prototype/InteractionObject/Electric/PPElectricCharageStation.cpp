@@ -10,11 +10,15 @@
 // Sets default values
 APPElectricCharageStation::APPElectricCharageStation()
 {
- 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
+	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
+	RootSceneComponent = CreateDefaultSubobject<USceneComponent>(TEXT("RootComponent"));
+	SetRootComponent(RootSceneComponent);
+
 	TriggerFloorMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("ElectricChager"));
-	SetRootComponent(TriggerFloorMesh);
+	TriggerFloorMesh->SetupAttachment(RootSceneComponent);
+	TriggerFloorMesh->SetRelativeLocation(FVector(0.0f, 0.0f, -20.0f));
 
 	TriggerBox = CreateDefaultSubobject<UBoxComponent>(TEXT("TriggerBox"));
 	TriggerBox->SetupAttachment(TriggerFloorMesh);
@@ -28,7 +32,7 @@ APPElectricCharageStation::APPElectricCharageStation()
 void APPElectricCharageStation::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
 }
 
 // Called every frame
@@ -44,6 +48,7 @@ void APPElectricCharageStation::Tick(float DeltaTime)
 
 void APPElectricCharageStation::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
+
 	if (OtherActor && (OtherActor != this) && !bIsActivate)
 	{
 		if (APPCharacterPlayer* player = Cast<APPCharacterPlayer>(OtherActor))
@@ -51,17 +56,9 @@ void APPElectricCharageStation::OnOverlapBegin(UPrimitiveComponent* OverlappedCo
 			UE_LOG(LogTemp, Log, TEXT("Player Overlap Begin"));
 			ElectricDischargeComponent = player->GetElectricDischargeComponent();
 
-
-			APPPlayerState* PlayerState = player->GetPlayerState<APPPlayerState>();
-			if (IsValid(PlayerState))
-			{
-				//현재 액터의 위치에 스폰되면 땅에 박혀서 임의로 조정, 임의값 사용이 문제되면 추후 SceneComponent를 사용하여 위치 조정
-				FVector SpawnLocation = GetActorLocation() + FVector(0.0f, 0.0f, 25.0f);
-				PlayerState->SetSpawnLocation(SpawnLocation);
-			}
-			bIsActivate = true;
+			SaveGame(player);
 		}
-		
+
 	}
 }
 
@@ -75,5 +72,19 @@ void APPElectricCharageStation::OnOverlapEnd(UPrimitiveComponent* OverlappedComp
 			bIsActivate = false;
 		}
 	}
+}
+
+void APPElectricCharageStation::SaveGame(APPCharacterPlayer* InPlayer)
+{
+	APPPlayerState* PlayerState = InPlayer->GetPlayerState<APPPlayerState>();
+	if (IsValid(PlayerState))
+	{
+		//현재 액터의 위치에 스폰되면 땅에 박혀서 임의로 조정, 임의값 사용이 문제되면 추후 SceneComponent를 사용하여 위치 조정
+		//FVector SpawnLocation = GetActorLocation() + FVector(0.0f, 0.0f, 10.0f);
+		PlayerState->SetSpawnActorLocation(this);
+		//PlayerState->SetSpawnLocation(SpawnLocation);
+	}
+	bIsActivate = true;
+
 }
 

@@ -3,12 +3,15 @@
 #include "Components/BoxComponent.h"
 #include "TimerManager.h"
 #include "Engine/World.h"
+#include "GameFramework/Pawn.h"
+#include "GameFramework/PawnMovementComponent.h"
+#include "GameFramework/Character.h"
+#include "Components/CapsuleComponent.h"
 
 APPCrane::APPCrane()
 {
     PrimaryActorTick.bCanEverTick = true;
 
-    // ▼ UStaticMesh 대신 USkeletalMeshComponent 생성
     Claw = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Claw"));
     RootComponent = Claw;
 
@@ -34,11 +37,16 @@ APPCrane::APPCrane()
 
     bStopDownMovement = false;
     PreviousLocation = FVector::ZeroVector;
+
+    OriginalLocation = FVector::ZeroVector;
+
+    StartLocation = FVector::ZeroVector;
 }
 
 void APPCrane::BeginPlay()
 {
     Super::BeginPlay();
+
     OriginalLocation = GetActorLocation();
 }
 
@@ -46,39 +54,32 @@ void APPCrane::Tick(float DeltaTime)
 {
     Super::Tick(DeltaTime);
 
-    // MovingDown 시점 혹은 Tick 시작 시점에 이전 위치 저장
     PreviousLocation = GetActorLocation();
 
     switch (CurrentState)
     {
     case EPPCraneState::Idle:
-        // 아무 것도 하지 않음
         break;
 
     case EPPCraneState::MovingDown:
     {
-        // Overlap으로 인해 멈춰야 한다면, 더 이상 아래로 이동하지 않음
         if (!bStopDownMovement)
         {
             MoveCraneDown(DeltaTime);
-        }
 
-        if (bStopDownMovement)
-        {
-            break;
-        }
+            float currentZ = GetActorLocation().Z;
+            float dist = StartLocation.Z - currentZ;
+            if (dist >= DownDistance)
+            {
+                FVector pos = StartLocation;
+                pos.Z -= DownDistance;
+                SetActorLocation(pos);
 
-        float dist = OriginalLocation.Z - GetActorLocation().Z;
-        if (dist >= DownDistance)
-        {
-            FVector pos = OriginalLocation;
-            pos.Z -= DownDistance;
-            SetActorLocation(pos);
+                SelectOverlapActor();
 
-            SelectOverlapActor();
-
-            CurrentState = EPPCraneState::Waiting;
-            WaitingTimer = 0.f;
+                CurrentState = EPPCraneState::Waiting;
+                WaitingTimer = 0.f;
+            }
         }
     }
     break;
@@ -100,13 +101,16 @@ void APPCrane::Tick(float DeltaTime)
     case EPPCraneState::MovingUp:
     {
         MoveCraneUp(DeltaTime);
-        float z = GetActorLocation().Z;
-        if (z >= OriginalLocation.Z)
+
+        float currentZ = GetActorLocation().Z;
+        if (currentZ >= StartLocation.Z)
         {
-            SetActorLocation(OriginalLocation);
+            FVector pos = GetActorLocation();
+            pos.Z = StartLocation.Z;
+            SetActorLocation(pos);
 
             CurrentState = EPPCraneState::MovingX;
-            TargetLocation = OriginalLocation + FVector(150.f, 0.f, 0.f);
+            TargetLocation = pos + FVector(150.f, 0.f, 0.f);
         }
     }
     break;
@@ -132,19 +136,112 @@ void APPCrane::OnGrabOverlapBegin(
 {
     if (!OtherActor || OtherActor == this) return;
 
-    // MovingDown 상태에서만 오버랩 즉시 잡기
     if (CurrentState == EPPCraneState::MovingDown && !bIsHoldingObject)
     {
-        // 이전 위치로 되돌려서 멈춤
         SetActorLocation(PreviousLocation);
+
         bStopDownMovement = true;
 
-        // 곧바로 Attach
         AttachActor(OtherActor);
 
-        // 상태 전환
         CurrentState = EPPCraneState::MovingUp;
     }
+}
+
+void APPCrane::SelectOverlapActor()
+{
+    if (bIsHoldingObject) return;
+
+    TArray<AActor*> OverlappedActors;
+    GrabCollision->GetOverlappingActors(OverlappedActors);
+
+    if (OverlappedActors.Num() > 0)
+    {
+        AActor* FirstActor = OverlappedActors[0];
+        if (FirstActor != this)
+        {
+            GrabbedActor = FirstActor;
+        }
+    }
+    else
+    {
+        GrabbedActor = nullptr;
+    }
+}
+
+void APPCrane::AttachActor(AActor* ActorToGrab)
+{
+    if (!ActorToGrab || bIsHoldingObject)
+        return;
+
+    if (APawn* PawnActor = Cast<APawn>(ActorToGrab))
+    {
+        PawnActor->DisableInput(nullptr);
+
+        if (UPawnMovementComponent* MoveComp = PawnActor->GetMovementComponent())
+        {
+            MoveComp->StopMovementImmediately();
+        }
+
+        if (ACharacter* Char = Cast<ACharacter>(PawnActor))
+        {
+            if (UCapsuleComponent* Capsule = Char->GetCapsuleComponent())
+            {
+                Capsule->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+            }
+        }
+
+        PawnActor->AttachToComponent(
+            Claw,
+            FAttachmentTransformRules::SnapToTargetNotIncludingScale
+        );
+    }
+    else
+    {
+        if (UPrimitiveComponent* RootComp = Cast<UPrimitiveComponent>(ActorToGrab->GetRootComponent()))
+        {
+            RootComp->SetSimulatePhysics(false);
+        }
+
+        ActorToGrab->AttachToComponent(
+            Claw,
+            FAttachmentTransformRules::KeepWorldTransform
+        );
+    }
+
+    bIsHoldingObject = true;
+    GrabbedActor = ActorToGrab;
+}
+
+void APPCrane::DropActor()
+{
+    if (GrabbedActor && bIsHoldingObject)
+    {
+        GrabbedActor->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
+
+        if (APawn* PawnActor = Cast<APawn>(GrabbedActor))
+        {
+            PawnActor->EnableInput(nullptr);
+
+            if (ACharacter* Char = Cast<ACharacter>(PawnActor))
+            {
+                if (UCapsuleComponent* Capsule = Char->GetCapsuleComponent())
+                {
+                    Capsule->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+                }
+            }
+        }
+        else
+        {
+            if (UPrimitiveComponent* RootComp = Cast<UPrimitiveComponent>(GrabbedActor->GetRootComponent()))
+            {
+                RootComp->SetSimulatePhysics(true);
+            }
+        }
+    }
+
+    GrabbedActor = nullptr;
+    bIsHoldingObject = false;
 }
 
 void APPCrane::MoveCraneDown(float DeltaTime)
@@ -175,8 +272,7 @@ void APPCrane::MoveOnX(float DeltaTime)
         return;
     }
 
-    FVector dir = TargetLocation - loc;
-    dir.Normalize();
+    FVector dir = (TargetLocation - loc).GetSafeNormal();
     loc += dir * XYMoveSpeed * DeltaTime;
     SetActorLocation(loc);
 }
@@ -187,93 +283,45 @@ void APPCrane::MoveOnY(float DeltaTime)
     float dist = (TargetLocation - loc).Size();
     if (dist <= AcceptableRadius)
     {
+        // 도착
         loc = TargetLocation;
         SetActorLocation(loc);
 
+        // 여기서 물체 또는 플레이어를 떨궈 줌
         if (bIsHoldingObject && GrabbedActor)
         {
             // 0.1초 후에 떨어뜨리기
             GetWorldTimerManager().ClearTimer(DropTimerHandle);
             GetWorldTimerManager().SetTimer(DropTimerHandle, this, &APPCrane::DropActor, 0.1f, false);
         }
+
+        // 드롭 후에는 Idle 상태로 => 그 자리에서 멈춰 있음
         CurrentState = EPPCraneState::Idle;
         return;
     }
 
-    FVector dir = TargetLocation - loc;
-    dir.Normalize();
+    FVector dir = (TargetLocation - loc).GetSafeNormal();
     loc += dir * XYMoveSpeed * DeltaTime;
     SetActorLocation(loc);
-}
-
-void APPCrane::SelectOverlapActor()
-{
-    if (bIsHoldingObject) return;
-
-    TArray<AActor*> OverlappedActors;
-    GrabCollision->GetOverlappingActors(OverlappedActors);
-
-    if (OverlappedActors.Num() > 0)
-    {
-        AActor* FirstActor = OverlappedActors[0];
-        if (FirstActor != this)
-        {
-            GrabbedActor = FirstActor;
-        }
-    }
-    else
-    {
-        GrabbedActor = nullptr;
-    }
-}
-
-void APPCrane::AttachActor(AActor* ActorToGrab)
-{
-    if (!ActorToGrab || bIsHoldingObject) return;
-
-    if (UPrimitiveComponent* RootComp = Cast<UPrimitiveComponent>(ActorToGrab->GetRootComponent()))
-    {
-        RootComp->SetSimulatePhysics(false);
-    }
-
-    // ▼ SkeletalMesh인 Claw에 붙임
-    ActorToGrab->AttachToComponent(Claw, FAttachmentTransformRules::KeepWorldTransform);
-
-    bIsHoldingObject = true;
-    GrabbedActor = ActorToGrab;
-}
-
-void APPCrane::DropActor()
-{
-    if (GrabbedActor && bIsHoldingObject)
-    {
-        GrabbedActor->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
-
-        if (UPrimitiveComponent* RootComp = Cast<UPrimitiveComponent>(GrabbedActor->GetRootComponent()))
-        {
-            RootComp->SetSimulatePhysics(true);
-        }
-    }
-
-    GrabbedActor = nullptr;
-    bIsHoldingObject = false;
 }
 
 void APPCrane::OnSwitchPressed()
 {
     bIsSwitchPressed = true;
 
+    // 스위치를 누른 '현재 위치'를 하강 시작점으로 기록
+    StartLocation = GetActorLocation();
+
     CurrentState = EPPCraneState::MovingDown;
     bStopDownMovement = false;
 
-    // 2) 컴포넌트와 몽타주가 유효하면 재생
+    // 애니메이션 재생
     if (Claw && Claw->GetAnimInstance() && AM_CraneMontage)
     {
         Claw->GetAnimInstance()->Montage_Play(AM_CraneMontage, 0.3f /*재생속도*/);
         UE_LOG(LogTemp, Warning, TEXT("Trying to play montage"));
     }
 }
-
 
 void APPCrane::OnSwitchReleased()
 {

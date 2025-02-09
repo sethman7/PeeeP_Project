@@ -59,7 +59,7 @@ void APPPressurePlate::DelayedPickup()
         Crane->OnSwitchReleased();
         return;
     }
-    Crane->AttachActor(OverlappedActorRef);
+    //Crane->AttachActor(OverlappedActorRef);
     Crane->OnSwitchReleased();
     OverlappedActorRef = nullptr;
 }

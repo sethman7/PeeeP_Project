@@ -29,10 +29,6 @@ protected:
 public:
     virtual void Tick(float DeltaTime) override;
 
-    /**
-     *  변경된 부분:
-     *  - UStaticMeshComponent 대신 USkeletalMeshComponent 2개를 사용
-     */
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Crane")
     class USkeletalMeshComponent* Claw;
 
@@ -65,6 +61,9 @@ public:
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation")
     UAnimMontage* AM_CraneMontage;
+
+    UPROPERTY()
+    FVector StartLocation;
 
 protected:
     FVector OriginalLocation;

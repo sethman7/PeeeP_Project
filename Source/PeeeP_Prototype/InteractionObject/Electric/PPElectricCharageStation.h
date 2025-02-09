@@ -4,10 +4,11 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "Interface/PPSavepointInterface.h"
 #include "PPElectricCharageStation.generated.h"
 
 UCLASS()
-class PEEEP_PROTOTYPE_API APPElectricCharageStation : public AActor
+class PEEEP_PROTOTYPE_API APPElectricCharageStation : public AActor, public IPPSavepointInterface
 {
 	GENERATED_BODY()
 	
@@ -25,6 +26,9 @@ protected:
 	UPROPERTY(EditAnywhere)
 	TObjectPtr<class UBoxComponent> TriggerBox;
 
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<class USceneComponent> RootSceneComponent;
+
 	bool bIsActivate;
 
 public:	
@@ -40,4 +44,6 @@ private:
 
 	UFUNCTION()
 	void OnOverlapEnd(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+
+	void SaveGame(class APPCharacterPlayer* InPlayer) override;
 };

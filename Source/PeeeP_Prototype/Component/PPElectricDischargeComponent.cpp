@@ -371,5 +371,7 @@ void UPPElectricDischargeComponent::Reset()
 
 	GetWorld()->GetTimerManager().ClearTimer(AutoDischargeTimeHandler);
 	GetWorld()->GetTimerManager().ClearTimer(RechargingDelayTimeHandler);
+
+	BroadCastToUI();
 }
 

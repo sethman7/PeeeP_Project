@@ -200,7 +200,7 @@ void APPCharacterPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 	EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &APPCharacterPlayer::Look);
 	EnhancedInputComponent->BindAction(ButtonInteract, ETriggerEvent::Triggered, this, &APPCharacterPlayer::ButtonInteraction);
 	EnhancedInputComponent->BindAction(OpenMenuInteract, ETriggerEvent::Triggered, this, &APPCharacterPlayer::OpenMenu);
-	//EnhancedInputComponent->BindAction(RespawnTestInputAction, ETriggerEvent::Triggered, this, &APPCharacterPlayer::OnDeath); // 테스트용
+	EnhancedInputComponent->BindAction(RespawnTestInputAction, ETriggerEvent::Triggered, this, &APPCharacterPlayer::OnDeath); // 테스트용
 	if (ElectricDischargeComponent)
 	{
 		EnhancedInputComponent->BindAction(ElectricDischargeAction, ETriggerEvent::Ongoing, ElectricDischargeComponent.Get(), &UPPElectricDischargeComponent::Charging);

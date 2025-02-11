@@ -14,18 +14,7 @@
 
 APPPlayerState::APPPlayerState()
 {
-	/*static ConstructorHelpers::FObjectFinder<ULevelSequence> RestartSequenceRef(TEXT("/Script/LevelSequence.LevelSequence'/Game/PeeeP_Sequence/LS_Respawn.LS_Respawn'"));
-	if(RestartSequenceRef.Object != nullptr)
-	{
-		RestartSequence = RestartSequenceRef.Object;
-	}*/
-}
-
-void APPPlayerState::SetSpawnLocation(FVector Location)
-{
-	SpawnLocation = Location;
-
-	RestartSequenceActor->SetActorLocation(Location);
+	
 }
 
 void APPPlayerState::SetSpawnActorLocation(AActor* InActor)
@@ -72,14 +61,12 @@ void APPPlayerState::BeginPlay()
 		RestartSequenceActor->SetBindingByTag(FName("Player"), { GetPawn() });
 		RestartSequenceActor->bOverrideInstanceData = true;
 		
-		UDefaultLevelSequenceInstanceData* DefaultInstanceData = NewObject<UDefaultLevelSequenceInstanceData>();
-		DefaultInstanceData->TransformOriginActor = GetPawn();
-		RestartSequenceActor->DefaultInstanceData = DefaultInstanceData;	
-
 		TArray<AActor*> FoundActors;
 		UGameplayStatics::GetAllActorsOfClass(GetWorld(), APostProcessVolume::StaticClass(), FoundActors);
-
-		RestartSequenceActor->SetBindingByTag(FName("PostProcessVolume"), { FoundActors[0]});
+		if (FoundActors.Num()>0)
+		{
+			RestartSequenceActor->SetBindingByTag(FName("PostProcessVolume"), { FoundActors[0] });
+		}
 
 		UE_LOG(LogTemp, Warning, TEXT("LevelSequnceSetting"));
 	}

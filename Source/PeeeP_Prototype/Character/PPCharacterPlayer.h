@@ -174,6 +174,6 @@ protected:	// Quick Slot Section
 	void SetWheelInputAllow(bool Value);
 
 public:
-	/*UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, Meta = (AllowPrivateAccess = "true"))
-	TObjectPtr<class UInputAction> RespawnTestInputAction;*/
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, Meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class UInputAction> RespawnTestInputAction;
 };

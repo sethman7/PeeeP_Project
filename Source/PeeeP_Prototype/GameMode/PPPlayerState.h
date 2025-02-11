@@ -19,7 +19,6 @@ public:
 
 	APPPlayerState();
 
-	void SetSpawnLocation(FVector Location);
 	void SetSpawnActorLocation(class AActor* InActor);
 	FVector GetSpawnLocation() { return SpawnLocation; }
 

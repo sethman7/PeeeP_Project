@@ -24,6 +24,8 @@
 #include "Kismet/KismetSystemLibrary.h"
 #include "GameMode/PPGameModeBase.h"
 #include "GameMode/PPPlayerState.h"
+#include "Components/AudioComponent.h"
+#include "Animation/PPAnimInstance.h"
 
 APPCharacterPlayer::APPCharacterPlayer()
 {
@@ -48,6 +50,11 @@ APPCharacterPlayer::APPCharacterPlayer()
 	{
 		LookAction = InputActionLookRef.Object;
 	}
+	static ConstructorHelpers::FObjectFinder<UInputAction> InputActionRunRef(TEXT("/Script/EnhancedInput.InputAction'/Game/Input/Actions/IA_Run.IA_Run'"));
+	if (!InputActionRunRef.Object)
+	{
+		RunAction = InputActionRunRef.Object;
+	}
 	static ConstructorHelpers::FObjectFinder<UInputAction> ButtonInteractRef(TEXT("/Script/EnhancedInput.InputAction'/Game/Input/Actions/IA_Button.IA_Button'"));
 	if (!ButtonInteractRef.Object)
 	{
@@ -67,6 +74,11 @@ APPCharacterPlayer::APPCharacterPlayer()
 	if (!OpenMenuActionRef.Object)
 	{
 		OpenMenuInteract = OpenMenuActionRef.Object;
+	}
+	static ConstructorHelpers::FObjectFinder<UInputAction> RespawnTestInputActionRef(TEXT("/Script/EnhancedInput.InputAction'/Game/PeeeP_Sequence/IA_Restart.IA_Restart'"));
+	if (!RespawnTestInputActionRef.Object)
+	{
+		RespawnTestInputAction = RespawnTestInputActionRef.Object;
 	}
 
 	// Quick Slot Section
@@ -97,7 +109,7 @@ APPCharacterPlayer::APPCharacterPlayer()
 	}
 
 	// Camera
-	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));	// CameraBoom 컴포넌트를 가져옴
+	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));	// CameraBoom 컴포?��?���? �??��?��
 	CameraBoom->SetupAttachment(RootComponent);
 	CameraBoom->TargetArmLength = 100.0f;
 	CameraBoom->bUsePawnControlRotation = true;
@@ -105,54 +117,77 @@ APPCharacterPlayer::APPCharacterPlayer()
 	CameraBoom->bEnableCameraLag = true;
 	CameraBoom->bEnableCameraRotationLag = true;
 	CameraBoom->CameraLagSpeed = 5.0f;
-	CameraBoom->CameraRotationLagSpeed = 20.f;
+	CameraBoom->CameraRotationLagSpeed = 20.0f;
 	CameraBoom->CameraLagMaxDistance = 500.f;
 	CameraBoom->ProbeSize = 8.0f;
 
-	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));	// FollowCamera 컴포넌트를 가져옴
+	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));	// FollowCamera 컴포?��?���? �??��?��
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
 	FollowCamera->bUsePawnControlRotation = false;
-	FollowCamera->FieldOfView = 80.0f;
+	FollowCamera->FieldOfView = 90.0f;
 
 	ElectricDischargeComponent = CreateDefaultSubobject<UPPElectricDischargeComponent>(TEXT("ElectricDischargeComponent"));
 
+	// Player Movement Setting
 	GetCharacterMovement()->BrakingDecelerationWalking = 2000.f;
 	GetCharacterMovement()->GravityScale = 1.6f;
-	this->MaxWalkSpeed = 150.0f;
-	GetCharacterMovement()->MaxWalkSpeed = this->MaxWalkSpeed;
+	this->MaxWalkSpeed = 60.0f;										// Setting Default Max Walk Speed
+	GetCharacterMovement()->MaxWalkSpeed = this->MaxWalkSpeed;		// Apply Default Max Walk Speed
 	GetCharacterMovement()->MaxStepHeight = 5.0f;
 	GetCharacterMovement()->SetWalkableFloorAngle(50.f);
+	this->bIsRunning = false;
 
-	PlayerCharacterNiagaraComponent = CreateDefaultSubobject<UNiagaraComponent>(TEXT("EffectComponent"));
-	PlayerCharacterNiagaraComponent->SetupAttachment(RootComponent);
+	ElectricNiagaraComponent = CreateDefaultSubobject<UNiagaraComponent>(TEXT("ElectricEffectComponent"));
+	ElectricNiagaraComponent->SetupAttachment(RootComponent);
 
-	
-	// 인벤토리 컴포넌트
+	PlayerEffectNiagaraComponent = CreateDefaultSubobject<UNiagaraComponent>(TEXT("PlayerEffectComponent"));
+	PlayerEffectNiagaraComponent->SetupAttachment(RootComponent);
+
+	// ?��벤토�? 컴포?��?��
 	InventoryComponent = CreateDefaultSubobject<UPPInventoryComponent>(TEXT("InventoryComponent"));
 
 	AttachedMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("AttachedMesh"));
 	GetCapsuleComponent()->OnComponentBeginOverlap.AddDynamic(this, &APPCharacterPlayer::OnBeginOverlap);
 }
 
-void APPCharacterPlayer::OnDeath()
+void APPCharacterPlayer::OnDeath(uint8 bIsDead)
 {
-	APlayerController* PlayerController = Cast<APlayerController>(GetController());
-	if (IsValid(PlayerController))
+
+	UPPAnimInstance* AnimInstance = Cast<UPPAnimInstance>(GetMesh()->GetAnimInstance());
+	if (IsValid(AnimInstance))
 	{
-		PlayerController->DisableInput(PlayerController);
-		GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_None);
-
-		ElectricDischargeComponent->Reset();
-
-		APPGameModeBase* GameMode = Cast<APPGameModeBase>(GetWorld()->GetAuthGameMode());
-		if (IsValid(GameMode))
+		AnimInstance->SetbIsDead(bIsDead);
+		APlayerController* PlayerController = Cast<APlayerController>(GetController());
+		if (bIsDead)
 		{
-			GameMode->MoveCharacterToSpawnLocation(this);
+			if (!GetWorldTimerManager().IsTimerActive(RespawnTimerHandle))
+			{
+				if (IsValid(PlayerController))
+				{
+					this->DisableInput(PlayerController);
+				}
+				GetWorldTimerManager().SetTimer(RespawnTimerHandle, this, &APPCharacterPlayer::PlayRespawnSequence, 2.25f, false);
+			}
 		}
+		else
+		{
+			if (IsValid(PlayerController))
+			{
+				this->EnableInput(PlayerController);
+			}
+		}
+	}
+}
 
-		PlayerController->SetControlRotation(FRotator(0.0f, 90.0f, 0.0f));
-		GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);
-		PlayerController->EnableInput(PlayerController);
+void APPCharacterPlayer::PlayRespawnSequence()
+{
+	APPGameModeBase* GameMode = Cast<APPGameModeBase>(GetWorld()->GetAuthGameMode());
+	if (IsValid(GameMode))
+	{
+		ElectricDischargeComponent->Reset();
+		GameMode->MoveCharacterToSpawnLocation(this);
+		OnDeath(false);	// Set bIsDead in AnimInstance
+		GetWorldTimerManager().ClearTimer(RespawnTimerHandle);
 	}
 }
 
@@ -172,17 +207,19 @@ void APPCharacterPlayer::BeginPlay()
 		GameMode->SetInitialSpawnLocation(PlayerController);
 	}
 
+	DeadEventDelegate.BindUObject(this, &APPCharacterPlayer::OnDeath);
+
 	//Test_EquipGrabParts();
 
-	//// Parts 임시로 생성자에서 부여함
-	//// 해당 부분은 나중에 인벤토리에서 데이터 이용해서 파츠 변경하는 함수 따로 만들어서 적용하면 될 듯
+	//// Parts ?��?���? ?��?��?��?��?�� �??��?��
+	//// ?��?�� �?분�?? ?��중에 ?��벤토리에?�� ?��?��?�� ?��?��?��?�� ?���? �?경하?�� ?��?�� ?���? 만들?��?�� ?��?��?���? ?�� ?��
 	//UActorComponent* PartsComponent = AddComponentByClass(UPPGrabParts::StaticClass(), true, FTransform::Identity, false);
 	//Parts = CastChecked<UPPPartsBase>(PartsComponent);
 }
 
 void APPCharacterPlayer::Tick(float DeltaTime)
 {
-	//Idle상태에서의 플레이어가 움직이는 actor와의 충돌을 무시하게 되버려 다음 코드를 추가함.
+	//Idle?��?��?��?��?�� ?��?��?��?���? ???직이?�� actor????�� 충돌?�� 무시?���? ?��버려 ?��?�� 코드�? 추�???��.
 	FHitResult OutHit;
 	GetCharacterMovement()->SafeMoveUpdatedComponent(FVector(0.f, 0.f, 0.03f), GetActorRotation(), true, OutHit);
 	GetCharacterMovement()->SafeMoveUpdatedComponent(FVector(0.f, 0.f, -0.03f), GetActorRotation(), true, OutHit);
@@ -194,22 +231,38 @@ void APPCharacterPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 
 	UEnhancedInputComponent* EnhancedInputComponent = CastChecked<UEnhancedInputComponent>(PlayerInputComponent);
 
+	/// Binding Section
+	/// If you added new action, you should add new binding action here.
+	/// Create some function for actions about added input and bind it.
+	
+	// Jump
 	EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Triggered, this, &ACharacter::Jump);
 	EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
+	// Move
 	EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &APPCharacterPlayer::Move);
+	// Look
 	EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &APPCharacterPlayer::Look);
+	// Running
+	EnhancedInputComponent->BindAction(RunAction, ETriggerEvent::Triggered, this, &APPCharacterPlayer::OnRunningStart);
+	EnhancedInputComponent->BindAction(RunAction, ETriggerEvent::Completed, this, &APPCharacterPlayer::OnRunningEnd);
+	// Button Interaction(Unused)
 	EnhancedInputComponent->BindAction(ButtonInteract, ETriggerEvent::Triggered, this, &APPCharacterPlayer::ButtonInteraction);
+	// Open Menu
 	EnhancedInputComponent->BindAction(OpenMenuInteract, ETriggerEvent::Triggered, this, &APPCharacterPlayer::OpenMenu);
 	EnhancedInputComponent->BindAction(RespawnTestInputAction, ETriggerEvent::Triggered, this, &APPCharacterPlayer::OnDeath); // 테스트용
+
+	// Electric Discharge Component
 	if (ElectricDischargeComponent)
 	{
 		EnhancedInputComponent->BindAction(ElectricDischargeAction, ETriggerEvent::Ongoing, ElectricDischargeComponent.Get(), &UPPElectricDischargeComponent::Charging);
 		EnhancedInputComponent->BindAction(ElectricDischargeAction, ETriggerEvent::Completed, ElectricDischargeComponent.Get(), &UPPElectricDischargeComponent::Discharge);
 		EnhancedInputComponent->BindAction(ElectricDischargeModeChangeAction, ETriggerEvent::Completed, ElectricDischargeComponent.Get(), &UPPElectricDischargeComponent::ChangeDischargeMode);
 	}
-	
+	// Quick Slot
 	EnhancedInputComponent->BindAction(QuickSlotMoveAction, ETriggerEvent::Triggered, this, &APPCharacterPlayer::QuickSlotMove);
 	EnhancedInputComponent->BindAction(QuickSlotUseAction, ETriggerEvent::Triggered, this, &APPCharacterPlayer::QuickSlotUse);
+
+	EnhancedInputComponent->BindAction(RespawnTestInputAction, ETriggerEvent::Triggered, this, &APPCharacterPlayer::SetElectricCapacity, 0.0f);
 }
 
 void APPCharacterPlayer::OnBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
@@ -219,7 +272,7 @@ void APPCharacterPlayer::OnBeginOverlap(UPrimitiveComponent* OverlappedComponent
 		FRotator Rotation = CleaingRobotRef->GetActorRotation();
 		FVector KnockbackVelocity = UKismetMathLibrary::GetForwardVector(Rotation) * CleaingRobotRef->KnockbackStrength;
 
-		// 플레이어에게 넉백 적용
+		// ?��?��?��?��?���? ?���? ?��?��
 		LaunchCharacter(KnockbackVelocity, true, true);
 		ElectricDischargeComponent->ChargeElectric(CleaingRobotRef->ElectricLossRate);
 	}
@@ -290,7 +343,6 @@ void APPCharacterPlayer::ButtonInteraction(const FInputActionValue& Value)
 	FHitResult HitResult;
 	FCollisionQueryParams CollisionParam(SCENE_QUERY_STAT(Button), false, this);
 
-
 	bool IsHit = GetWorld()->LineTraceSingleByChannel(HitResult, CameraPos, EndPos, ECC_GameTraceChannel1, CollisionParam, FCollisionResponseParams(ECR_Block));
 
 	if (IsHit)
@@ -309,6 +361,25 @@ void APPCharacterPlayer::ButtonInteraction(const FInputActionValue& Value)
 	FColor DebugColor(255, 0, 0);
 
 	DrawDebugLine(GetWorld(), CameraPos, EndPos, DebugColor, false, 5.0f);
+}
+
+void APPCharacterPlayer::OnRunningStart(const FInputActionValue& Value)
+{
+	// Set Player Max Walk Speed for Running.
+	if (!this->bIsRunning)
+	{
+		GetCharacterMovement()->MaxWalkSpeed = 150.f;	// Here is Running Max Walk Speed. You can Setting Running Max Walk Speed.
+		this->bIsRunning = true;
+		UE_LOG(LogTemp, Log, TEXT("Running Start"));
+	}
+}
+
+void APPCharacterPlayer::OnRunningEnd(const FInputActionValue& Value)
+{
+	// Set Player Max Walk Speed to Default Max Walk Speed.
+	GetCharacterMovement()->MaxWalkSpeed = this->MaxWalkSpeed;
+	this->bIsRunning = false;
+	UE_LOG(LogTemp, Log, TEXT("Running End"));
 }
 
 void APPCharacterPlayer::SetDefaultMeshAndAnim()
@@ -368,11 +439,7 @@ void APPCharacterPlayer::PlayAnimation(UAnimMontage* InAnimMontage)
 	}
 }
 
-
-
-
-
-//그랩 애니메이션 작동 후, Notify를 통해 호출됨. 그랩에 닿은 오브젝트가 있는지 체크. 
+//그랩 ?��?��메이?�� ?��?�� ?��, Notify�? ?��?�� ?��출됨. 그랩?�� ?��??? ?��브젝?���? ?��?���? 체크. 
 void APPCharacterPlayer::GrabHitCheck()
 {
 	UPPGrabParts* GrabParts = Cast<UPPGrabParts>(Parts);
@@ -413,9 +480,14 @@ void APPCharacterPlayer::RevertMaxWalkSpeed()
 	GetCharacterMovement()->MaxWalkSpeed = this->MaxWalkSpeed;
 }
 
-UNiagaraComponent* APPCharacterPlayer::GetPlayerCharacterNiagaraComponent() const
+UNiagaraComponent* APPCharacterPlayer::GetElectricNiagaraComponent() const
 {
-	return PlayerCharacterNiagaraComponent;;
+	return ElectricNiagaraComponent;
+}
+
+UNiagaraComponent* APPCharacterPlayer::GetPlayerEffectNiagaraComponent() const
+{
+	return PlayerEffectNiagaraComponent;
 }
 
 UPPInventoryComponent* APPCharacterPlayer::GetInventoryComponent()
@@ -425,19 +497,19 @@ UPPInventoryComponent* APPCharacterPlayer::GetInventoryComponent()
 
 void APPCharacterPlayer::QuickSlotMove(const FInputActionValue& Value)
 {
-	// 마우스 휠 업: 양수, 마우스 휠 다운: 음수
+	// 마우?�� ?�� ?��: ?��?��, 마우?�� ?�� ?��?��: ?��?��
 	float MoveDir = Value.Get<float>();
 
-	// 마우스 휠 연속된 입력 방지
-	float InputInterval = 0.4f;	// 다음 인풋까지 간격
+	// 마우?�� ?�� ?��?��?�� ?��?�� 방�??
+	float InputInterval = 0.4f;	// ?��?�� ?��?��까�?? 간격
 	if (bIsAllowWheelInput)
 	{
 		UE_LOG(LogTemp, Log, TEXT("Quick Slot Move: %f"), MoveDir);
 		bIsAllowWheelInput = false;
 		GetWorld()->GetTimerManager().SetTimer(QuickSlotMoveTimer, [&]() {bIsAllowWheelInput = true; }, InputInterval, false);
 
-		// 슬롯 움직임 구현부
-		// 슬롯이 처음이나 끝에 다다랐을 경우 화살표는 사라지지 않지만 더이상 움직이지 않아야 함.
+		// ?���? ???직임 구현�?
+		// ?���??�� 처음?��?�� ?��?�� ?��?��?��?�� 경우 ?��?��?��?�� ?��?���?�? ?���?�? ?��?��?�� ???직이�? ?��?��?�� ?��.
 		if (MoveDir < 0)		// Wheel Down
 		{
 			InventoryComponent->ModifyCurrentSlotIndex(1);
@@ -453,16 +525,16 @@ void APPCharacterPlayer::QuickSlotUse(const FInputActionValue& Value)
 {
 	UE_LOG(LogTemp, Log, TEXT("Quick Slot Used!"));
 
-	// 선택된 슬롯 사용부
-	// 미장착 상태에서는 어떠한 파츠(현재 보유하고 있는)를 선택하더라도 정상 착용이 되어야 함.
-	// 이미 장착하고 있는 파츠를 재선택 할 경우 장착하고 있는 파츠를 해제해야 함.
-	// 파츠를 장착하기 위해서는 현재 슬롯의 인덱스를 알아야 가능
+	// ?��?��?�� ?���? ?��?���?
+	// 미장�? ?��?��?��?��?�� ?��?��?�� ?���?(?��?�� 보유?���? ?��?��)�? ?��?��?��?��?��?�� ?��?�� 착용?�� ?��?��?�� ?��.
+	// ?���? ?��착하�? ?��?�� ?��츠�?? ?��?��?�� ?�� 경우 ?��착하�? ?��?�� ?��츠�?? ?��?��?��?�� ?��.
+	// ?��츠�?? ?��착하�? ?��?��?��?�� ?��?�� ?���??�� ?��?��?���? ?��?��?�� �??��
 
-	// 테스트 부분: 슬롯 인덱스 0번의 파츠 슬롯 타입의 아이템을 사용해 주세요.
-	// 결과: 로그 정상 출력
+	// ?��?��?�� �?�?: ?���? ?��?��?�� 0번의 ?���? ?���? ????��?�� ?��?��?��?�� ?��?��?�� 주세?��.
+	// 결과: 로그 ?��?�� 출력
 	//InventoryComponent->UseItem(0, ESlotType::ST_InventoryParts);
 
-	// 현재 선택된 슬롯을 기반으로 하여 아이템 사용
+	// ?��?�� ?��?��?�� ?���??�� 기반?���? ?��?�� ?��?��?�� ?��?��
 	InventoryComponent->UseItemCurrentIndex(ESlotType::ST_InventoryParts);
 
 }
@@ -470,6 +542,12 @@ void APPCharacterPlayer::QuickSlotUse(const FInputActionValue& Value)
 void APPCharacterPlayer::SetWheelInputAllow(bool Value)
 {
 	bIsAllowWheelInput = Value;
+}
+
+void APPCharacterPlayer::SetElectricCapacity(float Amount)
+{
+	ElectricDischargeComponent->SetCurrentCapacity(Amount);
+	ElectricDischargeComponent->BroadCastToUI();
 }
 
 void APPCharacterPlayer::OpenMenu()

@@ -14,7 +14,6 @@ enum class EDischargeMode : uint8
 	Capsule
 };
 
-
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class PEEEP_PROTOTYPE_API UPPElectricDischargeComponent : public UActorComponent
 {
@@ -65,6 +64,21 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Electric)
 	TMap<FName, TObjectPtr<class UNiagaraSystem>> DischargeEffects;
 
+	UPROPERTY(EditAnywhere, Category = Electric)
+	TObjectPtr<class UAudioComponent> ElectricSoundComponent;
+
+	UPROPERTY(EditAnywhere, Category = Electric)
+	TObjectPtr<class USoundBase> ChargeSound;
+
+	UPROPERTY(EditAnywhere, Category = Electric)
+	TObjectPtr<class USoundBase> DischargeSound;
+
+	UPROPERTY(EditAnywhere, Category = Electric)
+	TObjectPtr<class USoundBase> ChargeLevelSound;
+
+	int TempChargeLevel;
+	void PlayChargeLevelSound();
+
 public:	
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
@@ -83,9 +97,10 @@ public:
 
 	// ������Ʈ(�÷��̾�) ���� ���� �Լ�
 	void ChargeElectric(float amount);
+	void SetCurrentCapacity(float Amount);
 
 	void Reset();
 
-private:
+public:
 	void BroadCastToUI();
 };

@@ -36,6 +36,7 @@ protected:
 
 	FTimerHandle AutoDischargeTimeHandler;
 	FTimerHandle RechargingDelayTimeHandler;
+	FTimerHandle ElectricLevelHUDTimeHandler;
 
 	float RechargingDelay;
 	float MoveSpeedReductionRate;
@@ -103,4 +104,7 @@ public:
 
 public:
 	void BroadCastToUI();
+
+protected:
+	void SetElectricLevelHUDVisible(bool bFlag);
 };

@@ -26,6 +26,8 @@
 #include "GameMode/PPPlayerState.h"
 #include "Components/AudioComponent.h"
 #include "Animation/PPAnimInstance.h"
+#include "Components/WidgetComponent.h"
+#include "UI/PPChargingLevelHUD.h"
 
 APPCharacterPlayer::APPCharacterPlayer()
 {
@@ -148,6 +150,20 @@ APPCharacterPlayer::APPCharacterPlayer()
 
 	AttachedMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("AttachedMesh"));
 	GetCapsuleComponent()->OnComponentBeginOverlap.AddDynamic(this, &APPCharacterPlayer::OnBeginOverlap);
+
+	// Electric Charging Level Widget
+	ElectricChargingLevelWidgetComponent = CreateDefaultSubobject<UWidgetComponent>(TEXT("Widget"));
+	ElectricChargingLevelWidgetComponent->SetupAttachment(GetMesh());
+	ElectricChargingLevelWidgetComponent->SetRelativeLocation(FVector{ 0.0f, 0.0f, 60.0f });
+
+	static ConstructorHelpers::FClassFinder<UPPChargingLevelHUD> ElectricChargingLevelWidgetComponentRef = TEXT("/Game/UI/PlayerStatus/Charging/WB_ChargingLevelHUD.WB_ChargingLevelHUD_C");
+	if (ElectricChargingLevelWidgetComponentRef.Class)
+	{
+		ElectricChargingLevelWidgetComponent->SetWidgetClass(ElectricChargingLevelWidgetComponentRef.Class);
+		ElectricChargingLevelWidgetComponent->SetWidgetSpace(EWidgetSpace::Screen);
+		ElectricChargingLevelWidgetComponent->SetDrawSize(FVector2D{ 256.0f, 128.0f });
+		ElectricChargingLevelWidgetComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	}
 }
 
 void APPCharacterPlayer::OnDeath(uint8 bIsDead)
@@ -207,7 +223,15 @@ void APPCharacterPlayer::BeginPlay()
 		GameMode->SetInitialSpawnLocation(PlayerController);
 	}
 
+	ElectricChargingLevelWidget = Cast<UPPChargingLevelHUD>(ElectricChargingLevelWidgetComponent->GetWidget());
+	if (IsValid(ElectricChargingLevelWidget))
+	{
+		ElectricChargingLevelWidget->SetVisibility(ESlateVisibility::Hidden);
+	}
+
 	DeadEventDelegate.BindUObject(this, &APPCharacterPlayer::OnDeath);
+
+
 
 	//Test_EquipGrabParts();
 
@@ -253,7 +277,7 @@ void APPCharacterPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 	//EnhancedInputComponent->BindAction(RespawnTestInputAction, ETriggerEvent::Triggered, this, &APPCharacterPlayer::OnDeath); // 테스트용
 
 	// Electric Discharge Component
-	if (ElectricDischargeComponent)
+	if (ElectricDischargeComponent && ElectricChargingLevelWidgetComponent)
 	{
 		EnhancedInputComponent->BindAction(ElectricDischargeAction, ETriggerEvent::Ongoing, ElectricDischargeComponent.Get(), &UPPElectricDischargeComponent::Charging);
 		EnhancedInputComponent->BindAction(ElectricDischargeAction, ETriggerEvent::Completed, ElectricDischargeComponent.Get(), &UPPElectricDischargeComponent::Discharge);
@@ -564,6 +588,16 @@ UPPElectricDischargeComponent* APPCharacterPlayer::GetElectricDischargeComponent
 {
 	return ElectricDischargeComponent;
 
+}
+
+UWidgetComponent* APPCharacterPlayer::GetElectricChargingLevelWidgetComponent()
+{
+	return ElectricChargingLevelWidgetComponent;
+}
+
+UPPChargingLevelHUD* APPCharacterPlayer::GetElectricChargingLevelWidget()
+{
+	return ElectricChargingLevelWidget;
 }
 
 

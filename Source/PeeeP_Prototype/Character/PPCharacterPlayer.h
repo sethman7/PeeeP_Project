@@ -143,6 +143,12 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Effect)
 	TObjectPtr<class UNiagaraComponent> PlayerEffectNiagaraComponent;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Electric)
+	TObjectPtr<class UWidgetComponent> ElectricChargingLevelWidgetComponent;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Electric)
+	TObjectPtr<class UPPChargingLevelHUD> ElectricChargingLevelWidget;
+
 	float ChargeTime;
 
 public:
@@ -151,6 +157,8 @@ public:
 public:
 	// Getter
 	UPPElectricDischargeComponent* GetElectricDischargeComponent();
+	UWidgetComponent* GetElectricChargingLevelWidgetComponent();
+	UPPChargingLevelHUD* GetElectricChargingLevelWidget();
 
 protected:
 	//InventoryComponent

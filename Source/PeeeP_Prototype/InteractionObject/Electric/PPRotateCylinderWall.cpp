@@ -29,4 +29,9 @@ void APPRotateCylinderWall::Tick(float DeltaTime)
 
 }
 
+void APPRotateCylinderWall::Charge()
+{
+	UE_LOG(LogTemp, Log, TEXT("Cylinder!"));
+}
+
 

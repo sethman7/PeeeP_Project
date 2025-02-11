@@ -25,6 +25,7 @@
 #include "GameMode/PPGameModeBase.h"
 #include "GameMode/PPPlayerState.h"
 #include "Components/AudioComponent.h"
+#include "Animation/PPAnimInstance.h"
 
 APPCharacterPlayer::APPCharacterPlayer()
 {
@@ -74,7 +75,11 @@ APPCharacterPlayer::APPCharacterPlayer()
 	{
 		OpenMenuInteract = OpenMenuActionRef.Object;
 	}
-
+	static ConstructorHelpers::FObjectFinder<UInputAction> RespawnTestInputActionRef(TEXT("/Script/EnhancedInput.InputAction'/Game/PeeeP_Sequence/IA_Restart.IA_Restart'"));
+	if (!RespawnTestInputActionRef.Object)
+	{
+		RespawnTestInputAction = RespawnTestInputActionRef.Object;
+	}
 
 	// Quick Slot Section
 	static ConstructorHelpers::FObjectFinder<UInputAction> QuickSlotMoveRef(TEXT("/Script/EnhancedInput.InputAction'/Game/Input/Actions/IA_QuickSlotMove.IA_QuickSlotMove'"));
@@ -145,25 +150,44 @@ APPCharacterPlayer::APPCharacterPlayer()
 	GetCapsuleComponent()->OnComponentBeginOverlap.AddDynamic(this, &APPCharacterPlayer::OnBeginOverlap);
 }
 
-void APPCharacterPlayer::OnDeath()
+void APPCharacterPlayer::OnDeath(uint8 bIsDead)
 {
-	APlayerController* PlayerController = Cast<APlayerController>(GetController());
-	if (IsValid(PlayerController))
+
+	UPPAnimInstance* AnimInstance = Cast<UPPAnimInstance>(GetMesh()->GetAnimInstance());
+	if (IsValid(AnimInstance))
 	{
-		PlayerController->DisableInput(PlayerController);
-		GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_None);
-
-		ElectricDischargeComponent->Reset();
-
-		APPGameModeBase* GameMode = Cast<APPGameModeBase>(GetWorld()->GetAuthGameMode());
-		if (IsValid(GameMode))
+		AnimInstance->SetbIsDead(bIsDead);
+		APlayerController* PlayerController = Cast<APlayerController>(GetController());
+		if (bIsDead)
 		{
-			GameMode->MoveCharacterToSpawnLocation(this);
+			if (!GetWorldTimerManager().IsTimerActive(RespawnTimerHandle))
+			{
+				if (IsValid(PlayerController))
+				{
+					this->DisableInput(PlayerController);
+				}
+				GetWorldTimerManager().SetTimer(RespawnTimerHandle, this, &APPCharacterPlayer::PlayRespawnSequence, 2.25f, false);
+			}
 		}
+		else
+		{
+			if (IsValid(PlayerController))
+			{
+				this->EnableInput(PlayerController);
+			}
+		}
+	}
+}
 
-		PlayerController->SetControlRotation(FRotator(0.0f, 90.0f, 0.0f));
-		GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);
-		PlayerController->EnableInput(PlayerController);
+void APPCharacterPlayer::PlayRespawnSequence()
+{
+	APPGameModeBase* GameMode = Cast<APPGameModeBase>(GetWorld()->GetAuthGameMode());
+	if (IsValid(GameMode))
+	{
+		ElectricDischargeComponent->Reset();
+		GameMode->MoveCharacterToSpawnLocation(this);
+		OnDeath(false);	// Set bIsDead in AnimInstance
+		GetWorldTimerManager().ClearTimer(RespawnTimerHandle);
 	}
 }
 
@@ -182,6 +206,8 @@ void APPCharacterPlayer::BeginPlay()
 	{
 		GameMode->SetInitialSpawnLocation(PlayerController);
 	}
+
+	DeadEventDelegate.BindUObject(this, &APPCharacterPlayer::OnDeath);
 
 	//Test_EquipGrabParts();
 
@@ -234,6 +260,8 @@ void APPCharacterPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 	// Quick Slot
 	EnhancedInputComponent->BindAction(QuickSlotMoveAction, ETriggerEvent::Triggered, this, &APPCharacterPlayer::QuickSlotMove);
 	EnhancedInputComponent->BindAction(QuickSlotUseAction, ETriggerEvent::Triggered, this, &APPCharacterPlayer::QuickSlotUse);
+
+	EnhancedInputComponent->BindAction(RespawnTestInputAction, ETriggerEvent::Triggered, this, &APPCharacterPlayer::SetElectricCapacity, 0.0f);
 }
 
 void APPCharacterPlayer::OnBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
@@ -513,6 +541,12 @@ void APPCharacterPlayer::QuickSlotUse(const FInputActionValue& Value)
 void APPCharacterPlayer::SetWheelInputAllow(bool Value)
 {
 	bIsAllowWheelInput = Value;
+}
+
+void APPCharacterPlayer::SetElectricCapacity(float Amount)
+{
+	ElectricDischargeComponent->SetCurrentCapacity(Amount);
+	ElectricDischargeComponent->BroadCastToUI();
 }
 
 void APPCharacterPlayer::OpenMenu()

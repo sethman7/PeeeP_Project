@@ -57,6 +57,11 @@ void APPGameModeBase::MoveCharacterToSpawnLocation(APPCharacterPlayer* Character
 
 			PlayerState->PlayRespawnSequence();
 		}
+		AController* Controller = Character->GetController();
+		if (IsValid(Controller))
+		{
+			Controller->SetControlRotation(FRotator(0.0f, 90.0f, 0.0f));
+		}
 	}
 }
 

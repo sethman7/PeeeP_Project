@@ -9,6 +9,8 @@ UPPAnimInstance::UPPAnimInstance()
 {
 	MovingThreshould = 3.f;
 	JunpingThreshould = 100.f;
+
+	bIsDead = false;
 }
 
 void UPPAnimInstance::NativeInitializeAnimation()
@@ -18,6 +20,7 @@ void UPPAnimInstance::NativeInitializeAnimation()
 	Owner = Cast<ACharacter>(GetOwningActor());
 	if (Owner)
 	{
+		
 		Movement = Owner->GetCharacterMovement();
 	}
 }
@@ -33,7 +36,12 @@ void UPPAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 		bIsIdle = GroundSpeed < MovingThreshould;
 		bIsFalling = Movement->IsFalling();
 		bIsJumping = (Velocity.Z > JunpingThreshould) & bIsFalling;
-
+		bIsRunning = GroundSpeed > 100.0f;
 	}
 
+}
+
+void UPPAnimInstance::SetbIsDead(uint8 IsDead)
+{
+	bIsDead = IsDead;
 }

@@ -6,6 +6,7 @@
 #include "Components/BoxComponent.h"
 #include "Character/PPCharacterPlayer.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Engine/SkeletalMeshSocket.h"
 
 // Sets default values
 APPPunchTrap::APPPunchTrap()
@@ -15,12 +16,23 @@ APPPunchTrap::APPPunchTrap()
 
 	SkeletalMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Mesh"));
 	SetRootComponent(SkeletalMesh);
+	SkeletalMesh->SetRelativeRotation(FRotator(0.0f, 90.0f, 0.0f));
 
 	TriggerBox = CreateDefaultSubobject<UBoxComponent>(TEXT("Box Component"));
 	TriggerBox->SetupAttachment(SkeletalMesh, TEXT("Bone010Socket"));
 	TriggerBox->bDynamicObstacle = true;
 	TriggerBox->GetAttachParent();
-	TriggerBox->OnComponentBeginOverlap.AddDynamic(this, &APPPunchTrap::OnOverlapBegin);
+	/*TriggerBox->OnComponentBeginOverlap.AddDynamic(this, &APPPunchTrap::OnOverlapBegin);*/
+
+	DetectStartPosition = CreateDefaultSubobject<USceneComponent>(TEXT("Detect"));
+	DetectStartPosition->SetupAttachment(SkeletalMesh);
+	DetectStartPosition->SetRelativeRotation(FRotator(0.0f, -90.0f, 0.0f)); // 400
+
+	static ConstructorHelpers::FClassFinder<UAnimInstance> AnimInstanceClassRef(TEXT("/Game/Gimmik/PunchTrap/ABP_PunchTrap.ABP_PunchTrap_C"));
+	if (AnimInstanceClassRef.Class)
+	{
+		SkeletalMesh->SetAnimInstanceClass(AnimInstanceClassRef.Class);
+	}
 }
 
 // Called when the game starts or when spawned
@@ -35,17 +47,39 @@ void APPPunchTrap::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-}
+	FHitResult HitResult;
 
-void APPPunchTrap::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
-{
-	UE_LOG(LogTemp, Log, TEXT("Triggered!"));
-	APPCharacterPlayer* PlayerCharacter = Cast<APPCharacterPlayer>(OtherActor);
-	if (PlayerCharacter)
+	FVector StartPos = DetectStartPosition->GetComponentLocation();
+	FVector EndPos = StartPos + (DetectStartPosition->GetForwardVector() * 300.0f);
+	FVector HitBoxHalfExtent = FVector(50.0f, 30.0f, 30.0f);
+
+	FCollisionQueryParams CollisionParam(TEXT("Punch"), false, this);
+
+	bool bIsHit = GetWorld()->SweepSingleByChannel(HitResult, StartPos, EndPos, FQuat::Identity, ECC_GameTraceChannel6, FCollisionShape::MakeBox(HitBoxHalfExtent), CollisionParam);
+	if (bIsHit)
 	{
-		UE_LOG(LogTemp, Log, TEXT("Cast Completed!"));
-		PlayerCharacter->GetCharacterMovement()->AddImpulse(this->GetActorRightVector() * -500.0f, true);
-		PlayerCharacter->GetCharacterMovement()->AddImpulse(this->GetActorUpVector() * 300.0f, true);
+		APPCharacterPlayer* Player = Cast<APPCharacterPlayer>(HitResult.GetActor());
+		if (Player)
+		{
+			if (!SkeletalMesh->GetAnimInstance()->Montage_IsPlaying(JabMontage))
+			{
+				SkeletalMesh->GetAnimInstance()->Montage_Play(JabMontage, 1.0f);
+			}
+		}
 	}
+
+	//FVector Detect
 }
 
+//void APPPunchTrap::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+//{
+//	UE_LOG(LogTemp, Log, TEXT("Triggered!"));
+//	APPCharacterPlayer* PlayerCharacter = Cast<APPCharacterPlayer>(OtherActor);
+//	if (PlayerCharacter)
+//	{
+//		UE_LOG(LogTemp, Log, TEXT("Cast Completed!"));
+//		PlayerCharacter->GetCharacterMovement()->AddImpulse(this->GetActorRightVector() * -500.0f, true);
+//		PlayerCharacter->GetCharacterMovement()->AddImpulse(this->GetActorUpVector() * 300.0f, true);
+//	}
+//}
+//

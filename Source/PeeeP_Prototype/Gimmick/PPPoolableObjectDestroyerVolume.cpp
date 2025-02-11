@@ -16,6 +16,7 @@ APPPoolableObjectDestroyerVolume::APPPoolableObjectDestroyerVolume()
 	RootComponent = Trigger;
 
 	Trigger->OnComponentBeginOverlap.AddDynamic(this, &APPPoolableObjectDestroyerVolume::OnTriggered);
+	Trigger->SetCollisionProfileName(TEXT("PoolingObjectDestroy"));
 }
 
 // Called when the game starts or when spawned

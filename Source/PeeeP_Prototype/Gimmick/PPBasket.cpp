@@ -15,6 +15,7 @@ APPBasket::APPBasket()
 	Mesh->SetupAttachment(RootComponent);
 
 	Mesh->SetSimulatePhysics(true);
+	Mesh->SetCollisionObjectType(ECC_GameTraceChannel8);
 	//Mesh->SetMassScale(,10000.0f)
 }
 

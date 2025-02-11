@@ -47,7 +47,7 @@ void APP_ElectricMovingPlatform::Charge()
 
 	if (NewMaterial)
 	{
-		Mesh->SetMaterial(0, NewMaterial);
+		Mesh->SetMaterial(1, NewMaterial);
 	}
 
 	UE_LOG(LogTemp, Log, TEXT("Platform Charged!"));

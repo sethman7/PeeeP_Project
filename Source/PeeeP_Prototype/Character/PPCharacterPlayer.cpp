@@ -109,7 +109,7 @@ APPCharacterPlayer::APPCharacterPlayer()
 	}
 
 	// Camera
-	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));	// CameraBoom ì»´í¬?„Œ?Š¸ë¥? ê°?? ¸?˜´
+	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));	// CameraBoom ì»´í¬?ï¿½ï¿½?ï¿½ï¿½ï¿½? ï¿½??ï¿½ï¿½?ï¿½ï¿½
 	CameraBoom->SetupAttachment(RootComponent);
 	CameraBoom->TargetArmLength = 100.0f;
 	CameraBoom->bUsePawnControlRotation = true;
@@ -121,7 +121,7 @@ APPCharacterPlayer::APPCharacterPlayer()
 	CameraBoom->CameraLagMaxDistance = 500.f;
 	CameraBoom->ProbeSize = 8.0f;
 
-	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));	// FollowCamera ì»´í¬?„Œ?Š¸ë¥? ê°?? ¸?˜´
+	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));	// FollowCamera ì»´í¬?ï¿½ï¿½?ï¿½ï¿½ï¿½? ï¿½??ï¿½ï¿½?ï¿½ï¿½
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
 	FollowCamera->bUsePawnControlRotation = false;
 	FollowCamera->FieldOfView = 90.0f;
@@ -143,7 +143,7 @@ APPCharacterPlayer::APPCharacterPlayer()
 	PlayerEffectNiagaraComponent = CreateDefaultSubobject<UNiagaraComponent>(TEXT("PlayerEffectComponent"));
 	PlayerEffectNiagaraComponent->SetupAttachment(RootComponent);
 
-	// ?¸ë²¤í† ë¦? ì»´í¬?„Œ?Š¸
+	// ?ï¿½ï¿½ë²¤í† ï¿½? ì»´í¬?ï¿½ï¿½?ï¿½ï¿½
 	InventoryComponent = CreateDefaultSubobject<UPPInventoryComponent>(TEXT("InventoryComponent"));
 
 	AttachedMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("AttachedMesh"));
@@ -211,15 +211,15 @@ void APPCharacterPlayer::BeginPlay()
 
 	//Test_EquipGrabParts();
 
-	//// Parts ?„?‹œë¡? ?ƒ?„±??—?„œ ë¶??—¬?•¨
-	//// ?•´?‹¹ ë¶?ë¶„ì?? ?‚˜ì¤‘ì— ?¸ë²¤í† ë¦¬ì—?„œ ?°?´?„° ?´?š©?•´?„œ ?ŒŒì¸? ë³?ê²½í•˜?Š” ?•¨?ˆ˜ ?”°ë¡? ë§Œë“¤?–´?„œ ? ?š©?•˜ë©? ?  ?“¯
+	//// Parts ?ï¿½ï¿½?ï¿½ï¿½ï¿½? ?ï¿½ï¿½?ï¿½ï¿½?ï¿½ï¿½?ï¿½ï¿½?ï¿½ï¿½ ï¿½??ï¿½ï¿½?ï¿½ï¿½
+	//// ?ï¿½ï¿½?ï¿½ï¿½ ï¿½?ë¶„ï¿½?? ?ï¿½ï¿½ì¤‘ì— ?ï¿½ï¿½ë²¤í† ë¦¬ì—?ï¿½ï¿½ ?ï¿½ï¿½?ï¿½ï¿½?ï¿½ï¿½ ?ï¿½ï¿½?ï¿½ï¿½?ï¿½ï¿½?ï¿½ï¿½ ?ï¿½ï¿½ï¿½? ï¿½?ê²½í•˜?ï¿½ï¿½ ?ï¿½ï¿½?ï¿½ï¿½ ?ï¿½ï¿½ï¿½? ë§Œë“¤?ï¿½ï¿½?ï¿½ï¿½ ?ï¿½ï¿½?ï¿½ï¿½?ï¿½ï¿½ï¿½? ?ï¿½ï¿½ ?ï¿½ï¿½
 	//UActorComponent* PartsComponent = AddComponentByClass(UPPGrabParts::StaticClass(), true, FTransform::Identity, false);
 	//Parts = CastChecked<UPPPartsBase>(PartsComponent);
 }
 
 void APPCharacterPlayer::Tick(float DeltaTime)
 {
-	//Idle?ƒ?ƒœ?—?„œ?˜ ?”Œ? ˆ?´?–´ê°? ???ì§ì´?Š” actor????˜ ì¶©ëŒ?„ ë¬´ì‹œ?•˜ê²? ?˜ë²„ë ¤ ?‹¤?Œ ì½”ë“œë¥? ì¶”ê???•¨.
+	//Idle?ï¿½ï¿½?ï¿½ï¿½?ï¿½ï¿½?ï¿½ï¿½?ï¿½ï¿½ ?ï¿½ï¿½?ï¿½ï¿½?ï¿½ï¿½?ï¿½ï¿½ï¿½? ???ì§ì´?ï¿½ï¿½ actor????ï¿½ï¿½ ì¶©ëŒ?ï¿½ï¿½ ë¬´ì‹œ?ï¿½ï¿½ï¿½? ?ï¿½ï¿½ë²„ë ¤ ?ï¿½ï¿½?ï¿½ï¿½ ì½”ë“œï¿½? ì¶”ï¿½???ï¿½ï¿½.
 	FHitResult OutHit;
 	GetCharacterMovement()->SafeMoveUpdatedComponent(FVector(0.f, 0.f, 0.03f), GetActorRotation(), true, OutHit);
 	GetCharacterMovement()->SafeMoveUpdatedComponent(FVector(0.f, 0.f, -0.03f), GetActorRotation(), true, OutHit);
@@ -250,6 +250,8 @@ void APPCharacterPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 	// Open Menu
 	EnhancedInputComponent->BindAction(OpenMenuInteract, ETriggerEvent::Triggered, this, &APPCharacterPlayer::OpenMenu);
 
+	//EnhancedInputComponent->BindAction(RespawnTestInputAction, ETriggerEvent::Triggered, this, &APPCharacterPlayer::OnDeath); // í…ŒìŠ¤íŠ¸ìš©
+
 	// Electric Discharge Component
 	if (ElectricDischargeComponent)
 	{
@@ -271,7 +273,7 @@ void APPCharacterPlayer::OnBeginOverlap(UPrimitiveComponent* OverlappedComponent
 		FRotator Rotation = CleaingRobotRef->GetActorRotation();
 		FVector KnockbackVelocity = UKismetMathLibrary::GetForwardVector(Rotation) * CleaingRobotRef->KnockbackStrength;
 
-		// ?”Œ? ˆ?´?–´?—ê²? ?„‰ë°? ? ?š©
+		// ?ï¿½ï¿½?ï¿½ï¿½?ï¿½ï¿½?ï¿½ï¿½?ï¿½ï¿½ï¿½? ?ï¿½ï¿½ï¿½? ?ï¿½ï¿½?ï¿½ï¿½
 		LaunchCharacter(KnockbackVelocity, true, true);
 		ElectricDischargeComponent->ChargeElectric(CleaingRobotRef->ElectricLossRate);
 	}
@@ -438,7 +440,7 @@ void APPCharacterPlayer::PlayAnimation(UAnimMontage* InAnimMontage)
 	}
 }
 
-//ê·¸ë© ?• ?‹ˆë©”ì´?…˜ ?‘?™ ?›„, Notifyë¥? ?†µ?•´ ?˜¸ì¶œë¨. ê·¸ë©?— ?‹¿??? ?˜¤ë¸Œì ?Š¸ê°? ?ˆ?Š”ì§? ì²´í¬. 
+//ê·¸ë© ?ï¿½ï¿½?ï¿½ï¿½ë©”ì´?ï¿½ï¿½ ?ï¿½ï¿½?ï¿½ï¿½ ?ï¿½ï¿½, Notifyï¿½? ?ï¿½ï¿½?ï¿½ï¿½ ?ï¿½ï¿½ì¶œë¨. ê·¸ë©?ï¿½ï¿½ ?ï¿½ï¿½??? ?ï¿½ï¿½ë¸Œì ?ï¿½ï¿½ï¿½? ?ï¿½ï¿½?ï¿½ï¿½ï¿½? ì²´í¬. 
 void APPCharacterPlayer::GrabHitCheck()
 {
 	UPPGrabParts* GrabParts = Cast<UPPGrabParts>(Parts);
@@ -496,19 +498,19 @@ UPPInventoryComponent* APPCharacterPlayer::GetInventoryComponent()
 
 void APPCharacterPlayer::QuickSlotMove(const FInputActionValue& Value)
 {
-	// ë§ˆìš°?Š¤ ?œ  ?—…: ?–‘?ˆ˜, ë§ˆìš°?Š¤ ?œ  ?‹¤?š´: ?Œ?ˆ˜
+	// ë§ˆìš°?ï¿½ï¿½ ?ï¿½ï¿½ ?ï¿½ï¿½: ?ï¿½ï¿½?ï¿½ï¿½, ë§ˆìš°?ï¿½ï¿½ ?ï¿½ï¿½ ?ï¿½ï¿½?ï¿½ï¿½: ?ï¿½ï¿½?ï¿½ï¿½
 	float MoveDir = Value.Get<float>();
 
-	// ë§ˆìš°?Š¤ ?œ  ?—°?†?œ ?…? ¥ ë°©ì??
-	float InputInterval = 0.4f;	// ?‹¤?Œ ?¸?’‹ê¹Œì?? ê°„ê²©
+	// ë§ˆìš°?ï¿½ï¿½ ?ï¿½ï¿½ ?ï¿½ï¿½?ï¿½ï¿½?ï¿½ï¿½ ?ï¿½ï¿½?ï¿½ï¿½ ë°©ï¿½??
+	float InputInterval = 0.4f;	// ?ï¿½ï¿½?ï¿½ï¿½ ?ï¿½ï¿½?ï¿½ï¿½ê¹Œï¿½?? ê°„ê²©
 	if (bIsAllowWheelInput)
 	{
 		UE_LOG(LogTemp, Log, TEXT("Quick Slot Move: %f"), MoveDir);
 		bIsAllowWheelInput = false;
 		GetWorld()->GetTimerManager().SetTimer(QuickSlotMoveTimer, [&]() {bIsAllowWheelInput = true; }, InputInterval, false);
 
-		// ?Š¬ë¡? ???ì§ì„ êµ¬í˜„ë¶?
-		// ?Š¬ë¡??´ ì²˜ìŒ?´?‚˜ ??— ?‹¤?‹¤??„ ê²½ìš° ?™”?‚´?‘œ?Š” ?‚¬?¼ì§?ì§? ?•Šì§?ë§? ?”?´?ƒ ???ì§ì´ì§? ?•Š?•„?•¼ ?•¨.
+		// ?ï¿½ï¿½ï¿½? ???ì§ì„ êµ¬í˜„ï¿½?
+		// ?ï¿½ï¿½ï¿½??ï¿½ï¿½ ì²˜ìŒ?ï¿½ï¿½?ï¿½ï¿½ ?ï¿½ï¿½?ï¿½ï¿½ ?ï¿½ï¿½?ï¿½ï¿½?ï¿½ï¿½?ï¿½ï¿½ ê²½ìš° ?ï¿½ï¿½?ï¿½ï¿½?ï¿½ï¿½?ï¿½ï¿½ ?ï¿½ï¿½?ï¿½ï¿½ï¿½?ï¿½? ?ï¿½ï¿½ï¿½?ï¿½? ?ï¿½ï¿½?ï¿½ï¿½?ï¿½ï¿½ ???ì§ì´ï¿½? ?ï¿½ï¿½?ï¿½ï¿½?ï¿½ï¿½ ?ï¿½ï¿½.
 		if (MoveDir < 0)		// Wheel Down
 		{
 			InventoryComponent->ModifyCurrentSlotIndex(1);
@@ -524,16 +526,16 @@ void APPCharacterPlayer::QuickSlotUse(const FInputActionValue& Value)
 {
 	UE_LOG(LogTemp, Log, TEXT("Quick Slot Used!"));
 
-	// ?„ ?ƒ?œ ?Š¬ë¡? ?‚¬?š©ë¶?
-	// ë¯¸ì¥ì°? ?ƒ?ƒœ?—?„œ?Š” ?–´?– ?•œ ?ŒŒì¸?(?˜„?¬ ë³´ìœ ?•˜ê³? ?ˆ?Š”)ë¥? ?„ ?ƒ?•˜?”?¼?„ ? •?ƒ ì°©ìš©?´ ?˜?–´?•¼ ?•¨.
-	// ?´ë¯? ?¥ì°©í•˜ê³? ?ˆ?Š” ?ŒŒì¸ ë?? ?¬?„ ?ƒ ?•  ê²½ìš° ?¥ì°©í•˜ê³? ?ˆ?Š” ?ŒŒì¸ ë?? ?•´? œ?•´?•¼ ?•¨.
-	// ?ŒŒì¸ ë?? ?¥ì°©í•˜ê¸? ?œ„?•´?„œ?Š” ?˜„?¬ ?Š¬ë¡??˜ ?¸?±?Š¤ë¥? ?•Œ?•„?•¼ ê°??Š¥
+	// ?ï¿½ï¿½?ï¿½ï¿½?ï¿½ï¿½ ?ï¿½ï¿½ï¿½? ?ï¿½ï¿½?ï¿½ï¿½ï¿½?
+	// ë¯¸ì¥ï¿½? ?ï¿½ï¿½?ï¿½ï¿½?ï¿½ï¿½?ï¿½ï¿½?ï¿½ï¿½ ?ï¿½ï¿½?ï¿½ï¿½?ï¿½ï¿½ ?ï¿½ï¿½ï¿½?(?ï¿½ï¿½?ï¿½ï¿½ ë³´ìœ ?ï¿½ï¿½ï¿½? ?ï¿½ï¿½?ï¿½ï¿½)ï¿½? ?ï¿½ï¿½?ï¿½ï¿½?ï¿½ï¿½?ï¿½ï¿½?ï¿½ï¿½?ï¿½ï¿½ ?ï¿½ï¿½?ï¿½ï¿½ ì°©ìš©?ï¿½ï¿½ ?ï¿½ï¿½?ï¿½ï¿½?ï¿½ï¿½ ?ï¿½ï¿½.
+	// ?ï¿½ï¿½ï¿½? ?ï¿½ï¿½ì°©í•˜ï¿½? ?ï¿½ï¿½?ï¿½ï¿½ ?ï¿½ï¿½ì¸ ï¿½?? ?ï¿½ï¿½?ï¿½ï¿½?ï¿½ï¿½ ?ï¿½ï¿½ ê²½ìš° ?ï¿½ï¿½ì°©í•˜ï¿½? ?ï¿½ï¿½?ï¿½ï¿½ ?ï¿½ï¿½ì¸ ï¿½?? ?ï¿½ï¿½?ï¿½ï¿½?ï¿½ï¿½?ï¿½ï¿½ ?ï¿½ï¿½.
+	// ?ï¿½ï¿½ì¸ ï¿½?? ?ï¿½ï¿½ì°©í•˜ï¿½? ?ï¿½ï¿½?ï¿½ï¿½?ï¿½ï¿½?ï¿½ï¿½ ?ï¿½ï¿½?ï¿½ï¿½ ?ï¿½ï¿½ï¿½??ï¿½ï¿½ ?ï¿½ï¿½?ï¿½ï¿½?ï¿½ï¿½ï¿½? ?ï¿½ï¿½?ï¿½ï¿½?ï¿½ï¿½ ï¿½??ï¿½ï¿½
 
-	// ?…Œ?Š¤?Š¸ ë¶?ë¶?: ?Š¬ë¡? ?¸?±?Š¤ 0ë²ˆì˜ ?ŒŒì¸? ?Š¬ë¡? ????…?˜ ?•„?´?…œ?„ ?‚¬?š©?•´ ì£¼ì„¸?š”.
-	// ê²°ê³¼: ë¡œê·¸ ? •?ƒ ì¶œë ¥
+	// ?ï¿½ï¿½?ï¿½ï¿½?ï¿½ï¿½ ï¿½?ï¿½?: ?ï¿½ï¿½ï¿½? ?ï¿½ï¿½?ï¿½ï¿½?ï¿½ï¿½ 0ë²ˆì˜ ?ï¿½ï¿½ï¿½? ?ï¿½ï¿½ï¿½? ????ï¿½ï¿½?ï¿½ï¿½ ?ï¿½ï¿½?ï¿½ï¿½?ï¿½ï¿½?ï¿½ï¿½ ?ï¿½ï¿½?ï¿½ï¿½?ï¿½ï¿½ ì£¼ì„¸?ï¿½ï¿½.
+	// ê²°ê³¼: ë¡œê·¸ ?ï¿½ï¿½?ï¿½ï¿½ ì¶œë ¥
 	//InventoryComponent->UseItem(0, ESlotType::ST_InventoryParts);
 
-	// ?˜„?¬ ?„ ?ƒ?œ ?Š¬ë¡??„ ê¸°ë°˜?œ¼ë¡? ?•˜?—¬ ?•„?´?…œ ?‚¬?š©
+	// ?ï¿½ï¿½?ï¿½ï¿½ ?ï¿½ï¿½?ï¿½ï¿½?ï¿½ï¿½ ?ï¿½ï¿½ï¿½??ï¿½ï¿½ ê¸°ë°˜?ï¿½ï¿½ï¿½? ?ï¿½ï¿½?ï¿½ï¿½ ?ï¿½ï¿½?ï¿½ï¿½?ï¿½ï¿½ ?ï¿½ï¿½?ï¿½ï¿½
 	InventoryComponent->UseItemCurrentIndex(ESlotType::ST_InventoryParts);
 
 }

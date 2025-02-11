@@ -75,7 +75,7 @@ void APPGameModeBase::SetInitialSpawnLocation(APlayerController* PlayerControlle
 			APlayerStart* PlayerStart = Cast<APlayerStart>(FindPlayerStart(PlayerController));
 			if (IsValid(PlayerStart))
 			{
-				PlayerState->SetSpawnLocation(PlayerStart->GetActorLocation());
+				PlayerState->SetSpawnActorLocation(PlayerStart);
 			}
 		}
 	}

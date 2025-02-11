@@ -13,9 +13,8 @@
 #include "Interface/PPAnimationGrabInterface.h"
 #include "PPCharacterPlayer.generated.h"
 
-/**
- * 
- */
+DECLARE_DELEGATE_OneParam(FDeadEventDelegate, uint8)
+
 UCLASS()
 class PEEEP_PROTOTYPE_API APPCharacterPlayer : public APPCharacterBase, public IPPElectricHUDInterface, public IPPInventoryInterface, public IPPAnimationGrabInterface
 
@@ -25,7 +24,10 @@ class PEEEP_PROTOTYPE_API APPCharacterPlayer : public APPCharacterBase, public I
 public:
 	APPCharacterPlayer();
 	
-	void OnDeath();
+	void OnDeath(uint8 bIsDead);
+protected:
+	void PlayRespawnSequence();
+	FTimerHandle RespawnTimerHandle;
 
 protected:
 	virtual void BeginPlay() override;
@@ -144,6 +146,9 @@ protected:
 	float ChargeTime;
 
 public:
+	FDeadEventDelegate DeadEventDelegate;
+
+public:
 	// Getter
 	UPPElectricDischargeComponent* GetElectricDischargeComponent();
 
@@ -174,7 +179,6 @@ protected:
 
 	void OpenMenu();
 
-
 protected:	// Quick Slot Section
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class UInputAction> QuickSlotMoveAction;
@@ -191,6 +195,8 @@ protected:	// Quick Slot Section
 	void SetWheelInputAllow(bool Value);
 
 public:
-	/*UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, Meta = (AllowPrivateAccess = "true"))
-	TObjectPtr<class UInputAction> RespawnTestInputAction;*/
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, Meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class UInputAction> RespawnTestInputAction;
+
+	void SetElectricCapacity(float Amount);
 };

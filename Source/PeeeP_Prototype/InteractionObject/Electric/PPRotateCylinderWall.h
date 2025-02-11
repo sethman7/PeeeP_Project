@@ -4,10 +4,11 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "Interface/PPElectricObjectInterface.h"
 #include "PPRotateCylinderWall.generated.h"
 
 UCLASS()
-class PEEEP_PROTOTYPE_API APPRotateCylinderWall : public AActor
+class PEEEP_PROTOTYPE_API APPRotateCylinderWall : public AActor, public IPPElectricObjectInterface
 {
 	GENERATED_BODY()
 	
@@ -28,5 +29,7 @@ protected:
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
+
+	void Charge();
 
 };

@@ -95,8 +95,8 @@ void UPPElectricDischargeComponent::TickComponent(float DeltaTime, ELevelTick Ti
 		APPCharacterPlayer* OwnerCharacter = Cast<APPCharacterPlayer>(GetOwner());
 		if (IsValid(OwnerCharacter))
 		{
-			OwnerCharacter->OnDeath();
-			Reset();
+			OwnerCharacter->DeadEventDelegate.Execute(true);
+			//Reset();
 		}
 	}
 }
@@ -388,6 +388,11 @@ void UPPElectricDischargeComponent::ChargeElectric(float amount)
 		// UI�� ��ε�ĳ��Ʈ
 		BroadCastToUI();
 	}
+}
+
+void UPPElectricDischargeComponent::SetCurrentCapacity(float Amount)
+{
+	CurrentElectricCapacity = Amount;
 }
 
 void UPPElectricDischargeComponent::BroadCastToUI()

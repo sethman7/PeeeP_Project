@@ -14,7 +14,6 @@ enum class EDischargeMode : uint8
 	Capsule
 };
 
-
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class PEEEP_PROTOTYPE_API UPPElectricDischargeComponent : public UActorComponent
 {
@@ -98,10 +97,10 @@ public:
 
 	// ������Ʈ(�÷��̾�) ���� ���� �Լ�
 	void ChargeElectric(float amount);
+	void SetCurrentCapacity(float Amount);
 
 	void Reset();
 
-private:
+public:
 	void BroadCastToUI();
-
 };

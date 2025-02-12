@@ -25,10 +25,13 @@ public:
     class UBoxComponent* CollisionBox;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Interaction")
-    class APPMovingPlate* MovingPlate; // 발판을 참조하는 변수 추가
+    class APPMovingPlate* MovingPlate;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Interaction")
-    class APPDoor* Door; // 도어를 참조하는 변수 추가
+    class APPDoor* Door;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Interaction")
+    class APPCrane* Crane;
 
 private:
     UFUNCTION()
@@ -36,4 +39,10 @@ private:
 
     UFUNCTION()
     void OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+
+    AActor* OverlappedActorRef = nullptr;
+    FTimerHandle PickupTimerHandle;
+
+    UFUNCTION()
+    void DelayedPickup();
 };

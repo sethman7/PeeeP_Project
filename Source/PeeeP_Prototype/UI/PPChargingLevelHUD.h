@@ -37,6 +37,6 @@ protected:
 
 public:
 	void SetChargingCapacityAmount(int LevelOfBar, float Rate);
-
+	void SetGaugeGlowEffectVisible(bool bFlag);
 	void SetWidgetVisible(bool Flag);
 };

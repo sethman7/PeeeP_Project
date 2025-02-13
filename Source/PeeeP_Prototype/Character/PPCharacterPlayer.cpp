@@ -28,6 +28,7 @@
 #include "Animation/PPAnimInstance.h"
 #include "Components/WidgetComponent.h"
 #include "UI/PPChargingLevelHUD.h"
+#include "Kismet/GameplayStatics.h"
 
 APPCharacterPlayer::APPCharacterPlayer()
 {
@@ -230,8 +231,6 @@ void APPCharacterPlayer::BeginPlay()
 	}
 
 	DeadEventDelegate.BindUObject(this, &APPCharacterPlayer::OnDeath);
-
-
 
 	//Test_EquipGrabParts();
 
@@ -550,13 +549,12 @@ void APPCharacterPlayer::QuickSlotUse(const FInputActionValue& Value)
 {
 	UE_LOG(LogTemp, Log, TEXT("Quick Slot Used!"));
 
-	// ?��?��?�� ?���? ?��?���?
-	// 미장�? ?��?��?��?��?�� ?��?��?�� ?���?(?��?�� 보유?���? ?��?��)�? ?��?��?��?��?��?�� ?��?�� 착용?�� ?��?��?�� ?��.
-	// ?���? ?��착하�? ?��?�� ?��츠�?? ?��?��?�� ?�� 경우 ?��착하�? ?��?�� ?��츠�?? ?��?��?��?�� ?��.
-	// ?��츠�?? ?��착하�? ?��?��?��?�� ?��?�� ?���??�� ?��?��?���? ?��?��?�� �??��
-
-	// ?��?��?�� �?�?: ?���? ?��?��?�� 0번의 ?���? ?���? ????��?�� ?��?��?��?�� ?��?��?�� 주세?��.
-	// 결과: 로그 ?��?�� 출력
+	// 선택된 슬롯 사용부
+	// 미장착 상태에서는 어떠한 파츠(현재 보유하고 있는)를 선택하더라도 정상 착용이 되어야 함.
+	// 이미 장착하고 있는 파츠를 재선택 할 경우 장착하고 있는 파츠를 해제해야 함.
+	// 파츠를 장착하기 위해서는 현재 슬롯의 인덱스를 알아야 가능
+	// 테스트 부분: 슬롯 인덱스 0번의 파츠 슬롯 타입의 아이템을 사용해 주세요.
+	// 결과: 로그 정상 출력
 	//InventoryComponent->UseItem(0, ESlotType::ST_InventoryParts);
 
 	// ?��?�� ?��?��?�� ?���??�� 기반?���? ?��?�� ?��?��?�� ?��?��
@@ -567,6 +565,25 @@ void APPCharacterPlayer::QuickSlotUse(const FInputActionValue& Value)
 void APPCharacterPlayer::SetWheelInputAllow(bool Value)
 {
 	bIsAllowWheelInput = Value;
+}
+
+void APPCharacterPlayer::PlayEquipEffect()
+{
+	if (nullptr != EquipmentEffect)
+	{
+		if (PlayerEffectNiagaraComponent->GetAsset() != EquipmentEffect)
+		{
+			PlayerEffectNiagaraComponent->SetAsset(EquipmentEffect);
+			PlayerEffectNiagaraComponent->SetRelativeLocationAndRotation(FVector::ZeroVector, FRotator::ZeroRotator);
+		}
+		PlayerEffectNiagaraComponent->SetRelativeLocationAndRotation(FVector::ZeroVector, FRotator::ZeroRotator);
+		PlayerEffectNiagaraComponent->Activate(true);
+	}
+
+	if (nullptr != EquipmentSound)
+	{
+		UGameplayStatics::PlaySound2D(GetWorld(), EquipmentSound, 1.0f, 1.0f);
+	}
 }
 
 void APPCharacterPlayer::SetElectricCapacity(float Amount)

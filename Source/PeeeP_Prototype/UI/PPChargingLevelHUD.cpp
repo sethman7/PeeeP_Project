@@ -80,6 +80,22 @@ void UPPChargingLevelHUD::SetChargingCapacityAmount(int LevelOfBar, float Rate)
 	}
 }
 
+void UPPChargingLevelHUD::SetGaugeGlowEffectVisible(bool bFlag)
+{
+	if (bFlag)
+	{
+		Level1Glow->SetVisibility(ESlateVisibility::Visible);
+		Level2Glow->SetVisibility(ESlateVisibility::Visible);
+		Level3Glow->SetVisibility(ESlateVisibility::Visible);
+	}
+	else
+	{
+		Level1Glow->SetVisibility(ESlateVisibility::Hidden);
+		Level2Glow->SetVisibility(ESlateVisibility::Hidden);
+		Level3Glow->SetVisibility(ESlateVisibility::Hidden);
+	}
+}
+
 void UPPChargingLevelHUD::SetWidgetVisible(bool Flag)
 {
 	if (Flag)

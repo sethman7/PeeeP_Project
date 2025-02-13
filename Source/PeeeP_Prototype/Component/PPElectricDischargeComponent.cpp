@@ -26,6 +26,7 @@ UPPElectricDischargeComponent::UPPElectricDischargeComponent()
 	DischargeMode = EDischargeMode::Sphere;
 	MaxChargingTime = 3.0f;
 	CurrentChargingTime = 0.0f;
+	CurrentChargingAmount = 0.0f;
 	RechargingDelay = 1.0f;
 	MoveSpeedReductionRate = 0.5f;
 	CurrentChargeLevel = 0;
@@ -75,7 +76,7 @@ void UPPElectricDischargeComponent::PlayChargeLevelSound()
 	{
 		if (nullptr != ChargeLevelSound)
 		{
-			UGameplayStatics::PlaySound2D(GetWorld(), ChargeLevelSound, 1.0f, 0.33f * (float)TempChargeLevel);
+			UGameplayStatics::PlaySound2D(GetWorld(), ChargeLevelSound, 0.75f, 0.3f * (float)CurrentChargeLevel);
 		}
 		TempChargeLevel = CurrentChargeLevel;
 	}
@@ -109,7 +110,7 @@ void UPPElectricDischargeComponent::Charging()
 	if (!bChargingEnable)
 	{
 		UE_LOG(LogTemp, Log, TEXT("Not Enough Electric."));
-
+		
 		// 1.0�� �� �ڵ����� Discharge
 		if ((!AutoDischargeTimeHandler.IsValid()) && bChargeStart)
 		{
@@ -142,8 +143,6 @@ void UPPElectricDischargeComponent::Charging()
 		}
 	}
 
-	PlayChargeLevelSound();
-
 	if (CurrentChargeLevel >= MaxChargeLevel)
 	{
 		// 1.0�� �� �ڵ����� DisCharge
@@ -158,26 +157,27 @@ void UPPElectricDischargeComponent::Charging()
 	float DeltaTime = GetWorld()->GetDeltaSeconds();
 
 	CurrentChargingTime += DeltaTime;
-	// ��¡ ���� ��� ����ؼ� ���� ���� �������� ����
 	CurrentElectricCapacity -= DeltaTime;
 
 	CurrentChargingTime = FMath::Clamp(CurrentChargingTime, 0, MaxChargingTime);
 	CurrentElectricCapacity = FMath::Clamp(CurrentElectricCapacity, 0, MaxElectricCapacity);
 
-	// UI�� ��ε�ĳ��Ʈ
+	// UI and SFX
 	BroadCastToUI();
 
 	int32 IntCurrentChargingTime = FMath::TruncToInt(CurrentChargingTime);
-
 
 	if (CurrentChargeLevel < IntCurrentChargingTime)
 	{
 		// Set Current Charge Level from CurrentChargingTime
 		CurrentChargeLevel = IntCurrentChargingTime;
+		CurrentChargingTime = FMath::TruncToInt(CurrentChargingTime);
 	}
 
-	SetChargingEnable();
+	PlayChargeLevelSound();
 
+	SetChargingEnable();
+	
 	if (ChargingEffect != nullptr)
 	{
 		UE_LOG(LogTemp, Log, TEXT("ChargingEffect Is Valid"));
@@ -337,8 +337,6 @@ void UPPElectricDischargeComponent::ChangeDischargeMode()
 
 void UPPElectricDischargeComponent::SetChargingEnable()
 {
-	
-
 	if (CurrentChargeLevel != 0)
 	{
 		if (CurrentElectricCapacity + FMath::Fmod(CurrentChargingTime, CurrentChargeLevel) < ThresholdChargeLevel * RequireCapacityForNextLevel)
@@ -438,6 +436,7 @@ void UPPElectricDischargeComponent::SetElectricLevelHUDVisible(bool bFlag)
 			for (int i = 1; i <= 3; i++)
 			{
 				OwnerCharacter->GetElectricChargingLevelWidget()->SetChargingCapacityAmount(i, 0.0f);
+				OwnerCharacter->GetElectricChargingLevelWidget()->SetGaugeGlowEffectVisible(false);
 			}
 		}
 	}

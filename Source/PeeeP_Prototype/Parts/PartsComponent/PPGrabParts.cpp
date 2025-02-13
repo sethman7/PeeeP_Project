@@ -71,7 +71,7 @@ void UPPGrabParts::OnComponentCreated()
                 Subsystem->AddMappingContext(GrabPartsData->PartsMappingContext, 1);
                 UEnhancedInputComponent* EnhancedInputComponent = CastChecked<UEnhancedInputComponent>(PlayerController->InputComponent);
 
-                EnhancedInputComponent->BindAction(GrabPartsData->GrabAction, ETriggerEvent::Triggered, this, &UPPGrabParts::HandleGrabAnimation);
+                EnhancedInputComponent->BindAction(GrabPartsData->GrabAction, ETriggerEvent::Started, this, &UPPGrabParts::HandleGrabAnimation);
                 EnhancedInputComponent->BindAction(GrabPartsData->GrabAction, ETriggerEvent::Completed, this, &UPPGrabParts::GrabRelease);
             }
         }
@@ -106,7 +106,11 @@ void UPPGrabParts::TickComponent(float DeltaTime, ELevelTick TickType, FActorCom
 
 void UPPGrabParts::HandleGrabAnimation()
 {
-	Owner->PlayAnimation(GrabAnimMontage);
+	if (!IsGrabbed)
+	{
+		Owner->PlayAnimation(GrabAnimMontage);
+	}
+	
 }
 
 void UPPGrabParts::Grab(FHitResult& InHitResult)
@@ -120,11 +124,14 @@ void UPPGrabParts::Grab(FHitResult& InHitResult)
 // 그랩 끝날 때 작동
 void UPPGrabParts::GrabRelease()
 {	
-	UE_LOG(LogTemp, Log, TEXT("Grab End"));
-	IsGrabbed = false;
-	if (GrabHandle->GetGrabbedComponent())
+	if (IsGrabbed)
 	{
-		GrabHandle->ReleaseComponent();
+		UE_LOG(LogTemp, Log, TEXT("Grab End"));
+		IsGrabbed = false;
+		if (GrabHandle->GetGrabbedComponent())
+		{
+			GrabHandle->ReleaseComponent();
+		}
 	}
 }
 

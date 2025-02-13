@@ -30,6 +30,8 @@ protected:
 	EDischargeMode DischargeMode;
 
 	float CurrentChargingTime;
+	// Current Charging Amount(by Time)
+	float CurrentChargingAmount;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	float MaxChargingTime;

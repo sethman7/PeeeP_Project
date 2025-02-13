@@ -14,6 +14,7 @@
 #include "Sound/SoundBase.h"
 #include "Kismet/GameplayStatics.h"
 #include "Components/AudioComponent.h"
+#include "UI/PPChargingLevelHUD.h"
 
 // Sets default values for this component's properties
 UPPElectricDischargeComponent::UPPElectricDischargeComponent()
@@ -25,6 +26,7 @@ UPPElectricDischargeComponent::UPPElectricDischargeComponent()
 	DischargeMode = EDischargeMode::Sphere;
 	MaxChargingTime = 3.0f;
 	CurrentChargingTime = 0.0f;
+	CurrentChargingAmount = 0.0f;
 	RechargingDelay = 1.0f;
 	MoveSpeedReductionRate = 0.5f;
 	CurrentChargeLevel = 0;
@@ -74,7 +76,7 @@ void UPPElectricDischargeComponent::PlayChargeLevelSound()
 	{
 		if (nullptr != ChargeLevelSound)
 		{
-			UGameplayStatics::PlaySound2D(GetWorld(), ChargeLevelSound, 1.0f, 0.33f * (float)TempChargeLevel);
+			UGameplayStatics::PlaySound2D(GetWorld(), ChargeLevelSound, 0.75f, 0.3f * (float)CurrentChargeLevel);
 		}
 		TempChargeLevel = CurrentChargeLevel;
 	}
@@ -108,7 +110,7 @@ void UPPElectricDischargeComponent::Charging()
 	if (!bChargingEnable)
 	{
 		UE_LOG(LogTemp, Log, TEXT("Not Enough Electric."));
-
+		
 		// 1.0�� �� �ڵ����� Discharge
 		if ((!AutoDischargeTimeHandler.IsValid()) && bChargeStart)
 		{
@@ -124,9 +126,12 @@ void UPPElectricDischargeComponent::Charging()
 		if (OwnerCharacter)
 		{
 			OwnerCharacter->ReduationMaxWalkSpeedRatio(MoveSpeedReductionRate);
+			// Set Visible Level Gauge
+			OwnerCharacter->GetElectricChargingLevelWidget()->SetVisibility(ESlateVisibility::Visible);
 		}
 
 		bChargeStart = true;
+
 
 		// Play Charge Sound Here
 		if (ChargeSound != nullptr)
@@ -137,8 +142,6 @@ void UPPElectricDischargeComponent::Charging()
 			ElectricSoundComponent->Play();
 		}
 	}
-
-	PlayChargeLevelSound();
 
 	if (CurrentChargeLevel >= MaxChargeLevel)
 	{
@@ -154,26 +157,27 @@ void UPPElectricDischargeComponent::Charging()
 	float DeltaTime = GetWorld()->GetDeltaSeconds();
 
 	CurrentChargingTime += DeltaTime;
-	// ��¡ ���� ��� ����ؼ� ���� ���� �������� ����
 	CurrentElectricCapacity -= DeltaTime;
 
 	CurrentChargingTime = FMath::Clamp(CurrentChargingTime, 0, MaxChargingTime);
 	CurrentElectricCapacity = FMath::Clamp(CurrentElectricCapacity, 0, MaxElectricCapacity);
 
-	// UI�� ��ε�ĳ��Ʈ
+	// UI and SFX
 	BroadCastToUI();
 
 	int32 IntCurrentChargingTime = FMath::TruncToInt(CurrentChargingTime);
-
 
 	if (CurrentChargeLevel < IntCurrentChargingTime)
 	{
 		// Set Current Charge Level from CurrentChargingTime
 		CurrentChargeLevel = IntCurrentChargingTime;
+		CurrentChargingTime = FMath::TruncToInt(CurrentChargingTime);
 	}
 
-	SetChargingEnable();
+	PlayChargeLevelSound();
 
+	SetChargingEnable();
+	
 	if (ChargingEffect != nullptr)
 	{
 		UE_LOG(LogTemp, Log, TEXT("ChargingEffect Is Valid"));
@@ -312,7 +316,7 @@ void UPPElectricDischargeComponent::Discharge()
 	GetWorld()->GetTimerManager().ClearTimer(AutoDischargeTimeHandler);
 
 	GetWorld()->GetTimerManager().SetTimer(RechargingDelayTimeHandler, this, &UPPElectricDischargeComponent::SetChargingEnable, RechargingDelay, false);
-
+	GetWorld()->GetTimerManager().SetTimer(ElectricLevelHUDTimeHandler, FTimerDelegate::CreateLambda([this]() {SetElectricLevelHUDVisible(false); }), 1.0f, false);
 }
 
 void UPPElectricDischargeComponent::ChangeDischargeMode()
@@ -348,6 +352,7 @@ void UPPElectricDischargeComponent::SetChargingEnable()
 		UE_LOG(LogTemp, Warning, TEXT("SetChargingEnable False"));
 		return;
 	}
+	
 	bChargingEnable = true;
 }
 
@@ -399,6 +404,7 @@ void UPPElectricDischargeComponent::BroadCastToUI()
 {
 	// ���� ���� �뷮�� ������ ����� UI�� ����� �� �ְ� ��ε� ĳ��Ʈ
 	float CurrentElectircCapacityRate = FMath::Clamp((CurrentElectricCapacity / MaxElectricCapacity), 0, 1);
+	float CurrentElectricCapacityRatePerLevel = FMath::Clamp(CurrentChargingTime - CurrentChargeLevel, 0, 1);
 	IPPElectricHUDInterface* ElectircHUDInterface = Cast<IPPElectricHUDInterface>(GetOwner());
 	if (ElectircHUDInterface)
 	{
@@ -407,6 +413,31 @@ void UPPElectricDischargeComponent::BroadCastToUI()
 		{
 			UE_LOG(LogTemp, Log, TEXT("Succeessed to Bound ElectircCapacityDelegate."));
 			ElectircHUDInterface->ElectircCapacityDelegate.Broadcast(CurrentElectircCapacityRate);
+		}
+		if (ElectircHUDInterface->ChargingLevelDelegate.IsBound())	// Level Gauge
+		{
+			ElectircHUDInterface->ChargingLevelDelegate.Broadcast(CurrentChargeLevel + 1, CurrentElectricCapacityRatePerLevel);
+		}
+	}
+}
+
+void UPPElectricDischargeComponent::SetElectricLevelHUDVisible(bool bFlag)
+{
+	APPCharacterPlayer* OwnerCharacter = Cast<APPCharacterPlayer>(GetOwner());
+	if (OwnerCharacter)
+	{
+		if (bFlag)
+		{
+			OwnerCharacter->GetElectricChargingLevelWidget()->SetVisibility(ESlateVisibility::Visible);
+		}
+		else
+		{
+			OwnerCharacter->GetElectricChargingLevelWidget()->SetVisibility(ESlateVisibility::Hidden);
+			for (int i = 1; i <= 3; i++)
+			{
+				OwnerCharacter->GetElectricChargingLevelWidget()->SetChargingCapacityAmount(i, 0.0f);
+				OwnerCharacter->GetElectricChargingLevelWidget()->SetGaugeGlowEffectVisible(false);
+			}
 		}
 	}
 }
@@ -424,6 +455,7 @@ void UPPElectricDischargeComponent::Reset()
 
 	GetWorld()->GetTimerManager().ClearTimer(AutoDischargeTimeHandler);
 	GetWorld()->GetTimerManager().ClearTimer(RechargingDelayTimeHandler);
+	GetWorld()->GetTimerManager().ClearTimer(ElectricLevelHUDTimeHandler);
 
 	BroadCastToUI();
 }

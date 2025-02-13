@@ -42,7 +42,6 @@ protected:
 	UPROPERTY(EditAnywhere)
 	TObjectPtr<class UCharacterMovementComponent> CharacterMovementComponent;
 
-
 	UFUNCTION()
 	void OnBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
@@ -123,6 +122,8 @@ public:
 
 	void RemoveParts();
 
+	UPPPartsBase* GetParts() const { return Parts; }
+
 	void Test_EquipGrabParts();
 
 	virtual void GrabHitCheck() override;
@@ -143,6 +144,12 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Effect)
 	TObjectPtr<class UNiagaraComponent> PlayerEffectNiagaraComponent;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Electric)
+	TObjectPtr<class UWidgetComponent> ElectricChargingLevelWidgetComponent;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Electric)
+	TObjectPtr<class UPPChargingLevelHUD> ElectricChargingLevelWidget;
+
 	float ChargeTime;
 
 public:
@@ -151,6 +158,8 @@ public:
 public:
 	// Getter
 	UPPElectricDischargeComponent* GetElectricDischargeComponent();
+	UWidgetComponent* GetElectricChargingLevelWidgetComponent();
+	UPPChargingLevelHUD* GetElectricChargingLevelWidget();
 
 protected:
 	//InventoryComponent
@@ -168,10 +177,6 @@ public:
 	// InventoryComponent(IPPInventoryInterface에 의해)
 	virtual class UPPInventoryComponent* GetInventoryComponent() override;
 
-//protected:
-//	UPROPERTY()
-//	TObjectPtr<class UAudioComponent>
-
 protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, Meta = (AllowPrivateAccess = "true"))
@@ -186,6 +191,12 @@ protected:	// Quick Slot Section
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class UInputAction> QuickSlotUseAction;
 
+	UPROPERTY(EditAnywhere, Category = Effect)
+	TObjectPtr<class UNiagaraSystem> EquipmentEffect;
+
+	UPROPERTY(EditAnywhere, Category = Effect)
+	TObjectPtr<class USoundBase> EquipmentSound;
+
 	FTimerHandle QuickSlotMoveTimer;
 	bool bIsAllowWheelInput;
 
@@ -199,4 +210,6 @@ public:
 	TObjectPtr<class UInputAction> RespawnTestInputAction;
 
 	void SetElectricCapacity(float Amount);
+
+	void PlayEquipEffect();
 };

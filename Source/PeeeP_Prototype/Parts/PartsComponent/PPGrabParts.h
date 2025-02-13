@@ -22,9 +22,9 @@ public:
 	
 	void Grab(FHitResult& InHitResult);
 	void SetIsGrabbed(bool b) { IsGrabbed = b; }
+	bool GetIsGrabbed() const { return IsGrabbed; }
 
 	virtual void OnComponentCreated() override;
-
 
 protected:
 	virtual void BeginPlay() override;

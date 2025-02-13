@@ -30,12 +30,15 @@ protected:
 	EDischargeMode DischargeMode;
 
 	float CurrentChargingTime;
+	// Current Charging Amount(by Time)
+	float CurrentChargingAmount;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	float MaxChargingTime;
 
 	FTimerHandle AutoDischargeTimeHandler;
 	FTimerHandle RechargingDelayTimeHandler;
+	FTimerHandle ElectricLevelHUDTimeHandler;
 
 	float RechargingDelay;
 	float MoveSpeedReductionRate;
@@ -103,4 +106,7 @@ public:
 
 public:
 	void BroadCastToUI();
+
+protected:
+	void SetElectricLevelHUDVisible(bool bFlag);
 };

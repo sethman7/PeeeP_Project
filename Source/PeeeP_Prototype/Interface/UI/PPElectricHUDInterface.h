@@ -7,6 +7,7 @@
 #include "PPElectricHUDInterface.generated.h"
 
 DECLARE_MULTICAST_DELEGATE_OneParam(FUsingElectricDelegate, float)
+DECLARE_MULTICAST_DELEGATE_TwoParams(FChargingLevelDelegate, int, float)
 DECLARE_MULTICAST_DELEGATE_OneParam(FShowKeyManualDelegate, uint32)
 
 // This class does not need to be modified.
@@ -28,6 +29,9 @@ public:
 	// 전기량이 변화할 때 사용하는 델리게이트
 	FUsingElectricDelegate ElectircCapacityDelegate;
 
-	// UI 이미지 변경 테스트
+	// 충전된 양에 따라 게이지를 처리할 때 사용하는 델리게이트
+	FChargingLevelDelegate ChargingLevelDelegate;
+
+	// UI 이미지 변경
 	FShowKeyManualDelegate ShowKeyManualDelegate;
 };

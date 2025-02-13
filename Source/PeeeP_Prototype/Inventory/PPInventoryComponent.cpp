@@ -226,10 +226,11 @@ void UPPInventoryComponent::UseItemCurrentIndex(ESlotType InventoryType)
 
 				UE_LOG(LogTemp, Log, TEXT("Parts Item Attached: %d Slot"), CurrentSlotIndex);
 			}
-
+			Player->PlayEquipEffect();
 		}
 		break;
 	}
+	
 }
 
 void UPPInventoryComponent::RemoveItem(int32 InSlotIndex, ESlotType InventoryType)

@@ -60,7 +60,10 @@ void APPGameModeBase::MoveCharacterToSpawnLocation(APPCharacterPlayer* Character
 		AController* Controller = Character->GetController();
 		if (IsValid(Controller))
 		{
-			Controller->SetControlRotation(FRotator(0.0f, 90.0f, 0.0f));
+			FVector CharacterForwardVector = Character->GetActorForwardVector();
+			float Yaw = FMath::Atan2(CharacterForwardVector.Y, CharacterForwardVector.X) * (180.0f/PI);
+
+			Controller->SetControlRotation(FRotator(0.0f, Yaw, 0.0f));
 		}
 	}
 }

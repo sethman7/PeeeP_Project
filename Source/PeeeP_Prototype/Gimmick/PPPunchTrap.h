@@ -23,9 +23,6 @@ protected:
 	TObjectPtr<class USkeletalMeshComponent> SkeletalMesh;
 
 	UPROPERTY(EditAnywhere)
-	TObjectPtr<class UBoxComponent> TriggerBox;
-
-	UPROPERTY(EditAnywhere)
 	TObjectPtr<class USceneComponent> DetectStartPosition;
 
 	UPROPERTY(EditAnywhere)

@@ -18,12 +18,6 @@ APPPunchTrap::APPPunchTrap()
 	SetRootComponent(SkeletalMesh);
 	SkeletalMesh->SetRelativeRotation(FRotator(0.0f, 90.0f, 0.0f));
 
-	TriggerBox = CreateDefaultSubobject<UBoxComponent>(TEXT("Box Component"));
-	TriggerBox->SetupAttachment(SkeletalMesh, TEXT("Bone010Socket"));
-	TriggerBox->bDynamicObstacle = true;
-	TriggerBox->GetAttachParent();
-	/*TriggerBox->OnComponentBeginOverlap.AddDynamic(this, &APPPunchTrap::OnOverlapBegin);*/
-
 	DetectStartPosition = CreateDefaultSubobject<USceneComponent>(TEXT("Detect"));
 	DetectStartPosition->SetupAttachment(SkeletalMesh);
 	DetectStartPosition->SetRelativeRotation(FRotator(0.0f, -90.0f, 0.0f)); // 400
@@ -70,16 +64,3 @@ void APPPunchTrap::Tick(float DeltaTime)
 
 	//FVector Detect
 }
-
-//void APPPunchTrap::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
-//{
-//	UE_LOG(LogTemp, Log, TEXT("Triggered!"));
-//	APPCharacterPlayer* PlayerCharacter = Cast<APPCharacterPlayer>(OtherActor);
-//	if (PlayerCharacter)
-//	{
-//		UE_LOG(LogTemp, Log, TEXT("Cast Completed!"));
-//		PlayerCharacter->GetCharacterMovement()->AddImpulse(this->GetActorRightVector() * -500.0f, true);
-//		PlayerCharacter->GetCharacterMovement()->AddImpulse(this->GetActorUpVector() * 300.0f, true);
-//	}
-//}
-//

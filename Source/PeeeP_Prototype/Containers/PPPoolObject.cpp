@@ -18,6 +18,11 @@ AActor* UPPPoolObject::GetPoolObject()
 		if (PoolingObjectClass)
 		{
 			AActor* PoolableObject = GetWorld()->SpawnActor<AActor>(PoolingObjectClass, FVector::ZeroVector, FRotator::ZeroRotator);
+			IPPPoolableInterface* PoolingActor = Cast<IPPPoolableInterface>(PoolableObject);
+			if (PoolingActor)
+			{
+				PoolingActor->SetObjectPool(this);
+			}
 			PoolableObject->SetActorHiddenInGame(true);
 			return PoolableObject;
 		}

@@ -44,7 +44,7 @@ void APPAutoSpawner::SpawnPoolingActor()
 	AActor* SpawnedActor = PoolObject->GetPoolObject();
 	IPPPoolableInterface* PoolableActor = CastChecked<IPPPoolableInterface>(SpawnedActor);
 
-	SpawnedActor->SetActorLocation(this->GetActorLocation());
+	SpawnedActor->SetActorLocationAndRotation(this->GetActorLocation(), FRotator::ZeroRotator);
 	PoolableActor->SetActive(true);
 }
 

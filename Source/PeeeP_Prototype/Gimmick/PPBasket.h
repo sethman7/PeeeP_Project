@@ -33,6 +33,5 @@ public:
 
 private:
 
-	bool bIsActive;
 	class UPPPoolObject* ObjectPool;
 };

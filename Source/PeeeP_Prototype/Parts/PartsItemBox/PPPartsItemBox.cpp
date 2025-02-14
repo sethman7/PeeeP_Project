@@ -4,6 +4,7 @@
 #include "Parts/PartsItemBox/PPPartsItemBox.h"
 #include "Components/BoxComponent.h"
 #include "Character/PPCharacterPlayer.h"
+#include "Kismet/GameplayStatics.h"
 
 // Sets default values
 APPPartsItemBox::APPPartsItemBox()
@@ -53,6 +54,11 @@ void APPPartsItemBox::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor
 			InventoryComponent = player->GetInventoryComponent();
 			int32 TempOutItemQuntity = 0;
 			InventoryComponent->AddItem(PartsClassName, 1, TempOutItemQuntity);
+
+			if (nullptr != EarnSound)
+			{
+				UGameplayStatics::PlaySound2D(GetWorld(), EarnSound, 0.75f);
+			}
 
 			Destroy();
 		}

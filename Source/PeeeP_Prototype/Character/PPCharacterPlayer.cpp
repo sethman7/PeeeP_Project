@@ -183,12 +183,14 @@ void APPCharacterPlayer::OnDeath(uint8 bIsDead)
 				InventoryComponent->ClearUsingItem();
 				RemoveParts();
 				PlayEquipEffect();
-				
+				PlayDeadSound();
+
 				if (IsValid(PlayerController))
 				{
 					this->DisableInput(PlayerController);
 				}
 				GetWorldTimerManager().SetTimer(RespawnTimerHandle, this, &APPCharacterPlayer::PlayRespawnSequence, 2.25f, false);
+				
 			}
 		}
 		else
@@ -199,6 +201,7 @@ void APPCharacterPlayer::OnDeath(uint8 bIsDead)
 			}
 		}
 	}
+	
 }
 
 void APPCharacterPlayer::PlayRespawnSequence()
@@ -303,7 +306,7 @@ void APPCharacterPlayer::OnBeginOverlap(UPrimitiveComponent* OverlappedComponent
 
 		// ?��?��?��?��?���? ?���? ?��?��
 		LaunchCharacter(KnockbackVelocity, true, true);
-		ElectricDischargeComponent->ChargeElectric(CleaingRobotRef->ElectricLossRate);
+		ElectricDischargeComponent->AddCurrentCapacity(CleaingRobotRef->ElectricLossRate);
 	}
 }
 
@@ -598,10 +601,22 @@ void APPCharacterPlayer::PlayEquipEffect()
 	}
 }
 
+void APPCharacterPlayer::PlayDeadSound()
+{
+	if (nullptr != DeadSound)
+	{
+		UGameplayStatics::PlaySound2D(GetWorld(), DeadSound);
+	}
+}
+
+void APPCharacterPlayer::TakeDamage(float Amount)
+{
+	ElectricDischargeComponent->AddCurrentCapacity(-Amount);
+}
+
 void APPCharacterPlayer::SetElectricCapacity(float Amount)
 {
 	ElectricDischargeComponent->SetCurrentCapacity(Amount);
-	ElectricDischargeComponent->BroadCastToUI();
 }
 
 void APPCharacterPlayer::OpenMenu()

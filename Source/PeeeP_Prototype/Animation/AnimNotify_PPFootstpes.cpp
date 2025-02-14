@@ -8,7 +8,7 @@
 
 UAnimNotify_PPFootstpes::UAnimNotify_PPFootstpes()
 {
-	VolumeMultiplier = 0.25f;
+	VolumeMultiplier = 0.75f;
 	PitchMultiplier = 1.00f;
 }
 

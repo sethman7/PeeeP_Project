@@ -150,6 +150,9 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Electric)
 	TObjectPtr<class UPPChargingLevelHUD> ElectricChargingLevelWidget;
 
+	UPROPERTY(EditAnywhere, Category = Effect)
+	TObjectPtr<class USoundBase> DeadSound;
+
 	float ChargeTime;
 
 public:
@@ -212,4 +215,8 @@ public:
 	void SetElectricCapacity(float Amount);
 
 	void PlayEquipEffect();
+	void PlayDeadSound();
+
+public:
+	virtual void TakeDamage(float Amount);
 };

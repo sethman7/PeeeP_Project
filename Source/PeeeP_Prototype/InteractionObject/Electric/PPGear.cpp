@@ -27,6 +27,7 @@ APPGear::APPGear()
 
 /// <summary>
 /// 액터가 충돌했을 때 호출되는 메서드
+/// 현재 여러번 충돌되는 현상 발생
 /// </summary>
 /// <param name="MyComp"></param>
 /// <param name="Other"></param>
@@ -74,9 +75,10 @@ void APPGear::NotifyHit(UPrimitiveComponent* MyComp, AActor* Other, UPrimitiveCo
 					FVector dir = HitLocation - GetActorLocation();
 					FVector normalDir = dir.GetSafeNormal2D();
 
-
 					ApplyKnockback(CharacterMovementComponent, normalDir, 500.0f);
 				}
+
+				Player->TakeDamage(1.0f);
 			}
 		}
 	}

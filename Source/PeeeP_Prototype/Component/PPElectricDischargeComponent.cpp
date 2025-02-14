@@ -226,6 +226,7 @@ void UPPElectricDischargeComponent::Discharge()
 		CurrentChargingTime = 0.0f;
 		DischargeEffectComponent->Deactivate();
 		OwnerCharacter->RevertMaxWalkSpeed();
+		OwnerCharacter->GetElectricChargingLevelWidget()->SetVisibility(ESlateVisibility::Hidden);
 		return;
 	}
 

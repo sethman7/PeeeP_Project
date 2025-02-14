@@ -5,6 +5,7 @@
 #include "Character/PPCharacterPlayer.h"
 #include "Component/PPElectricDischargeComponent.h"
 #include "GameMode/PPPlayerState.h"
+#include "Components/AudioComponent.h"
 
 
 // Sets default values
@@ -25,6 +26,10 @@ APPElectricCharageStation::APPElectricCharageStation()
 	TriggerBox->OnComponentBeginOverlap.AddDynamic(this, &APPElectricCharageStation::OnOverlapBegin);
 	TriggerBox->OnComponentEndOverlap.AddDynamic(this, &APPElectricCharageStation::OnOverlapEnd);
 
+	AudioComponent = CreateDefaultSubobject<UAudioComponent>(TEXT("AudioComponent"));
+	AudioComponent->SetupAttachment(RootComponent);
+	AudioComponent->VolumeMultiplier = 0.5f;
+
 	bIsActivate = false;
 }
 
@@ -33,6 +38,10 @@ void APPElectricCharageStation::BeginPlay()
 {
 	Super::BeginPlay();
 
+	if (nullptr != SaveSound)
+	{
+		AudioComponent->Sound = SaveSound;
+	}
 }
 
 // Called every frame
@@ -42,7 +51,7 @@ void APPElectricCharageStation::Tick(float DeltaTime)
 
 	if (bIsActivate)
 	{
-		ElectricDischargeComponent->ChargeElectric(5.0f * DeltaTime);
+		ElectricDischargeComponent->AddCurrentCapacity(5.0f * DeltaTime);
 	}
 }
 
@@ -83,6 +92,15 @@ void APPElectricCharageStation::SaveGame(APPCharacterPlayer* InPlayer)
 		//FVector SpawnLocation = GetActorLocation() + FVector(0.0f, 0.0f, 10.0f);
 		PlayerState->SetSpawnActorLocation(this);
 		//PlayerState->SetSpawnLocation(SpawnLocation);
+
+		if (nullptr != AudioComponent)
+		{
+			AudioComponent->Play();
+		}
+		if (nullptr != ActiveMaterial)
+		{
+			TriggerFloorMesh->SetMaterial(1, ActiveMaterial);
+		}
 	}
 	bIsActivate = true;
 

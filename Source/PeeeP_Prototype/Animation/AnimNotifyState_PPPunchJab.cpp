@@ -4,6 +4,7 @@
 #include "Animation/AnimNotifyState_PPPunchJab.h"
 #include "GameFramework/Character.h"
 #include "Kismet/KismetSystemLibrary.h"
+#include "Character/PPCharacterPlayer.h"
 
 void UAnimNotifyState_PPPunchJab::NotifyBegin(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, float TotalDuration, const FAnimNotifyEventReference& EventReference)
 {
@@ -43,6 +44,11 @@ void UAnimNotifyState_PPPunchJab::NotifyTick(USkeletalMeshComponent* MeshComp, U
 			if (HitCharacter != nullptr)
 			{
 				HitCharacter->LaunchCharacter(Velocity, true, true);
+				APPCharacterPlayer* CharacterPlayer = Cast<APPCharacterPlayer>(HitCharacter);
+				if (nullptr != CharacterPlayer)
+				{
+					CharacterPlayer->TakeDamage(10.0f * FrameDeltaTime);
+				}
 				UE_LOG(LogTemp, Warning, TEXT("Hit"));
 			}
 			else

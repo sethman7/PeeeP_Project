@@ -99,9 +99,8 @@ public:
 	void PlayDischargeEffect(FName EffectType, int8 ChargingLevel, FVector Location, FRotator Rotation);
 
 	// ������Ʈ(�÷��̾�) ���� ���� �Լ�
-	void ChargeElectric(float amount);
+	void AddCurrentCapacity(float amount);
 	void SetCurrentCapacity(float Amount);
-
 	void Reset();
 
 public:

@@ -27,7 +27,16 @@ protected:
 	TObjectPtr<class UBoxComponent> TriggerBox;
 
 	UPROPERTY(EditAnywhere)
+	TObjectPtr<class UMaterialInterface> ActiveMaterial;
+
+	UPROPERTY(EditAnywhere)
 	TObjectPtr<class USceneComponent> RootSceneComponent;
+
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<class UAudioComponent> AudioComponent;
+
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<class USoundBase> SaveSound;
 
 	bool bIsActivate;
 

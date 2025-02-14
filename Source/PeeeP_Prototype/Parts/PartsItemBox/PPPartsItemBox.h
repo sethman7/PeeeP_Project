@@ -29,6 +29,9 @@ protected:
 	UPROPERTY(EditAnywhere)
 	TObjectPtr<class UBoxComponent> TriggerBox;
 
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<class USoundBase> EarnSound;
+
 
 public:	
 	// Called every frame

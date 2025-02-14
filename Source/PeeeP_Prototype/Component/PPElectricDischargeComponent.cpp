@@ -76,7 +76,7 @@ void UPPElectricDischargeComponent::PlayChargeLevelSound()
 	{
 		if (nullptr != ChargeLevelSound)
 		{
-			UGameplayStatics::PlaySound2D(GetWorld(), ChargeLevelSound, 0.75f, 0.3f * (float)CurrentChargeLevel);
+			UGameplayStatics::PlaySound2D(GetWorld(), ChargeLevelSound, 0.5f * (float)CurrentChargeLevel, 0.3f * (float)CurrentChargeLevel);
 		}
 		TempChargeLevel = CurrentChargeLevel;
 	}
@@ -239,6 +239,8 @@ void UPPElectricDischargeComponent::Discharge()
 	if (nullptr != DischargeSound)
 	{
 		ElectricSoundComponent->Sound = DischargeSound;
+		ElectricSoundComponent->PitchMultiplier = 0.33f * CurrentChargeLevel;
+		ElectricSoundComponent->VolumeMultiplier = 0.5f * CurrentChargeLevel;
 		ElectricSoundComponent->Play();
 	}
 
@@ -378,7 +380,7 @@ void UPPElectricDischargeComponent::PlayDischargeEffect(FName EffectType, int8 C
 /// ElectricDischargeComponent�� CurrentElectricCapacity�� ���������ִ� �Լ�
 /// </summary>
 /// <param name="amount">CurrentElectricCapacity�� ������</param>
-void UPPElectricDischargeComponent::ChargeElectric(float amount)
+void UPPElectricDischargeComponent::AddCurrentCapacity(float amount)
 {
 	if (bElectricIsEmpty)
 	{
@@ -399,6 +401,7 @@ void UPPElectricDischargeComponent::ChargeElectric(float amount)
 void UPPElectricDischargeComponent::SetCurrentCapacity(float Amount)
 {
 	CurrentElectricCapacity = Amount;
+	BroadCastToUI();
 }
 
 void UPPElectricDischargeComponent::BroadCastToUI()

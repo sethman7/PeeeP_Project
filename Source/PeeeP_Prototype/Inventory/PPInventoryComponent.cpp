@@ -32,6 +32,15 @@ void UPPInventoryComponent::InitializeComponent()
 }
 
 
+void UPPInventoryComponent::ClearUsingItem()
+{
+	UsingSlotIndex = -1; // 미장착으로 변경
+	QuickSlotWidget->SetEquipmentTextVisible(ESlateVisibility::Hidden);
+	// 파츠 해제부
+
+	UE_LOG(LogTemp, Log, TEXT("Parts Item Detached: %d Slot"), CurrentSlotIndex);
+}
+
 // Called when the game starts
 void UPPInventoryComponent::BeginPlay()
 {

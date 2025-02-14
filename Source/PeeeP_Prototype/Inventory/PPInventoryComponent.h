@@ -27,6 +27,8 @@ public:
 public:
 	FOnChangedInventoryDelegate OnChangeInven;
 
+	void ClearUsingItem();
+
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;

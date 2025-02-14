@@ -169,6 +169,7 @@ APPCharacterPlayer::APPCharacterPlayer()
 
 void APPCharacterPlayer::OnDeath(uint8 bIsDead)
 {
+	SetDefaultMeshAndAnim();
 
 	UPPAnimInstance* AnimInstance = Cast<UPPAnimInstance>(GetMesh()->GetAnimInstance());
 	if (IsValid(AnimInstance))
@@ -179,6 +180,10 @@ void APPCharacterPlayer::OnDeath(uint8 bIsDead)
 		{
 			if (!GetWorldTimerManager().IsTimerActive(RespawnTimerHandle))
 			{
+				InventoryComponent->ClearUsingItem();
+				RemoveParts();
+				PlayEquipEffect();
+				
 				if (IsValid(PlayerController))
 				{
 					this->DisableInput(PlayerController);
@@ -408,8 +413,15 @@ void APPCharacterPlayer::OnRunningEnd(const FInputActionValue& Value)
 
 void APPCharacterPlayer::SetDefaultMeshAndAnim()
 {
-	GetMesh()->SetSkeletalMesh(DefaultSkeletonMesh);
-	GetMesh()->SetAnimInstanceClass(DefaultAnimClass);
+	if (GetMesh()->GetSkeletalMeshAsset() != DefaultSkeletonMesh)
+	{
+		GetMesh()->SetSkeletalMesh(DefaultSkeletonMesh);
+	}
+
+	if (GetMesh()->GetAnimClass() != DefaultAnimClass)
+	{
+		GetMesh()->SetAnimInstanceClass(DefaultAnimClass);
+	}
 }
 
 UCameraComponent* APPCharacterPlayer::GetCamera()

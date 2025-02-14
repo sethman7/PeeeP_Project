@@ -24,6 +24,14 @@ protected:
 	TObjectPtr <class UImage> KeyManualImage_Charge;
 	UPROPERTY()
 	TObjectPtr <class UImage> KeyManualImage_Discharge;
+	UPROPERTY()
+	TObjectPtr <class UImage> KeyManualImage_Equip;
+	UPROPERTY()
+	TObjectPtr <class UImage> KeyManualImage_Unequip;
+	UPROPERTY()
+	TObjectPtr <class UImage> KeyManualImage_Grab01;
+	UPROPERTY()
+	TObjectPtr <class UImage> KeyManualImage_Grab02;
 
 public:
 	void SetAllKeyManualImageHidden();

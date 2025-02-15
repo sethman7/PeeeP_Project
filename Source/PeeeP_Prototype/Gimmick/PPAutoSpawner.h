@@ -22,8 +22,6 @@ protected:
 	void SpawnPoolingActor();
 
 	UPROPERTY(EditAnywhere)
-	TObjectPtr<class UBlueprint> SpawnActorBlueprint;
-
 	TSubclassOf<class AActor> SpawnActorClass;
 
 	UPROPERTY()

@@ -13,8 +13,6 @@ APPAutoSpawner::APPAutoSpawner()
 
 	PoolObject = CreateDefaultSubobject<UPPPoolObject>(TEXT("ObjectPool"));
 
-	SpawnActorBlueprint = CreateDefaultSubobject<UBlueprint>(TEXT("SpawnActorObject"));
-
 }
 
 // Called when the game starts or when spawned
@@ -22,18 +20,9 @@ void APPAutoSpawner::BeginPlay()
 {
 	Super::BeginPlay();
 
-	if (IsValid(SpawnActorBlueprint))
+	if (IsValid(SpawnActorClass))
 	{
-		TSubclassOf<UObject> SpawnObjectClass = SpawnActorBlueprint->GeneratedClass;
-		if (IsValid(SpawnObjectClass))
-		{
-			TSubclassOf<AActor> CastSpawnActorClass = TSubclassOf<AActor>(SpawnObjectClass);
-			if (IsValid(CastSpawnActorClass))
-			{
-				SpawnActorClass = CastSpawnActorClass;
-				PoolObject->SetPoolingObjectClass(SpawnActorClass);
-			}
-		}
+		PoolObject->SetPoolingObjectClass(SpawnActorClass);
 	}
 
 	GetWorld()->GetTimerManager().SetTimer(AutoSpawnTimer, this, &APPAutoSpawner::SpawnPoolingActor, 5.0f, true);
@@ -46,6 +35,7 @@ void APPAutoSpawner::SpawnPoolingActor()
 
 	SpawnedActor->SetActorLocationAndRotation(this->GetActorLocation(), FRotator::ZeroRotator);
 	PoolableActor->SetActive(true);
+
 }
 
 // Called every frame

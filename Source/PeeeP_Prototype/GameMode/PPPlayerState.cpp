@@ -35,8 +35,11 @@ void APPPlayerState::PlayRespawnSequence()
 {
 	if (IsValid(SpawnPointActor) && SpawnPointActor->Implements<UPPSavepointInterface>())
 	{
-		UE_LOG(LogTemp, Log, TEXT("Play Sequence"));
-		RestartSequencePlayer->Play();
+		if (IsValid(RestartSequencePlayer))
+		{
+			UE_LOG(LogTemp, Log, TEXT("Play Sequence"));
+			RestartSequencePlayer->Play();
+		}
 	}
 }
 

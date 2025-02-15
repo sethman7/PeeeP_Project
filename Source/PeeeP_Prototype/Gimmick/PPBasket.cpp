@@ -12,7 +12,7 @@ APPBasket::APPBasket()
 	PrimaryActorTick.bCanEverTick = true;
 
 	Mesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh"));
-	Mesh->SetupAttachment(RootComponent);
+	SetRootComponent(Mesh);
 
 	Mesh->SetSimulatePhysics(true);
 	Mesh->SetCollisionObjectType(ECC_GameTraceChannel8);

@@ -18,12 +18,13 @@ AActor* UPPPoolObject::GetPoolObject()
 		if (PoolingObjectClass)
 		{
 			AActor* PoolableObject = GetWorld()->SpawnActor<AActor>(PoolingObjectClass, FVector::ZeroVector, FRotator::ZeroRotator);
+			PoolableObject->SetActorHiddenInGame(true);
+
 			IPPPoolableInterface* PoolingActor = Cast<IPPPoolableInterface>(PoolableObject);
 			if (PoolingActor)
 			{
 				PoolingActor->SetObjectPool(this);
 			}
-			PoolableObject->SetActorHiddenInGame(true);
 			return PoolableObject;
 		}
 		else
@@ -31,9 +32,7 @@ AActor* UPPPoolObject::GetPoolObject()
 			UE_LOG(Pooling, Warning, TEXT("PoolingObjectClass is nullptr."));
 			return nullptr;
 		}
-		
 	}
-
 	return Pool.Pop();
 }
 
